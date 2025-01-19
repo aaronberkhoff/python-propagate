@@ -31,7 +31,7 @@ class State:
 
 class Agent:
 
-    def __init__(self, state:State, start_time:datetime, duration:timedelta, dt: timedelta):
+    def __init__(self, state:State, start_time:datetime, duration:timedelta, dt: timedelta, coefficent_of_drag = None, mass = None, area = None):
         self.state = state
         self._start_time = start_time
         self._duration = duration
@@ -39,6 +39,10 @@ class Agent:
         self.scenario = None
         self.state_data = None
         self.time_data = None
+        self._coefficent_of_drag = coefficent_of_drag
+        self._mass = mass
+        self._area = area
+    
         self.dynamics = []
 
         pass
@@ -54,6 +58,18 @@ class Agent:
     @property
     def dt(self):
         return self._dt
+    
+    @property
+    def coefficet_of_drag(self):
+        return self._coefficent_of_drag
+    
+    @property
+    def mass(self):
+        return self._mass
+    
+    @property
+    def area(self):
+        return self._area
     
     def add_dynamics(self,dynamics: tuple):
         for dynamic in dynamics:
@@ -74,7 +90,7 @@ class Agent:
         az = 0
 
         for dynamic in self.dynamics:
-            a_x,a_y,a_z = dynamic(state,time,self.scenario)
+            a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
 
             ax += a_x
             ay += a_y

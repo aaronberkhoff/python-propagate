@@ -1,10 +1,11 @@
 import numpy as np
 from python_propagate.Scenario import Scenario
+from python_propagate.Agents import Agent
 
 
 import numpy as np
 
-def J2_motion(state: np.array, time: np.array, scenario):
+def J2_motion(state: np.array, time: np.array, scenario:Scenario, agent:Agent = None):
     """
     Compute the acceleration due to the second zonal harmonic J2.
     

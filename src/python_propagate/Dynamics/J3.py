@@ -1,10 +1,11 @@
 import numpy as np
 from python_propagate.Scenario import Scenario
+from python_propagate.Agents import Agent
 
 
 import numpy as np
 
-def J3_motion(state: np.array, time: np.array, scenario) -> np.array:
+def J3_motion(state: np.array, time: np.array, scenario:Scenario, agent:Agent = None):
 
     # Extract position components
     rx = state[0]

@@ -1,8 +1,9 @@
 import numpy as np
 from python_propagate.Scenario import Scenario
+from python_propagate.Agents import Agent
 
 
-def keplerian_motion(state:np.array,time:np.array, scenario: Scenario) -> np.array: 
+def keplerian_motion(state:np.array,time:np.array, scenario: Scenario, agent:Agent = None): 
 
     rx  = state[0]
     ry  = state[1]

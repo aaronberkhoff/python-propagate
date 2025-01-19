@@ -6,14 +6,16 @@ Planet = namedtuple("Planet", ["name",
                                "J2",
                                "J3", 
                                "spice_id",
-                               "mu"])
+                               "mu",
+                               "angular_velocity"])
 
 earth = Planet(name     = 'Earth',
                radius   = 6378.1363,
                J2       = 0.0010826267,
                J3       = -0.0000025327,
                spice_id = 399,
-               mu       = 398600.4415)
+               mu       = 398600.4415,
+               angular_velocity = 7.29211585530066e-5) #rad/sec
 
 
 # Connect to SQLite database (it will create the database file if it doesn't exist)
@@ -30,7 +32,9 @@ CREATE TABLE IF NOT EXISTS planets (
     J2 REAL NOT NULL,             -- Second zonal
     J3 REAL NOT NULL,             -- Second zonal
     spice_id INTEGER,             -- spice identifier
-    mu REAL                       -- Gravitational constant
+    mu REAL,                      -- Gravitational constant
+    angular_velocity REAL               --Angular velocity
+               
 );
 ''')
 
@@ -41,13 +45,14 @@ planets_data = [
     earth.J2,
     earth.J3,
     earth.spice_id,
-    earth.mu)  # Gravitational constants in m/s^2
+    earth.mu,
+    earth.angular_velocity)  # Gravitational constants in m/s^2
 ]
 
 # Insert the planet data into the table
 cursor.executemany('''
-INSERT INTO planets (name, radius, J2, J3, spice_id, mu)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO planets (name, radius, J2, J3, spice_id, mu, angular_velocity)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 ''', planets_data)
 
 # Commit the transaction (to save the changes)
@@ -59,7 +64,7 @@ cursor.execute("SELECT * FROM planets")
 # Fetch and display all the planets
 planets = cursor.fetchall()
 for planet in planets:
-    print(f"ID: {planet[0]}, Name: {planet[1]} J3")
+    print(f"ID: {planet[0]}, Name: {planet[-1]} J3")
 
 # Close the connection to the database
 connection.close()
