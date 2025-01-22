@@ -5,6 +5,14 @@ import numpy as np
 import scipy.integrate as sci_int
 
 from python_propagate.Scenario import Scenario
+from python_propagate.Dynamics import Result
+from python_propagate.Dynamics import Dynamic
+from python_propagate.Dynamics.keplerian import Keplerian
+from python_propagate.Dynamics.J2 import J2
+from python_propagate.Dynamics.J3 import J3
+from python_propagate.Dynamics.drag import Drag
+
+
 
 class State:
     def __init__(self, position, velocity, stm = np.eye(6), frame="inertial"):
@@ -20,9 +28,9 @@ class State:
         self.stm      = stm
         self.frame = frame
 
-    def __call__(self,stm = False):
+    def __call__(self,stm = None):
 
-        if stm:
+        if stm is not None:
             return np.hstack((self.position,self.velocity,self.stm.flatten()))
         else:
             return np.hstack((self.position,self.velocity))
@@ -73,30 +81,37 @@ class Agent:
     
     def add_dynamics(self,dynamics: tuple):
         for dynamic in dynamics:
-            self.dynamics.append(dynamic)
+            if dynamic == 'kepler':
+                self.dynamics.append(Keplerian(scenario=self.scenario,agent=self))
+
+            elif dynamic == 'J2':
+                self.dynamics.append(J2(scenario=self.scenario,agent=self))
+
+            elif dynamic == 'J3':
+                self.dynamics.append(J3(scenario=self.scenario,agent=self))
+
+            elif dynamic == 'drag':
+                self.dynamics.append(Drag(scenario=self.scenario,agent=self))
+
+            elif isinstance(dynamic,Dynamic):
+                self.dynamics.append(dynamic)
+            else:
+                raise NotImplementedError(f'Dynamic <{dynamic}> is not an option or is spelled wrong')
 
     def set_scenario(self,scenario:Scenario):
 
         self.scenario = scenario
 
     def propagator(self,time,state):
- 
-        vx  = state[3]
-        vy  = state[4]
-        vz  = state[5]
 
-        ax = 0
-        ay = 0
-        az = 0
+
+        result = Result()
 
         for dynamic in self.dynamics:
-            a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
-
-            ax += a_x
-            ay += a_y
-            az += a_z
-
-        return np.array([vx,vy,vz,ax,ay,az])
+            # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
+            result += dynamic(state,time)
+            
+        return np.hstack((state[3:6],result.compile()))
     
     def propagate(self,tolerance = 1e-12):
 

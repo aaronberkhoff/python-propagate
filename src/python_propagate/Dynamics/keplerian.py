@@ -1,18 +1,22 @@
 import numpy as np
 from python_propagate.Scenario import Scenario
-from python_propagate.Agents import Agent
+from python_propagate.Dynamics import Dynamic
 
+class Keplerian(Dynamic):
 
-def keplerian_motion(state:np.array,time:np.array, scenario: Scenario, agent:Agent = None): 
+    def __init__(self, scenario: Scenario, agent = None,stm = None):
+        super().__init__(scenario, agent, stm)
 
-    rx  = state[0]
-    ry  = state[1]
-    rz  = state[2]
+    def function(self,state:np.array,time:np.array):
 
-    r = np.sqrt(rx**2 + ry**2 + rz**2)
+        rx  = state[0]
+        ry  = state[1]
+        rz  = state[2]
 
-    ax = -scenario.central_body.mu * rx /r**3
-    ay = -scenario.central_body.mu * ry /r**3
-    az = -scenario.central_body.mu * rz /r**3
+        r = np.sqrt(rx**2 + ry**2 + rz**2)
 
-    return ax, ay, az
+        ax = -self.scenario.central_body.mu * rx /r**3
+        ay = -self.scenario.central_body.mu * ry /r**3
+        az = -self.scenario.central_body.mu * rz /r**3
+
+        return np.array([ax, ay, az])

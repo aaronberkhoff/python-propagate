@@ -7,7 +7,10 @@ from python_propagate.Environment.Planets import Earth
 from python_propagate.Agents.spacecraft import Spacecraft
 from python_propagate.Agents import State
 from datetime import datetime, timedelta
-from python_propagate.Dynamics import J2, J3, keplerian
+from python_propagate.Dynamics.keplerian import Keplerian
+from python_propagate.Dynamics.J2 import J2
+from python_propagate.Dynamics.J3 import J3
+from python_propagate.Dynamics.drag import Drag
 from scipy.io import loadmat
 
 
@@ -29,11 +32,13 @@ def test_accel_are_equal_J3():
 
     # jah_sat = Spacecraft(initial_state,start_time=start_time,duration=duration, dt = scenario.dt)
 
-    ax, ay, az = J3.J3_motion(initial_state(),time=None,scenario=scenario)
+    j3 = J3(scenario=scenario)
+
+    result = j3(initial_state(),None)
 
 
     # temp = 
-    actual_accel = np.array([ax,ay,az])[:,np.newaxis]
+    actual_accel = result.compile()[:,np.newaxis]
     
     data = loadmat("C:/Users/ajber/Desktop/College Classes/Spring_2025/Space_Debris/Homework/homewrok1/HW01_ComparisonResults.mat")
     expected_accel = data['accel_TwoBody_J2_J3'][3:6] - data['accel_TwoBody_J2'][3:6]
@@ -56,7 +61,8 @@ def test_end_states_are_equal_J3():
 
     jah_sat = Spacecraft(initial_state,start_time=start_time,duration=duration, dt = scenario.dt)
     jah_sat.set_scenario(scenario=scenario)
-    jah_sat.add_dynamics((J2.J2_motion,keplerian.keplerian_motion,J3.J3_motion))
+    dynamics = ('kepler','J2','J3')
+    jah_sat.add_dynamics(dynamics=dynamics)
 
     # scenario.add_agent(jah_sat)
     # scenario.add_dynamics((J2.J2_motion,J3.J3_motion,keplerian.keplerian_motion))
