@@ -1,27 +1,15 @@
 import numpy as np
 from python_propagate.Scenario import Scenario
 from python_propagate.Dynamics import Dynamic
+from python_propagate.Agents.state import State
 
 class J2(Dynamic):
     def __init__(self, scenario: Scenario, agent= None,stm = None):
         super().__init__(scenario, agent, stm)
 
-    def function(self,state: np.array, time: np.array):
-        """
-        Compute the acceleration due to the second zonal harmonic J2.
-        
-        Parameters:
-            state (np.array): Position vector [rx, ry, rz].
-            time (np.array): Time (not used in this function but can be relevant for future modifications).
-            scenario: Scenario object containing central body properties (radius, J2, and gravitational parameter).
-            
-        Returns:
-            np.array: Accelerations [ax, ay, az] due to J2.
-        """
-        # Extract position components
-        rx = state[0]
-        ry = state[1]
-        rz = state[2]
+    def function(self,state: State, time: float):
+
+        rx, ry, rz = state.extract_position()
 
         # Compute common terms
         r2 = rx**2 + ry**2 + rz**2    # Square of the radial distance
@@ -42,7 +30,7 @@ class J2(Dynamic):
         ay = alpha * ry / gamma * beta
         az = alpha * rz / gamma * (3 - 5 * rz**2 / r2)
 
-        return np.array([ax, ay, az])
+        return State(acceleration=np.array([ax, ay, az]))
 
 
   

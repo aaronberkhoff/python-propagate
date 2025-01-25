@@ -1,20 +1,17 @@
 import numpy as np
 from python_propagate.Scenario import Scenario
 from python_propagate.Dynamics import Dynamic
+from python_propagate.Agents.state import State
+
 
 class Drag(Dynamic):
     def __init__(self, scenario: Scenario, agent = None,stm = None):
         super().__init__(scenario, agent, stm)
         
-    def function(self,state: np.array, time: float):
+    def function(self,state: State, time: float):
 
-        rx = state[0]
-        ry = state[1]
-        rz = state[2]
-        
-        vx = state[3]
-        vy = state[4]
-        vz = state[5]
+        rx, ry, rz = state.extract_position()
+        vx, vy, vz = state.extract_velocity()
 
         r = np.sqrt(rx**2 + ry**2 + rz**2)
 
@@ -31,7 +28,8 @@ class Drag(Dynamic):
         ay = dynamic_pressure * vay * va
         az = dynamic_pressure * vz * va
 
-        return np.array([ax, ay, az])
+        return State(acceleration=np.array([ax, ay, az]))
+        
 
 
 

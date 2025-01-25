@@ -1,5 +1,4 @@
 from python_propagate.Environment.Planets import Planet
-from python_propagate.Agents import Agent
 from datetime import datetime, timedelta
 import numpy as np
 
@@ -30,7 +29,7 @@ class Scenario:
     def dt(self):
         return self._dt
 
-    def add_agent(self,agent:Agent):
+    def add_agent(self,agent):
         agent.set_scenario(self)
         self.agents.append(agent)
         pass

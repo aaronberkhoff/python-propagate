@@ -1,7 +1,14 @@
 import numpy as np
 class Planet:
 
-    def __init__(self, name : str, radius: float, J2: float, J3: float, spice_id:int, mu: float, angular_velocity:float):
+    def __init__(self, name : str, 
+                 radius: float, 
+                 J2: float, 
+                 J3: float, 
+                 spice_id:int, 
+                 mu: float, 
+                 angular_velocity:float, 
+                 flattening: float):
         self._radius = radius
         self._mu = mu
         self._J2 = J2
@@ -9,6 +16,8 @@ class Planet:
         self._name = name
         self._spice_id = spice_id
         self._angular_velocity = angular_velocity
+        self._flattening = flattening
+
 
     @property
     def radius(self):
@@ -38,6 +47,14 @@ class Planet:
     def angular_velocity(self):
         return self._angular_velocity
     
+    @property
+    def flattening(self):
+        return self._flattening
+
+    @property
+    def eccentricity(self):
+        return 2 * self._flattening - self._flattening**2
+
 
 
 
@@ -49,9 +66,10 @@ class Earth(Planet):
                J3       = -0.0000025327,
                spice_id = 399,
                mu       = 398600.4415,
-               angular_velocity = 7.29211585530066e-5):
+               angular_velocity = 7.29211585530066e-5,
+               flattening = 1 / 298.257223563):
         
-        super().__init__(name, radius, J2, J3, spice_id, mu, angular_velocity)
+        super().__init__(name, radius, J2, J3, spice_id, mu, angular_velocity,flattening=flattening)
 
     def atmosphere_model(self,radius_spacecraft):
 
@@ -170,45 +188,13 @@ class Earth(Planet):
             h0 = 0
             H = 7.249
             
-        density = rho0 * np.exp( - (altitude - h0) / H)
+        density = rho0 * np.exp( - (altitude - h0) / H) * 1000**3
 
-        return density * 1000**3
+        return density
     
     def set_atmosphere_model(self,model):
         self.atmosphere_model = model
         pass
 
   
-    # def initialize_planet(name:str):
-
-    #     #load data
-    #     connection = sqlite3.connect('data/planets.db')
-
-    #     cursor = connection.cursor()
-
-    #     # Query to fetch data for Earth
-    #     cursor.execute("SELECT * FROM planets WHERE name = ?", (name,))
-
-    #     planet_data = cursor.fetchone()
-
-    #     # Close the connection
-    #     connection.close()
-
-    #     planet = Planet(*planet_data)
-
-    #     return planet
-        
-
-            
-            
-    
-    
-
-        
-
-
-
-    
-
-
 

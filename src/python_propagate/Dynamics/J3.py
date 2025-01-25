@@ -1,17 +1,15 @@
 import numpy as np
 from python_propagate.Scenario import Scenario
 from python_propagate.Dynamics import Dynamic
+from python_propagate.Agents.state import State
 
 class J3(Dynamic):
     def __init__(self, scenario: Scenario, agent = None,stm = None):
         super().__init__(scenario, agent, stm)
 
-    def function(self,state: np.array, time: np.array):
+    def function(self,state: State, time: float):
 
-        # Extract position components
-        rx = state[0]
-        ry = state[1]
-        rz = state[2]
+        rx, ry, rz = state.extract_position()
 
         # Compute common terms
         r2 = rx**2 + ry**2 + rz**2    # Square of the radial distance
@@ -33,5 +31,5 @@ class J3(Dynamic):
         az = alpha *  gamma
         
 
-        return np.array([ax, ay, az])
+        return State(acceleration=np.array([ax, ay, az]))
 

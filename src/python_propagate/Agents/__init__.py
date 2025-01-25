@@ -5,35 +5,15 @@ import numpy as np
 import scipy.integrate as sci_int
 
 from python_propagate.Scenario import Scenario
-from python_propagate.Dynamics import Result
 from python_propagate.Dynamics import Dynamic
 from python_propagate.Dynamics.keplerian import Keplerian
 from python_propagate.Dynamics.J2 import J2
 from python_propagate.Dynamics.J3 import J3
 from python_propagate.Dynamics.drag import Drag
+from python_propagate.Dynamics.stm import STM
+from python_propagate.Agents.state import State
 
-
-
-class State:
-    def __init__(self, position, velocity, stm = np.eye(6), frame="inertial"):
-        """
-        Initialize the state of an object with explicit units.
-
-        :param position: Position vector (e.g., [x, y, z] in kilometers or km)
-        :param velocity: Velocity vector (e.g., [vx, vy, vz] in m/s or km/s)
-        :param frame: Reference frame (e.g., "inertial", "body")
-        """
-        self.position = np.array(position* u.km)   # Assume kilometers by default
-        self.velocity = np.array(velocity * (u.km / u.s))  # Assume kilometers per second
-        self.stm      = stm
-        self.frame = frame
-
-    def __call__(self,stm = None):
-
-        if stm is not None:
-            return np.hstack((self.position,self.velocity,self.stm.flatten()))
-        else:
-            return np.hstack((self.position,self.velocity))
+        
 
 
 
@@ -93,6 +73,9 @@ class Agent:
             elif dynamic == 'drag':
                 self.dynamics.append(Drag(scenario=self.scenario,agent=self))
 
+            elif dynamic == 'stm':
+                self.dynamics.append(STM(scenario=self.scenario,agent=self))
+
             elif isinstance(dynamic,Dynamic):
                 self.dynamics.append(dynamic)
             else:
@@ -104,16 +87,37 @@ class Agent:
 
     def propagator(self,time,state):
 
-
-        result = Result()
+        # result = Result()
+        #TODO: Specifying an object in the propagation loop will increase comp time
+        #TODO THis sTm config is a quick fix
+        #TODO Create own propagators
+        state = State(position=state[0:3],velocity=state[3:6],acceleration=np.array([0,0,0]))
 
         for dynamic in self.dynamics:
             # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
-            result += dynamic(state,time)
+            state.update_acceleration_from_state(dynamic(state,time))
+
             
-        return np.hstack((state[3:6],result.compile()))
+        return state.dot()
+    
+    def stm_propagator(self,time,state):
+
+        # result = Result()
+        #TODO: Specifying an object in the propagation loop will increase comp time
+        #TODO THis sTm config is a quick fix
+        #TODO Create own propagators
+        state = State(position=state[0:3],velocity=state[3:6],acceleration=np.array([0,0,0]),stm = np.reshape(state[6:],(6,6)))
+
+        for dynamic in self.dynamics:
+            # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
+            state.update_acceleration_from_state(dynamic(state,time))
+
+            
+        return state.dot()
     
     def propagate(self,tolerance = 1e-12):
+
+        #TODO Create own propagators instead of using scipy
 
         time = [0,self.duration.total_seconds()]
         method = 'RK45'
@@ -122,16 +126,24 @@ class Agent:
         atol = tolerance
         t_eval = np.arange(time[0],time[1]+self.dt.seconds,self.dt.seconds)
 
+        if self.state.stm is not None:
+            ode_state = sci_int.solve_ivp(self.stm_propagator,time,self.state.compile(),method = method,rtol = rtol,atol = atol,t_eval = t_eval)
+            self.state.position = ode_state.y[0:3,-1]
+            self.state.velocity = ode_state.y[3:6,-1]
+            self.state.stm = np.reshape(ode_state.y[6:,-1],(6,6))
+        else:
+            ode_state = sci_int.solve_ivp(self.propagator,time,self.state.compile(),method = method,rtol = rtol,atol = atol,t_eval = t_eval)
+            self.state.position = ode_state.y[0:3,-1]
+            self.state.velocity = ode_state.y[3:6,-1]
+            
 
-        ode_state = sci_int.solve_ivp(self.propagator,time,self.state(),method = method,rtol = rtol,atol = atol,t_eval = t_eval)
-
-        self.update_state(new_state=ode_state.y[:,-1])
-        self.save_state_data(ode_state=ode_state)
 
     def update_state(self,new_state):
 
         self.state.position = new_state[0:3]
         self.state.velocity = new_state[3:6]
+
+        self.state.stm = np.reshape(new_state[6:],(6,6))
 
 
         pass
