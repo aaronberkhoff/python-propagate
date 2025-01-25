@@ -1,6 +1,7 @@
 from python_propagate.Environment.Planets import Planet
 from datetime import datetime, timedelta
 import numpy as np
+from python_propagate.Utilities.load_spice import load_spice
 
 
 class Scenario:
@@ -12,6 +13,9 @@ class Scenario:
         self._duration      = duration
         self._dt            = dt
         self.agents         = []
+        self.stations       = []
+        
+        load_spice()
 
     @property
     def central_body(self):

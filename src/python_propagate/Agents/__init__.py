@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from astropy import units as u
 import numpy as np
 import scipy.integrate as sci_int
+from datetime import datetime, timedelta
 
 from python_propagate.Scenario import Scenario
 from python_propagate.Dynamics import Dynamic
@@ -25,7 +26,7 @@ class Agent:
         self._duration = duration
         self._dt       = dt
         self.scenario = None
-        self.state_data = None
+        self.state_data = []
         self.time_data = None
         self._coefficent_of_drag = coefficent_of_drag
         self._mass = mass
@@ -135,6 +136,7 @@ class Agent:
             ode_state = sci_int.solve_ivp(self.propagator,time,self.state.compile(),method = method,rtol = rtol,atol = atol,t_eval = t_eval)
             self.state.position = ode_state.y[0:3,-1]
             self.state.velocity = ode_state.y[3:6,-1]
+            self.save_state_data(ode_state=ode_state)
             
 
 
@@ -149,8 +151,10 @@ class Agent:
         pass
 
     def save_state_data(self,ode_state):
-        self.state_data = ode_state.y
-        self.time_data  = ode_state.t
+        for state, time in zip(ode_state.y.transpose(),ode_state.t):
+            delta_time = timedelta(seconds=time)
+            self.state_data.append(State(position=state[0:3],velocity=state[3:6],time=self.start_time + delta_time))
+
 
 
 

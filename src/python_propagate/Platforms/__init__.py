@@ -68,7 +68,8 @@ class Platform:
         y_ecef = factor * np.cos(self._latitude) * np.sin(self._longitude)
         z_ecef = ((1 - self._scenario.central_body.eccentricity) * curvature + self._altitude) * np.sin(self._latitude)
 
-        state = State(position=np.array([x_ecef,y_ecef,z_ecef]),frame='ECEF')
+        state = State(position=np.array([x_ecef,y_ecef,z_ecef]),
+                      velocity=np.array([0,0,0]),frame='ECEF')
         
         return state
 
