@@ -1,6 +1,7 @@
 import numpy as np
 import spiceypy as spice
 from python_propagate.Utilities.load_spice import load_spice
+from python_propagate.Utilities.transforms import cart2classical
 
 
 TARGET = 'EARTH'
@@ -129,6 +130,13 @@ class State:
             return np.hstack((self.position,self.velocity,self.stm.flatten()))
         else:
             return np.hstack((self.position,self.velocity))
+        
+    def to_keplerian(self,mu):
+
+        sma,ecc,inc,raan,arg,nu = cart2classical(self.compile(),mu)
+
+        return sma,ecc,inc,raan,arg,nu
+
         
     def dot(self):
         if self.stm is not None:

@@ -84,6 +84,12 @@ def test_data_from_target(scenario,agent):
     range, range_rate = platform.calculate_range_and_range_rate_from_target(state=agent.state)
     az, el = platform.calculate_azimuth_and_elevation(state=agent.state)
 
+    assert isinstance(range,float)
+    assert isinstance(range_rate,float)
+
+    assert isinstance(az,float)
+    assert isinstance(el,float)
+
 
     pass
 

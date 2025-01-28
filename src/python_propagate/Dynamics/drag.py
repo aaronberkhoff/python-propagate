@@ -14,8 +14,12 @@ class Drag(Dynamic):
         vx, vy, vz = state.extract_velocity()
 
         r = np.sqrt(rx**2 + ry**2 + rz**2)
+        alt = r - self.scenario.central_body.radius
 
-        density = self.scenario.central_body.atmosphere_model(r) 
+        rho0,h0,H = self.scenario.central_body.atmosphere_model(r)
+
+        density = rho0 * np.exp( - (alt - h0) / H) * 1000**3
+
 
         vax = vx + self.scenario.central_body.angular_velocity * ry
         vay = vy - self.scenario.central_body.angular_velocity * rx

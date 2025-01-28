@@ -73,7 +73,7 @@ def test_end_states_are_equal_J3():
     actual_end = jah_sat.state.compile()[np.newaxis,:]
     data = loadmat("C:/Users/ajber/Desktop/College Classes/Spring_2025/Space_Debris/Homework/homewrok1/HW01_ComparisonResults.mat")
     expected_end = data['endState_TwoBody_J2_J3']
-    assert_allclose(actual_end, expected_end,rtol = 1e-7)
+    assert_allclose(actual_end, expected_end, atol = 1e-18)
 
 
 

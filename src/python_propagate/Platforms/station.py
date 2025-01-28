@@ -120,6 +120,13 @@ class Station(Platform):
 
 
         return azimuth, elevation
+    
+    def calculate_ra_and_dec(self,state):
+
+        dec = np.arcsin(state.z_ECI/ state.radius)
+        ra = np.arctan2(state.y_ECI, state.z_ECI)
+
+        return ra,dec
 
 
 

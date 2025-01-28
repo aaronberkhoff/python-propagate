@@ -188,9 +188,8 @@ class Earth(Planet):
             h0 = 0
             H = 7.249
             
-        density = rho0 * np.exp( - (altitude - h0) / H) * 1000**3
 
-        return density
+        return rho0,h0,H
     
     def set_atmosphere_model(self,model):
         self.atmosphere_model = model

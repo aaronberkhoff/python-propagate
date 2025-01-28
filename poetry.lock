@@ -798,7 +798,30 @@ files = [
     {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
 ]
 
+[[package]]
+name = "spiceypy"
+version = "6.0.0"
+description = "A Python Wrapper for the NAIF CSPICE Toolkit"
+optional = false
+python-versions = "<4,>=3.6"
+groups = ["main"]
+files = [
+    {file = "spiceypy-6.0.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:70cda5b057d1b83dd8a4ecd9d4d2823b2f9c263b85fcdcc0df0370ca5b94c74f"},
+    {file = "spiceypy-6.0.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:20d70ce09e6efa78e9e3f2400c6ee85bd7065f19edf2d4ebce257c79eb43e534"},
+    {file = "spiceypy-6.0.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:22b50777174c6ef61cdb57aac4f4003ab8de69a0c4b0b87f66881f0a9758e9a2"},
+    {file = "spiceypy-6.0.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a7da6cdb0eaa1e1a27a2198be58404262c0def0216ad62de7183223461e35aa0"},
+    {file = "spiceypy-6.0.0-py3-none-win_amd64.whl", hash = "sha256:5737a4e19fb8030916b60d6280358d672330243d5aab6299954346a22c92ce58"},
+    {file = "spiceypy-6.0.0.tar.gz", hash = "sha256:ac27096a12b795898c3a6d1fa1f12a7e4485f480acd2e59fbd3a986cb0ade2be"},
+]
+
+[package.dependencies]
+numpy = ">=1.17.0"
+
+[package.extras]
+dev = ["black", "build", "coverage (>=5.1.0)", "numpy (>=1.17.0)", "pandas (>=0.24.0)", "pytest (>=7.0.0)", "twine (>=3.3.0)", "wheel"]
+tests = ["numpy (>=1.17.0)", "pandas (>=0.24.0)", "pytest (>=7.0.0)"]
+
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.11"
-content-hash = "1f2c406a354a9e4716582a44cf276b1a70874b8e31460e2c6c0040d2fe02d653"
+python-versions = ">=3.11,<4"
+content-hash = "a610a0ecb293ccdcbce731e1f26439a2c0e506130e55d32ef01a7c63885327bb"

@@ -50,7 +50,7 @@ def test_accel_are_equal_drag():
     data = loadmat("C:/Users/ajber/Desktop/College Classes/Spring_2025/Space_Debris/Homework/homewrok1/HW01_ComparisonResults.mat")
     expected_accel = data['accel_All'][3:6] - data['accel_TwoBody_J2_J3'][3:6]
     diff = (actual_accel - expected_accel)
-    assert_allclose(actual_accel, expected_accel,rtol = 0.0, atol = 1e-12)
+    assert_allclose(actual_accel, expected_accel,rtol = 0.0, atol = 1e-18)
 
 
 

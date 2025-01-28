@@ -29,7 +29,10 @@ class Spacecraft(Agent):
         Initializes the Spacecraft with the given parameters.
     """
 
-    def __init__(self, state, start_time, duration, dt, coefficent_of_drag = None, mass = None, area = None):
+    def __init__(self, state, 
+                 start_time, 
+                 duration, dt, 
+                 coefficent_of_drag = None, mass = None, area = None):
         """
         Constructs all the necessary attributes for the Spacecraft object.
 
