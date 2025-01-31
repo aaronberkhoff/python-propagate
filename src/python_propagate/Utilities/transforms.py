@@ -1,124 +1,148 @@
+"""
+transforms.py:
+
+This module contains functions for converting between reference frames and orbital elements.
+
+Functions:
+- classical2cart: Converts classical orbital elements to cartesian state vector.
+- cart2classical: Converts cartesian state vector to classical orbital elements.
+- mean2true: Converts mean anomaly to true anomaly.
+- true2mean: Converts true anomaly to mean anomaly.
+
+Author: Aaron Berkhoff
+Date: 2025-01-30
+"""
+
 import numpy as np
 from scipy.optimize import newton
 
-def classical2cart(a,e,i,arg,raan,mu,nu = None,M = None):  
-    
-    if nu is None and M is None:
+
+def classical2cart(a, e, i, arg, raan, mu, nu=None, mean_anomaly=None):
+    """Converts classical orbital elements to cartesian state vector."""
+
+    if nu is None and mean_anomaly is None:
         raise ValueError("A true anomaly (nu) or mean anomaly (M) must be specified")
 
     if nu is None:
-        n = np.sqrt(mu/(a**3))
-        # M = M0 + n*tof 
-        # M = M % (2*np.pi)
-        nu,E = mean2true(M, e)
-        # nu = nu % (2*np.pi)
-    
-    
-    p = a*(1-e**2)
-    r = p/(1+e*np.cos(nu))
-    
-    R = np.array([r*np.cos(nu),r*np.sin(nu),0])
-    V = np.array([-np.sqrt(mu/p)*np.sin(nu), np.sqrt(mu/p) * (e+np.cos(nu)), 0])
-    
+        nu, _ = mean2true(mean_anomaly, e)
 
-    DCM = np.array([
+    p = a * (1 - e**2)
+    r = p / (1 + e * np.cos(nu))
+
+    r_perifocal = np.array([r * np.cos(nu), r * np.sin(nu), 0])
+    v_perifocal = np.array(
+        [-np.sqrt(mu / p) * np.sin(nu), np.sqrt(mu / p) * (e + np.cos(nu)), 0]
+    )
+
+    transform = np.array(
         [
-            np.cos(raan) * np.cos(arg) - np.sin(raan) * np.sin(arg) * np.cos(i),
-            -np.cos(raan) * np.sin(arg) - np.sin(raan) * np.cos(arg) * np.cos(i),
-            np.sin(raan) * np.sin(i)
-        ],
-        [
-            np.sin(raan) * np.cos(arg) + np.cos(raan) * np.sin(arg) * np.cos(i),
-            -np.sin(raan) * np.sin(arg) + np.cos(raan) * np.cos(arg) * np.cos(i),
-            -np.cos(raan) * np.sin(i)
-        ],
-        [
-            np.sin(arg) * np.sin(i),
-            np.cos(arg) * np.sin(i),
-            np.cos(i)
+            [
+                np.cos(raan) * np.cos(arg) - np.sin(raan) * np.sin(arg) * np.cos(i),
+                -np.cos(raan) * np.sin(arg) - np.sin(raan) * np.cos(arg) * np.cos(i),
+                np.sin(raan) * np.sin(i),
+            ],
+            [
+                np.sin(raan) * np.cos(arg) + np.cos(raan) * np.sin(arg) * np.cos(i),
+                -np.sin(raan) * np.sin(arg) + np.cos(raan) * np.cos(arg) * np.cos(i),
+                -np.cos(raan) * np.sin(i),
+            ],
+            [np.sin(arg) * np.sin(i), np.cos(arg) * np.sin(i), np.cos(i)],
         ]
-    ])
-    
-    
-    xyz = DCM @ R
+    )
 
-    vxyz = DCM @ V
+    xyz = transform @ r_perifocal
 
-    return np.hstack((xyz,vxyz))
+    vxyz = transform @ v_perifocal
 
-def cart2classical(state,mu,nu_bool = True):
-    
-    
-    x, y, z, vx, vy, vz = state
-    
-    r = np.sqrt(x**2+y**2+z**2)
-    
-    v = np.sqrt(vx**2+vy**2+vz**2)
-    
-    z_hat = [0,0,1]
+    return np.hstack((xyz, vxyz))
 
-    h = np.cross([x, y, z], [vx, vy, vz])
-    a_vec = np.cross(z_hat,h) / np.linalg.norm(np.cross(z_hat,h))
-    e_vector = 1/mu * ((v**2 - mu/r) * np.array([x, y, z]) - np.dot([x, y, z], [vx, vy, vz]) * np.array([vx, vy, vz]))
-    
+
+def cart2classical(state, mu, nu_bool=True):
+    """Converts cartesian state vector to classical orbital elements."""
+
+    # x, y, z, vx, vy, vz = state
+
+    r = np.linalg.norm(state[0:3])
+
+    v = np.linalg.norm(state[3:6])
+
+    z_hat = [0, 0, 1]
+
+    h = np.cross(state[0:3], state[3:6])
+
+    e_vector = (
+        1
+        / mu
+        * (
+            (v**2 - mu / r) * np.array(state[0:3])
+            - np.dot(state[0:3], state[3:6]) * np.array(state[3:6])
+        )
+    )
+
     ecc = np.linalg.norm(e_vector)
-    
-    
-    p = np.linalg.norm(h)**2 / mu
-    
+
+    p = np.linalg.norm(h) ** 2 / mu
+
     sma = p / (1 - ecc**2)
-    
+
     inc = np.arccos(h[2] / np.linalg.norm(h))
-    
-    #node line direction
-    ahat=(np.cross(z_hat,h))/(np.linalg.norm(np.cross(z_hat,h)))
 
-    #find Omega
-    xhat=[1, 0, 0]
-    Omega=np.arccos(np.dot(xhat,ahat))
+    # node line direction
+    ahat = (np.cross(z_hat, h)) / (np.linalg.norm(np.cross(z_hat, h)))
 
-    #Quad check
-    if ahat[1] < 0 : Omega=2*np.pi-Omega
+    # find raan
+    # xhat=[1, 0, 0]
+    raan = np.arccos(np.dot([1, 0, 0], ahat))
 
-    #find w
-    arg=np.arccos((np.dot(ahat,e_vector))/np.linalg.norm(e_vector))
+    # Quad check
+    if ahat[1] < 0:
+        raan = 2 * np.pi - raan
 
-    #quad check
+    # find w
+    arg = np.arccos((np.dot(ahat, e_vector)) / np.linalg.norm(e_vector))
 
-    if e_vector[2] <0:
-        arg=2*np.pi-arg
+    # quad check
+    if e_vector[2] < 0:
+        arg = 2 * np.pi - arg
 
+    nu = np.arccos(np.dot(e_vector, state[0:3]) / (ecc * r))
 
-    # nu = np.arctan2(z / (r * np.sin(i)), (x * np.cos(Omega) + y * np.sin(Omega)) / r)
-    nu = np.arccos(np.dot(e_vector,[x,y,z])/(ecc*r))
-
-    
-
-    # nu = nu - arg
-    if np.dot([x,y,z],[vx,vy,vz]) < 0: nu = 2*np.pi - nu 
+    if np.dot(state[0:3], state[3:6]) < 0:
+        nu = 2 * np.pi - nu
 
     if nu_bool:
-        return sma, ecc, inc, arg, Omega, nu
+        anomaly = nu
+
     else:
-        E = np.arctan2(np.sqrt(1 - ecc**2) * np.sin(nu), ecc + np.cos(nu))
-        M = E - ecc * np.sin(E)
-        return sma, ecc, inc, arg, Omega, M
-    
+        eccentric_amomaly = np.arctan2(
+            np.sqrt(1 - ecc**2) * np.sin(nu), ecc + np.cos(nu)
+        )
+        mean_anomaly = eccentric_amomaly - ecc * np.sin(eccentric_amomaly)
+        anomaly = mean_anomaly
 
-        # return a, e, np.rad2deg(i), np.rad2deg(arg), np.rad2deg(Omega), np.rad2deg(nu)
-        
-    
-def mean2true(mean,eccentricity):
+    return sma, ecc, inc, arg, raan, anomaly
 
+
+def mean2true(mean, eccentricity):
+    """Converts mean anomaly to true anomaly."""
     eccentric_anomaly = newton(lambda E: E - eccentricity * np.sin(E) - mean, x0=mean)
-    true_anomaly = 2*np.arctan((np.sqrt((1+eccentricity)/(1-eccentricity))*np.tan(eccentric_anomaly/2)))
+    true_anomaly = 2 * np.arctan(
+        (
+            np.sqrt((1 + eccentricity) / (1 - eccentricity))
+            * np.tan(eccentric_anomaly / 2)
+        )
+    )
 
-    true_anomaly = true_anomaly % (2*np.pi)
+    true_anomaly = true_anomaly % (2 * np.pi)
     return true_anomaly, eccentric_anomaly
 
-def true2mean(true_anomaly,eccentricity):
-     E = 2 * np.arctan(np.sqrt((1-eccentricity))/np.sqrt(1 + eccentricity)* np.tan(true_anomaly/2))
-     M = E - eccentricity*np.sin(E)
 
-     
-     return M
+def true2mean(true_anomaly, eccentricity):
+    """Converts true anomaly to mean anomaly."""
+    eccentric_amomaly = 2 * np.arctan(
+        np.sqrt((1 - eccentricity))
+        / np.sqrt(1 + eccentricity)
+        * np.tan(true_anomaly / 2)
+    )
+    mean_anomaly = eccentric_amomaly - eccentricity * np.sin(eccentric_amomaly)
+    return mean_anomaly

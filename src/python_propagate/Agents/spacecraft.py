@@ -1,4 +1,17 @@
+"""
+spacecraft.py
+
+This module contains the Spacecraft class.
+
+Classes:
+- Spacecraft: A class to represent a spacecraft.
+Author: Aaron Berkhoff
+
+Date: 2025-01-30
+"""
+
 from python_propagate.Agents import Agent
+
 
 class Spacecraft(Agent):
     """
@@ -29,10 +42,16 @@ class Spacecraft(Agent):
         Initializes the Spacecraft with the given parameters.
     """
 
-    def __init__(self, state, 
-                 start_time, 
-                 duration, dt, 
-                 coefficent_of_drag = None, mass = None, area = None):
+    def __init__(
+        self,
+        state,
+        start_time,
+        duration,
+        dt,
+        coefficent_of_drag=None,
+        mass=None,
+        area=None,
+    ):
         """
         Constructs all the necessary attributes for the Spacecraft object.
 
@@ -53,4 +72,6 @@ class Spacecraft(Agent):
         area : float, optional
             The cross-sectional area of the spacecraft (default is None).
         """
-        super().__init__(state, start_time, duration, dt, coefficent_of_drag, mass, area = area)
+        super().__init__(
+            state, start_time, duration, dt, coefficent_of_drag, mass, area=area
+        )
