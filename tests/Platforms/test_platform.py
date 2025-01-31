@@ -1,11 +1,10 @@
 import pytest
-from datetime import datetime
-import numpy as np
-from python_propagate.Platforms import Platform
-from python_propagate.Scenario import Scenario
 from datetime import datetime, timedelta
-from python_propagate.Environment.Planets import Earth
-from python_propagate.Utilities.units import RAD2DEG, DEG2RAD
+from python_propagate.platforms import Platform
+from python_propagate.scenario import Scenario
+
+from python_propagate.environment.planets import Earth
+from python_propagate.utilities.units import RAD2DEG, DEG2RAD
 
 
 @pytest.fixture
@@ -24,7 +23,7 @@ def test_platform_initialization(scenario):
     longitude = -118.25  # Example longitude
     altitude = 0.0  # Example altitude
 
-    platform = Platform(latitude, longitude, scenario, altitude)
+    platform = Platform((latitude, longitude), scenario, altitude)
 
     assert platform.latitude == latitude * DEG2RAD
     assert platform.longitude == longitude * DEG2RAD
@@ -37,7 +36,7 @@ def test_latlon_convesion(scenario):
     longitude = -118.25  # Example longitude
     altitude = 0.0  # Example altitude
 
-    platform = Platform(latitude, longitude, scenario, altitude)
+    platform = Platform((latitude, longitude), scenario, altitude)
 
     state = platform.state
 

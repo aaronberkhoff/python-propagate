@@ -1,14 +1,14 @@
+from datetime import datetime, timedelta
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-
-from python_propagate.Scenario import Scenario
-from python_propagate.Environment.Planets import Earth
-from python_propagate.Agents.spacecraft import Spacecraft
-from python_propagate.Agents import State
-from datetime import datetime, timedelta
-from python_propagate.Dynamics.stm import STM
 from scipy.io import loadmat
+
+from python_propagate.scenario import Scenario
+from python_propagate.environment.planets import Earth
+from python_propagate.agents.spacecraft import Spacecraft
+from python_propagate.agents import State
+from python_propagate.dynamics.stm import STM
 
 
 def test_stm_acceleration():
@@ -48,9 +48,7 @@ def test_stm_acceleration():
 
     actual_accel = result.stm_dot.flatten(order="F")[:, np.newaxis]
 
-    data = loadmat(
-        "C:/Users/ajber/Desktop/College Classes/Spring_2025/Space_Debris/Homework/homewrok1/HW01_ComparisonResults.mat"
-    )
+    data = loadmat("tests\data\Dynamics_ComparisonResults.mat")
     expected_accel = data["accel_All"][6:]
     diff = actual_accel - expected_accel
     # diff = (actual_accel - expected_accel).reshape((6,6))

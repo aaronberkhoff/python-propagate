@@ -1,11 +1,10 @@
 import pytest
-from python_propagate.Scenario import Scenario
-from python_propagate.Environment.Planets import Earth
-from python_propagate.Agents.spacecraft import Spacecraft
-from python_propagate.Agents import State
+
+from python_propagate.scenario import Scenario
+from python_propagate.environment.planets import Earth
+from python_propagate.agents.spacecraft import Spacecraft
+from python_propagate.agents.state import State
 from datetime import datetime, timedelta
-from python_propagate.Dynamics import J2, J3, keplerian
-from scipy.io import loadmat
 
 
 @pytest.fixture

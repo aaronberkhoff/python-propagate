@@ -1,16 +1,15 @@
 import pytest
 from datetime import datetime
 import numpy as np
-from python_propagate.Platforms import Platform
-from python_propagate.Platforms.station import Station
-from python_propagate.Scenario import Scenario
-from datetime import datetime, timedelta
-from python_propagate.Environment.Planets import Earth
-from python_propagate.Utilities.units import RAD2DEG, DEG2RAD
-from python_propagate.Agents.state import State
-from python_propagate.Agents.spacecraft import Spacecraft
-from python_propagate.Utilities.load_spice import load_spice
 import spiceypy as spice
+
+from python_propagate.platforms.station import Station
+from python_propagate.scenario import Scenario
+from datetime import datetime, timedelta
+from python_propagate.environment.planets import Earth
+from python_propagate.agents.state import State
+from python_propagate.agents.spacecraft import Spacecraft
+
 
 TARGET = "EARTH"
 ECI = "J2000"
@@ -55,26 +54,26 @@ def test_frame_conversion(agent):
 
     # load_spice()
 
-    position_ECI = agent.state.position_ECI
+    position_eci = agent.state.position_eci
 
-    position_ECEF = agent.state.position_ECEF
-
-    et = spice.str2et(agent.start_time.strftime("%Y-%m-%dT%H:%M:%S"))
-    rotation_matix = spice.pxform(ECEF, ECI, et)
-
-    position_ECI2 = rotation_matix @ position_ECEF
-
-    velocity_ECI = agent.state.velocity_ECI
-
-    velocity_ECEF = agent.state.velocity_ECEF
+    position_ecef = agent.state.position_ecef
 
     et = spice.str2et(agent.start_time.strftime("%Y-%m-%dT%H:%M:%S"))
     rotation_matix = spice.pxform(ECEF, ECI, et)
 
-    velocity_ECI2 = rotation_matix @ velocity_ECEF
+    position_eci2 = rotation_matix @ position_ecef
 
-    np.testing.assert_array_almost_equal(position_ECI, position_ECI2, decimal=12)
-    np.testing.assert_array_almost_equal(velocity_ECI, velocity_ECI2, decimal=12)
+    velocity_eci = agent.state.velocity_eci
+
+    velocity_ecef = agent.state.velocity_ecef
+
+    et = spice.str2et(agent.start_time.strftime("%Y-%m-%dT%H:%M:%S"))
+    rotation_matix = spice.pxform(ECEF, ECI, et)
+
+    velocity_eci2 = rotation_matix @ velocity_ecef
+
+    np.testing.assert_array_almost_equal(position_eci, position_eci2, decimal=12)
+    np.testing.assert_array_almost_equal(velocity_eci, velocity_eci2, decimal=12)
 
 
 def test_data_from_target(scenario, agent):
@@ -83,7 +82,7 @@ def test_data_from_target(scenario, agent):
     altitude = 0.0  # Example altitude
     assert isinstance(scenario, Scenario)
     assert isinstance(agent, Spacecraft)
-    platform = Station(latitude, longitude, scenario, altitude)
+    platform = Station((latitude, longitude), scenario, altitude)
 
     range, range_rate = platform.calculate_range_and_range_rate_from_target(
         state=agent.state

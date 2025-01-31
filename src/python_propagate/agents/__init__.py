@@ -12,14 +12,14 @@ from datetime import timedelta
 import numpy as np
 import scipy.integrate as sci_int
 
-from python_propagate.Scenario import Scenario
-from python_propagate.Dynamics import Dynamic
-from python_propagate.Dynamics.keplerian import Keplerian
-from python_propagate.Dynamics.J2 import J2
-from python_propagate.Dynamics.J3 import J3
-from python_propagate.Dynamics.drag import Drag
-from python_propagate.Dynamics.stm import STM
-from python_propagate.Agents.state import State
+from python_propagate.scenario import Scenario
+from python_propagate.dynamics import Dynamic
+from python_propagate.dynamics.keplerian import Keplerian
+from python_propagate.dynamics.j2 import J2
+from python_propagate.dynamics.j3 import J3
+from python_propagate.dynamics.drag import Drag
+from python_propagate.dynamics.stm import STM
+from python_propagate.agents.state import State
 
 
 class Agent:

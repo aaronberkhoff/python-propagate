@@ -1,7 +1,7 @@
 import numpy as np
-from python_propagate.Scenario import Scenario
-from python_propagate.Dynamics import Dynamic
-from python_propagate.Agents.state import State
+from python_propagate.scenario import Scenario
+from python_propagate.dynamics import Dynamic
+from python_propagate.agents.state import State
 
 
 class Drag(Dynamic):
@@ -16,9 +16,9 @@ class Drag(Dynamic):
         r = np.sqrt(rx**2 + ry**2 + rz**2)
         alt = r - self.scenario.central_body.radius
 
-        rho0, h0, H = self.scenario.central_body.atmosphere_model(r)
+        rho0, h0, scale_height = self.scenario.central_body.atmosphere_model(r)
 
-        density = rho0 * np.exp(-(alt - h0) / H) * 1000**3
+        density = rho0 * np.exp(-(alt - h0) / scale_height) * 1000**3
 
         vax = vx + self.scenario.central_body.angular_velocity * ry
         vay = vy - self.scenario.central_body.angular_velocity * rx

@@ -25,3 +25,15 @@ build-backend = "poetry.core.masonry.api"
 pytest = "^8.3.4"
 pre-commit = "^4.1.0"
 pylint = "^3.3.4"
+black = "^25.1.0"
+mypy = "^1.14.1"
+
+[tool.black]
+include = "src/|tests/"  # Only format these folders
+exclude = "migrations/|venv/"
+line-length = 88
+
+[tool.mypy]
+files = ["src"]
+ignore_missing_imports = true
+strict = true

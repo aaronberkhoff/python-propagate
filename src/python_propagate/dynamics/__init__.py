@@ -14,8 +14,8 @@ Date: 2025-01-30
 # TODO: Need to fix how dynamics are done, look at the pylinrc for reference
 import numpy as np
 
-from python_propagate.Scenario import Scenario
-from python_propagate.Agents.state import State
+from python_propagate.scenario import Scenario
+from python_propagate.agents.state import State
 
 
 class Dynamic:
@@ -50,7 +50,6 @@ class Dynamic:
         self.stm = stm
         self.scenario = scenario
         self.agent = agent
-        self.function = None
 
     def __call__(self, state: State, time: np.array):
         """

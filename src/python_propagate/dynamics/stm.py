@@ -1,9 +1,9 @@
 import numpy as np
 from numpy import sqrt
 
-from python_propagate.Scenario import Scenario
-from python_propagate.Dynamics import Dynamic
-from python_propagate.Agents.state import State
+from python_propagate.scenario import Scenario
+from python_propagate.dynamics import Dynamic
+from python_propagate.agents.state import State
 
 # TODO: explore specifying the difference between the classes for normal dynamics and STMs
 
@@ -31,8 +31,8 @@ class STM(Dynamic):
 
         R = self.scenario.central_body.radius
         mu = self.scenario.central_body.mu
-        J2 = self.scenario.central_body.J2
-        J3 = self.scenario.central_body.J3
+        j2 = self.scenario.central_body.j2
+        j3 = self.scenario.central_body.j3
 
         rho0, h0, H = self.scenario.central_body.atmosphere_model(r)
         Cd = self.agent.coefficet_of_drag
@@ -78,22 +78,22 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * rx**2
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    - 3 * J2 * R**2 * mu * rx**2 / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    - 3 * j2 * R**2 * mu * rx**2 / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     + (3 / 2)
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx**2
@@ -101,14 +101,14 @@ class STM(Dynamic):
                     * (-3 * rx**2 - 3 * ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     - 15
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx**2
                     * rz
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
                     + (5 / 2)
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rz
@@ -158,17 +158,17 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * rx
                     * ry
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    - 3 * J2 * R**2 * mu * rx * ry / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    - 3 * j2 * R**2 * mu * rx * ry / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
@@ -177,7 +177,7 @@ class STM(Dynamic):
                     * (-3 * rx**2 - 3 * ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     - 15
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
@@ -200,17 +200,17 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * rx
                     * rz
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    + 12 * J2 * R**2 * mu * rx * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    + 12 * j2 * R**2 * mu * rx * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
@@ -218,14 +218,14 @@ class STM(Dynamic):
                     * (-3 * rx**2 - 3 * ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     + 20
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
                     * rz**2
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
                     + (5 / 2)
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
@@ -331,17 +331,17 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * rx
                     * ry
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    - 3 * J2 * R**2 * mu * rx * ry / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    - 3 * j2 * R**2 * mu * rx * ry / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
@@ -350,7 +350,7 @@ class STM(Dynamic):
                     * (-3 * rx**2 - 3 * ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     - 15
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
@@ -389,22 +389,22 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * ry**2
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    - 3 * J2 * R**2 * mu * ry**2 / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    - 3 * j2 * R**2 * mu * ry**2 / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     + (3 / 2)
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * ry**2
@@ -412,14 +412,14 @@ class STM(Dynamic):
                     * (-3 * rx**2 - 3 * ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     - 15
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * ry**2
                     * rz
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
                     + (5 / 2)
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rz
@@ -442,17 +442,17 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * ry
                     * rz
                     * (-(rx**2) - ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    + 12 * J2 * R**2 * mu * ry * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    + 12 * j2 * R**2 * mu * ry * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * ry
@@ -460,14 +460,14 @@ class STM(Dynamic):
                     * (-3 * rx**2 - 3 * ry**2 + 4 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     + 20
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * ry
                     * rz**2
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
                     + (5 / 2)
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * ry
@@ -562,17 +562,17 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * rx
                     * rz
                     * (-3 * rx**2 - 3 * ry**2 + 2 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    - 9 * J2 * R**2 * mu * rx * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    - 9 * j2 * R**2 * mu * rx * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rx
@@ -583,7 +583,7 @@ class STM(Dynamic):
                     )
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     + (5 / 2)
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * (
@@ -623,17 +623,17 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * ry
                     * rz
                     * (-3 * rx**2 - 3 * ry**2 + 2 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    - 9 * J2 * R**2 * mu * ry * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    - 9 * j2 * R**2 * mu * ry * rz / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * ry
@@ -644,7 +644,7 @@ class STM(Dynamic):
                     )
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     + (5 / 2)
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * (
@@ -668,22 +668,22 @@ class STM(Dynamic):
                     / (H * mass * sqrt(rx**2 + ry**2 + rz**2))
                     - 21
                     / 2
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * rz**2
                     * (-3 * rx**2 - 3 * ry**2 + 2 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (9 / 2)
-                    + 6 * J2 * R**2 * mu * rz**2 / (rx**2 + ry**2 + rz**2) ** (7 / 2)
+                    + 6 * j2 * R**2 * mu * rz**2 / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     + (3 / 2)
-                    * J2
+                    * j2
                     * R**2
                     * mu
                     * (-3 * rx**2 - 3 * ry**2 + 2 * rz**2)
                     / (rx**2 + ry**2 + rz**2) ** (7 / 2)
                     - 45
                     / 2
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * rz
@@ -694,7 +694,7 @@ class STM(Dynamic):
                     )
                     / (rx**2 + ry**2 + rz**2) ** (11 / 2)
                     + (5 / 2)
-                    * J3
+                    * j3
                     * R**3
                     * mu
                     * (

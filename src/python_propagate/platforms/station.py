@@ -12,8 +12,8 @@ Date: 2025-01-30
 
 import numpy as np
 
-from python_propagate.Platforms import Platform
-from python_propagate.Scenario import Scenario
+from python_propagate.platforms import Platform
+from python_propagate.scenario import Scenario
 
 
 class Station(Platform):
@@ -36,8 +36,8 @@ class Station(Platform):
         self,
         latlong: tuple,
         scenario: Scenario,
-        sensor: str = 'none',
-        name: str = 'none',
+        sensor: str = "none",
+        name: str = "none",
         altitude: float = 0.0,
         minimum_elevation_angle: float = 0.0,
         identity: int = 0,
@@ -132,7 +132,7 @@ class Station(Platform):
 
     def calculate_ra_and_dec(self, state):
         """Calculates the right ascension and declination angles from the station to the target"""
-        dec = np.arcsin(state.z_ECI / state.radius)
-        ra = np.arctan2(state.y_ECI, state.z_ECI)
+        dec = np.arcsin(state.z_eci / state.radius)
+        ra = np.arctan2(state.y_eci, state.x_eci)
 
         return ra, dec

@@ -1,7 +1,7 @@
 import numpy as np
-from python_propagate.Scenario import Scenario
-from python_propagate.Dynamics import Dynamic
-from python_propagate.Agents.state import State
+from python_propagate.scenario import Scenario
+from python_propagate.dynamics import Dynamic
+from python_propagate.agents.state import State
 
 
 class J2(Dynamic):
@@ -19,7 +19,7 @@ class J2(Dynamic):
         R2 = self.scenario.central_body.radius**2  # Earth's radius squared
 
         # Central body's parameters
-        J2 = self.scenario.central_body.J2  # J2 coefficient
+        J2 = self.scenario.central_body.j2  # J2 coefficient
         mu = self.scenario.central_body.mu  # Gravitational parameter
 
         alpha = -3 * J2 * mu * R2

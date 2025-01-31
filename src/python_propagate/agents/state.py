@@ -175,7 +175,7 @@ class State:
             position = self.position
         elif self.frame == "inertial":
             et = spice.str2et(self.time.strftime("%Y-%m-%dT%H:%M:%S"))
-            rotation_matrix = spice.pxform("ECI", "ECEF", et)
+            rotation_matrix = spice.pxform(ECI, ECEF, et)
             position = rotation_matrix @ self.position
         else:
             raise ValueError(
@@ -221,7 +221,7 @@ class State:
             velocity = self.velocity
         elif self.frame == "inertial":
             et = spice.str2et(self.time.strftime("%Y-%m-%dT%H:%M:%S"))
-            rotation_matrix = spice.pxform("ECI", "ECEF", et)
+            rotation_matrix = spice.pxform(ECI, ECEF, et)
             velocity = rotation_matrix @ self.velocity
         else:
             raise ValueError(

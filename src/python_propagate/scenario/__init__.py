@@ -13,7 +13,7 @@ Date: 2025-01-30
 
 from datetime import datetime, timedelta
 
-from python_propagate.environment.Planets import Planet
+from python_propagate.environment.planets import Planet
 from python_propagate.utilities.load_spice import load_spice
 
 

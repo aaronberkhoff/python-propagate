@@ -1,17 +1,14 @@
-import pytest
+from datetime import datetime, timedelta
+
 import numpy as np
 from numpy.testing import assert_allclose
-
-from python_propagate.Scenario import Scenario
-from python_propagate.Environment.Planets import Earth
-from python_propagate.Agents.spacecraft import Spacecraft
-from python_propagate.Agents import State
-from datetime import datetime, timedelta
-from python_propagate.Dynamics.keplerian import Keplerian
-from python_propagate.Dynamics.J2 import J2
-from python_propagate.Dynamics.J3 import J3
-from python_propagate.Dynamics.drag import Drag
 from scipy.io import loadmat
+
+from python_propagate.scenario import Scenario
+from python_propagate.environment.planets import Earth
+from python_propagate.agents.spacecraft import Spacecraft
+from python_propagate.agents.state import State
+from python_propagate.dynamics.j3 import J3
 
 
 def test_accel_are_equal_J3():
@@ -40,9 +37,7 @@ def test_accel_are_equal_J3():
     # temp =
     actual_accel = result.acceleration[:, np.newaxis]
 
-    data = loadmat(
-        "C:/Users/ajber/Desktop/College Classes/Spring_2025/Space_Debris/Homework/homewrok1/HW01_ComparisonResults.mat"
-    )
+    data = loadmat("tests\data\Dynamics_ComparisonResults.mat")
     expected_accel = data["accel_TwoBody_J2_J3"][3:6] - data["accel_TwoBody_J2"][3:6]
     diff = actual_accel - expected_accel
     assert_allclose(actual_accel, expected_accel, rtol=0, atol=1e-17)
@@ -76,9 +71,7 @@ def test_end_states_are_equal_J3():
     jah_sat.propagate()
 
     actual_end = jah_sat.state.compile()[np.newaxis, :]
-    data = loadmat(
-        "C:/Users/ajber/Desktop/College Classes/Spring_2025/Space_Debris/Homework/homewrok1/HW01_ComparisonResults.mat"
-    )
+    data = loadmat("tests\data\Dynamics_ComparisonResults.mat")
     expected_end = data["endState_TwoBody_J2_J3"]
     assert_allclose(actual_end, expected_end, atol=1e-18)
 

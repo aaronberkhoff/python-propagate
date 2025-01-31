@@ -10,7 +10,7 @@ Author: Aaron Berkhoff
 Date: 2025-01-30
 """
 
-from python_propagate.Agents import Agent
+from python_propagate.agents import Agent
 
 
 class Spacecraft(Agent):
