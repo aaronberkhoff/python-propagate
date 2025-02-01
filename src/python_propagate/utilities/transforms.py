@@ -17,36 +17,36 @@ import numpy as np
 from scipy.optimize import newton
 
 
-def classical2cart(a, e, i, arg, raan, mu, nu=None, mean_anomaly=None):
+def classical2cart(sma, ecc, inc, arg, raan, mu, nu=None, mean_anomaly=None):
     """Converts classical orbital elements to cartesian state vector."""
 
     if nu is None and mean_anomaly is None:
         raise ValueError("A true anomaly (nu) or mean anomaly (M) must be specified")
 
     if nu is None:
-        nu, _ = mean2true(mean_anomaly, e)
+        nu, _ = mean2true(mean_anomaly, ecc)
 
-    p = a * (1 - e**2)
-    r = p / (1 + e * np.cos(nu))
+    p = sma * (1 - ecc**2)
+    r = p / (1 + ecc * np.cos(nu))
 
     r_perifocal = np.array([r * np.cos(nu), r * np.sin(nu), 0])
     v_perifocal = np.array(
-        [-np.sqrt(mu / p) * np.sin(nu), np.sqrt(mu / p) * (e + np.cos(nu)), 0]
+        [-np.sqrt(mu / p) * np.sin(nu), np.sqrt(mu / p) * (ecc + np.cos(nu)), 0]
     )
 
     transform = np.array(
         [
             [
-                np.cos(raan) * np.cos(arg) - np.sin(raan) * np.sin(arg) * np.cos(i),
-                -np.cos(raan) * np.sin(arg) - np.sin(raan) * np.cos(arg) * np.cos(i),
-                np.sin(raan) * np.sin(i),
+                np.cos(raan) * np.cos(arg) - np.sin(raan) * np.sin(arg) * np.cos(inc),
+                -np.cos(raan) * np.sin(arg) - np.sin(raan) * np.cos(arg) * np.cos(inc),
+                np.sin(raan) * np.sin(inc),
             ],
             [
-                np.sin(raan) * np.cos(arg) + np.cos(raan) * np.sin(arg) * np.cos(i),
-                -np.sin(raan) * np.sin(arg) + np.cos(raan) * np.cos(arg) * np.cos(i),
-                -np.cos(raan) * np.sin(i),
+                np.sin(raan) * np.cos(arg) + np.cos(raan) * np.sin(arg) * np.cos(inc),
+                -np.sin(raan) * np.sin(arg) + np.cos(raan) * np.cos(arg) * np.cos(inc),
+                -np.cos(raan) * np.sin(inc),
             ],
-            [np.sin(arg) * np.sin(i), np.cos(arg) * np.sin(i), np.cos(i)],
+            [np.sin(arg) * np.sin(inc), np.cos(arg) * np.sin(inc), np.cos(inc)],
         ]
     )
 

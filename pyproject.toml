@@ -13,7 +13,9 @@ dependencies = [
     "scipy (>=1.15.1,<2.0.0)",
     "matplotlib (>=3.10.0,<4.0.0)",
     "astropy",
-    "spiceypy (>=6.0.0,<7.0.0)"
+    "spiceypy (>=6.0.0,<7.0.0)",
+    "click (>=8.1.8,<9.0.0)",
+    "pyyaml (>=6.0.2,<7.0.0)"
 ]
 
 

@@ -67,7 +67,8 @@ class Planet:
         spice_id: int,
         mu: float,
         angular_velocity: float,
-        flattening: float,
+        flattening_bool: bool = False,
+        flattening: float = 0.0
     ):
         """
         Initializes the Planet with the given parameters.
@@ -88,8 +89,8 @@ class Planet:
             The gravitational parameter of the planet.
         angular_velocity : float
             The angular velocity of the planet.
-        flattening : float
-            The flattening factor of the planet.
+        flattening : bool
+            Include flattening.
         """
         self._radius = radius
         self._mu = mu
@@ -98,7 +99,22 @@ class Planet:
         self._name = name
         self._spice_id = spice_id
         self._angular_velocity = angular_velocity
+        self._flattening_bool = flattening_bool
         self._flattening = flattening
+
+    def __repr__(self):
+        """
+        Returns a string representation of the Planet object.
+
+        Returns
+        -------
+        str
+            A string representation of the Planet object.
+        """
+        return (f"Planet(name={self._name!r}, radius={self._radius}, J2={self._J2}, "
+                f"J3={self._J3}, spice_id={self._spice_id}, mu={self._mu}, "
+                f"angular_velocity={self._angular_velocity},"
+                f"flattening={self._flattening},flattening_bool={self._flattening_bool})")
 
     @property
     def radius(self):
@@ -185,6 +201,18 @@ class Planet:
         return self._angular_velocity
 
     @property
+    def flattening_bool(self):
+        """
+        Returns the flattening boolean of the planet.
+
+        Returns
+        -------
+        bool
+            The flattening boolean of the planet.
+        """
+        return self._flattening_bool
+    
+    @property
     def flattening(self):
         """
         Returns the flattening factor of the planet.
@@ -245,7 +273,7 @@ class Earth(Planet):
         spice_id=399,
         mu=398600.4415,
         angular_velocity=7.29211585530066e-5,
-        flattening=1 / 298.257223563,
+        flattening_bool=False
     ):
         """
         Initializes the Earth with the given parameters.
@@ -266,13 +294,30 @@ class Earth(Planet):
             The gravitational parameter of the planet (default is 398600.4415).
         angular_velocity : float, optional
             The angular velocity of the planet (default is 7.29211585530066e-5).
-        flattening : float, optional
-            The flattening factor of the planet (default is 1 / 298.257223563).
+        flattening_bool : float, optional
+            The flattening boolean of the planet (default is 1 / 298.257223563).
         """
+        if flattening_bool:
+            flattening = 1 / 298.257223563
+        else:
+            flattening = 0.0
 
         super().__init__(
             name, radius, j2, j3, spice_id, mu, angular_velocity, flattening=flattening
         )
+
+    def __repr__(self):
+        """
+        Returns a string representation of the Planet object.
+
+        Returns
+        -------
+        str
+            A string representation of the Planet object.
+        """
+        return (f"Earth(name={self._name}, radius={self._radius}, J2={self._j2}, "
+                f"J3={self._j3}, spice_id={self._spice_id}, mu={self._mu}, "
+                f"angular_velocity={self._angular_velocity}, flattening_bool={self._flattening_bool})")
 
     def atmosphere_model(self, radius_spacecraft):
         """

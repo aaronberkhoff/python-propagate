@@ -45,6 +45,7 @@ class Agent:
         coefficent_of_drag=None,
         mass=None,
         area=None,
+        name='Agent'
     ):
         """
         Initializes the Agent with the given parameters.
@@ -73,10 +74,12 @@ class Agent:
         self._coefficent_of_drag = coefficent_of_drag
         self._mass = mass
         self._area = area
+        self._name = name
         self.state_data = []
         self.time_data = []
         self.scenario = None
         self.dynamics = []
+        
 
     @property
     def start_time(self):
@@ -107,6 +110,11 @@ class Agent:
     def area(self):
         """Returns the area of the agent."""
         return self._area
+    
+    @property
+    def name(self):
+        """Returns the name of the agent."""
+        return self._name
 
     def add_dynamics(self, dynamics: tuple):
         """Adds dynamics to the agent.
@@ -143,6 +151,7 @@ class Agent:
         scenario : Scenario
             The scenario to be set for the agent.
         """
+        #TODO: Explore weakref to avoid circular dependancies
         self.scenario = scenario
 
     def propagator(self, time, state):

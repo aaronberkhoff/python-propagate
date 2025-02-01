@@ -54,6 +54,8 @@ class Scenario:
         start_time: datetime,
         duration: timedelta,
         dt: timedelta,
+        agents :list = [],
+        stations:list = [],
     ):
         """
         Initializes the Scenario with the given parameters.
@@ -68,13 +70,17 @@ class Scenario:
             The duration of the simulation.
         dt : timedelta
             The time step of the simulation.
+        agents : tuple
+            A tuple of agents in the scenario.
+        stations : tuple, optional
+            A tuple of stations in the scenario (default is empty tuple).
         """
         self._central_body = central_body
         self._start_time = start_time
         self._duration = duration
         self._dt = dt
-        self.agents = []
-        self.stations = []
+        self.agents = agents
+        self.stations = stations
 
         load_spice()
 
@@ -126,15 +132,20 @@ class Scenario:
         """
         return self._dt
 
-    def add_agent(self, agent):
-        """Addes an agent to the scenario."""
-        agent.set_scenario(self)
-        self.agents.append(agent)
-
     def add_dynamics(self, dynamics: tuple):
         """Adds dynamics to the agents in the scenario."""
         for agent in self.agents:
             agent.add_dynamics(dynamics)
+
+    def add_agents(self, agents: tuple):
+        """Adds agents to the agents in the scenario."""
+        for agent in agents:
+            self.agents.append(agent)
+
+    def add_stations(self, stations: tuple):
+        """Adds stations to the stations in the scenario."""
+        for station in stations:
+            self.stations.append(station)
 
     def run(self):
         """Runs the simulation."""

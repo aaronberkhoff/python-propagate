@@ -5,6 +5,18 @@ from python_propagate.agents.state import State
 
 
 class J2(Dynamic):
+    """
+    A class to represent a J2 dynamic.
+
+    Attributes
+
+    scenario : Scenario
+        The scenario of the dynamic.
+    agent : Agent
+        The agent of the dynamic.
+    stm : STM
+        The state transition matrix of the dynamic.
+    """
     def __init__(self, scenario: Scenario, agent=None, stm=None):
         super().__init__(scenario, agent, stm)
 

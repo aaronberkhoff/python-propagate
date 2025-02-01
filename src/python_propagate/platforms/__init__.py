@@ -33,7 +33,7 @@ class Platform:
         The state of the platform containing position and velocity.
     """
 
-    def __init__(self, latlong: tuple, scenario: Scenario, altitude: float = 0.0):
+    def __init__(self, lat_long_alt: tuple):
         """
         Constructs all the necessary attributes for the Platform object.
 
@@ -46,11 +46,11 @@ class Platform:
         scenario : Scenario
             The scenario to which the platform is attached.
         """
-        self._latitude = latlong[0] * DEG2RAD
-        self._longitude = latlong[1] * DEG2RAD
-        self._altitude = altitude
-        self._scenario = scenario
-        self.state = self.calculate_state_ecef()
+        self._latitude = lat_long_alt[0] * DEG2RAD
+        self._longitude = lat_long_alt[1] * DEG2RAD
+        self._altitude = lat_long_alt[2]
+        self.scenario = None
+        self.state = None
 
     @property
     def latitude(self):
@@ -66,11 +66,10 @@ class Platform:
     def altitude(self):
         """Gets the altitude of the platform."""
         return self._altitude
-
-    @property
-    def time(self):
-        """Gets the current time from the scenario."""
-        return self._scenario.start_time
+    
+    def add_scenario(self,scenario: Scenario):
+        """Adds and links the station to a scenario."""        
+        self.scenario = scenario
 
     def calculate_state_ecef(self):
         """Calculates the initial state (position and velocity in the ECEF frame) using spiceypy."""

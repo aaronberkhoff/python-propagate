@@ -14,13 +14,17 @@ Date: 2025-01-30
 
 import numpy as np
 import spiceypy as spice
+from collections import namedtuple
 
-from python_propagate.utilities.transforms import cart2classical
+from python_propagate.utilities.transforms import cart2classical, classical2cart
 
 
+#TODO: Remove hard coded TARGET
 TARGET = "EARTH"
 ECI = "J2000"
 ECEF = "ITRF93"
+MU = 398600.4415
+
 
 
 class State:
@@ -60,38 +64,14 @@ class State:
         Returns the velocity in the ECEF frame.
     radius(self):
         Returns the radius of the position vector.
-    x_eci(self):
-        Returns the x-component of the position vector in the ECI frame.
-    y_eci(self):
-        Returns the y-component of the position vector in the ECI frame.
-    z_eci(self):
-        Returns the z-component of the position vector in the ECI frame.
-    x_ecef(self):
-        Returns the x-component of the position vector in the ECEF frame.
-    y_ecef(self):
-        Returns the y-component of the position vector in the ECEF frame.
-    z_ecef(self):
-        Returns the z-component of the position vector in the ECEF frame.
-    vx_eci(self):
-        Returns the x-component of the velocity vector in the ECI frame.
-    vy_eci(self):
-        Returns the y-component of the velocity vector in the ECI frame.
-    vz_eci(self):
-        Returns the z-component of the velocity vector in the ECI frame.
-    vx_ecef(self):
-        Returns the x-component of the velocity vector in the ECEF frame.
-    vy_ecef(self):
-        Returns the y-component of the velocity vector in the ECEF frame.
-    vz_ecef(self):
-        Returns the z-component of the velocity vector in the ECEF frame.
-    latitude(self):
-        Returns the latitude of the position vector in the ECEF frame.
-    longitude(self):
-        Returns the longitude of the position vector in the ECEF frame.
+    latlong(self):
+        Returns the latitude and longitude of the position vector.
     compile(self):
         Compiles the state vector.
     to_keplerian(self, mu):
         Converts the state vector to Keplerian elements.
+    to_cartesian(self, mu):
+        Converts the state vector to Cartesian coordinates.
     dot(self):
         Returns the time derivative of the state vector.
     """
@@ -106,6 +86,7 @@ class State:
         time=None,
         dimension=6,
         frame="inertial",
+        orbital_elements=None,
     ):
         """
         Constructs all the necessary attributes for the State object.
@@ -128,6 +109,8 @@ class State:
             The dimension of the state vector (default is 6).
         frame : str, optional
             The reference frame of the state ('inertial' or 'ECEF', default is 'inertial').
+        orbital_elements : tuple, optional
+            The orbital elements of the agent (default is None).
         """
         self.position = position  # Assume kilometers by default
         self.velocity = velocity  # Assume kilometers per second
@@ -138,6 +121,35 @@ class State:
         self.time = time
         self.stm_dot = stm_dot
 
+        if orbital_elements is not None:
+            self.orbital_elements = orbital_elements
+            #TODO Figure out how to handle mu
+            state = classical2cart(sma=orbital_elements[0], 
+                                   ecc=orbital_elements[1],
+                                   inc=orbital_elements[2],
+                                   arg=orbital_elements[3],
+                                   raan=orbital_elements[4],
+                                   nu=orbital_elements[5],
+                                   mu=MU)
+            self.position = state[0:3]
+            self.velocity = state[3:6]
+           
+    def __repr__(self):
+
+        """
+        Returns a string representation of the State object.
+
+        Returns
+        -------
+        str
+            A string representation of the State object.
+        """
+        return (f"State(position={self.position}, velocity={self.velocity}, acceleration={self.acceleration}, "
+                f"stm={self.stm}, stm_dot={self.stm_dot}, time={self.time}, dimension={self.dimension}, "
+                f"frame={self.frame}, orbital_elements={getattr(self, 'orbital_elements', None)})")
+        
+
+            
     @property
     def position_eci(self):
         """
@@ -231,186 +243,19 @@ class State:
         return velocity
 
     @property
-    def radius(self):
-        """
-        Returns the radius of the position vector.
-
-        Returns
-        -------
-        float
-            The radius of the position vector.
-        """
-        return np.sqrt(
-            self.position[0] ** 2 + self.position[1] ** 2 + self.position[2] ** 2
-        )
-
-    @property
-    def x_eci(self):
-        """
-        Returns the x-component of the position vector in the ECI frame.
-
-        Returns
-        -------
-        float
-            The x-component of the position vector in the ECI frame.
-        """
-        return self.position_eci[0]
-
-    @property
-    def y_eci(self):
-        """
-        Returns the y-component of the position vector in the ECI frame.
-
-        Returns
-        -------
-        float
-            The y-component of the position vector in the ECI frame.
-        """
-        return self.position_eci[1]
-
-    @property
-    def z_eci(self):
-        """
-        Returns the z-component of the position vector in the ECI frame.
-
-        Returns
-        -------
-        float
-            The z-component of the position vector in the ECI frame.
-        """
-        return self.position_eci[2]
-
-    @property
-    def x_ecef(self):
-        """
-        Returns the x-component of the position vector in the ECEF frame.
-
-        Returns
-        -------
-        float
-            The x-component of the position vector in the ECEF frame.
-        """
-        return self.position_ecef[0]
-
-    @property
-    def y_ecef(self):
-        """
-        Returns the y-component of the position vector in the ECEF frame.
-
-        Returns
-        -------
-        float
-            The y-component of the position vector in the ECEF frame.
-        """
-        return self.position_ecef[1]
-
-    @property
-    def z_ecef(self):
-        """
-        Returns the z-component of the position vector in the ECEF frame.
-
-        Returns
-        -------
-        float
-            The z-component of the position vector in the ECEF frame.
-        """
-        return self.position_ecef[2]
-
-    @property
-    def vx_eci(self):
-        """
-        Returns the x-component of the velocity vector in the ECI frame.
-
-        Returns
-        -------
-        float
-            The x-component of the velocity vector in the ECI frame.
-        """
-        return self.velocity_eci[0]
-
-    @property
-    def vy_eci(self):
-        """
-        Returns the y-component of the velocity vector in the ECI frame.
-
-        Returns
-        -------
-        float
-            The y-component of the velocity vector in the ECI frame.
-        """
-        return self.velocity_eci[1]
-
-    @property
-    def vz_eci(self):
-        """
-        Returns the z-component of the velocity vector in the ECI frame.
-
-        Returns
-        -------
-        float
-            The z-component of the velocity vector in the ECI frame.
-        """
-        return self.velocity_eci[2]
-
-    @property
-    def vx_ecef(self):
-        """
-        Returns the x-component of the velocity vector in the ECEF frame.
-
-        Returns
-        -------
-        float
-            The x-component of the velocity vector in the ECEF frame.
-        """
-        return self.velocity_ecef[0]
-
-    @property
-    def vy_ecef(self):
-        """
-        Returns the y-component of the velocity vector in the ECEF frame.
-
-        Returns
-        -------
-        float
-            The y-component of the velocity vector in the ECEF frame.
-        """
-        return self.velocity_ecef[1]
-
-    @property
-    def vz_ecef(self):
-        """
-        Returns the z-component of the velocity vector in the ECEF frame.
-
-        Returns
-        -------
-        float
-            The z-component of the velocity vector in the ECEF frame.
-        """
-        return self.velocity_ecef[2]
-
-    @property
-    def latitude(self):
+    def latlong(self) -> tuple:
         """
         Returns the latitude of the position vector in the ECEF frame.
 
         Returns
         -------
-        float
-            The latitude of the position vector in the ECEF frame.
+        tuple
+            The latitude and longitude of the position vector in the ECEF frame.
         """
-        return np.arctan2(self.z_ecef, np.sqrt(self.x_ecef**2 + self.y_ecef**2))
+        lat  = np.arctan2(self.position_ecef[2], np.sqrt(self.position_ecef[0]**2 + self.position_ecef[1]**2))
+        long = np.arctan2(self.position_ecef[1], self.position_ecef[0])
 
-    @property
-    def longitude(self):
-        """
-        Returns the longitude of the position vector in the ECEF frame.
-
-        Returns
-        -------
-        float
-            The longitude of the position vector in the ECEF frame.
-        """
-        return np.arctan2(self.y_ecef, self.x_ecef)
+        return (lat, long)
 
     def compile(self):
         """
@@ -444,6 +289,19 @@ class State:
         """
         sma, ecc, inc, raan, arg, nu = cart2classical(self.compile(), mu)
         return sma, ecc, inc, raan, arg, nu
+    
+    def to_cartesian(self,mu):
+        """
+        Converts the state vector to Cartesian coordinates.
+
+        Returns
+        -------
+        tuple
+            The position and velocity vectors in Cartesian coordinates.
+            TODO: There is a quick fix for nu and M below
+        """
+        state = classical2cart(**self.orbital_elements[0:5],nu=self.orbital_elements[-1], mu=mu)
+        return state
 
     def dot(self):
         """
@@ -499,3 +357,22 @@ class State:
 
         if state.stm_dot is not None:
             self.stm_dot = state.stm_dot
+
+def state_constructor(loader, node):
+    """
+    Constructor function for the !State tag in the YAML file.
+
+    Parameters
+    ----------
+    loader : yaml.Loader
+        The YAML loader.
+    node : yaml.Node
+        The YAML node containing the data for the State object.
+
+    Returns
+    -------
+    State
+        An instance of the State class.
+    """
+    values = loader.construct_mapping(node)
+    return State(**values)

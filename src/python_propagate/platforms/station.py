@@ -34,11 +34,9 @@ class Station(Platform):
 
     def __init__(
         self,
-        latlong: tuple,
-        scenario: Scenario,
+        lat_long_alt: tuple,
         sensor: str = "none",
         name: str = "none",
-        altitude: float = 0.0,
         minimum_elevation_angle: float = 0.0,
         identity: int = 0,
     ):
@@ -62,11 +60,24 @@ class Station(Platform):
         minimum_elevation_angle : float, optional
             The minimum elevation angle of the station (default is 0.0).
         """
-        super().__init__(latlong, scenario, altitude)
+        super().__init__(lat_long_alt)
         self._sensor = sensor
         self._name = name
         self._minimum_elevation_angle = minimum_elevation_angle
         self._identity = identity
+
+    def __repr__(self):
+        """
+        Returns a string representation of the Station object.
+
+        Returns
+        -------
+        str
+            A string representation of the Station object.
+        """
+        return (f"Station(lat_long_alt={self.lat_long_alt}, scenario={self.scenario}, sensor={self.sensor!r}, "
+                f"name={self.name!r}, altitude={self.altitude}, minimum_elevation_angle={self.minimum_elevation_angle}, "
+                f"identity={self._identity})")
 
     @property
     def sensor(self):
@@ -136,3 +147,4 @@ class Station(Platform):
         ra = np.arctan2(state.y_eci, state.x_eci)
 
         return ra, dec
+    

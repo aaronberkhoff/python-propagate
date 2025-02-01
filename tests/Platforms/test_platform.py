@@ -10,7 +10,7 @@ from python_propagate.utilities.units import RAD2DEG, DEG2RAD
 @pytest.fixture
 def scenario():
     # Create a mock scenario object
-    earth = Earth(flattening=0.0)
+    earth = Earth(flattening_bool=False)
 
     start_time = datetime.strptime("2025-01-15T12:30:00", "%Y-%m-%dT%H:%M:%S")
     duration = timedelta(seconds=86400)
