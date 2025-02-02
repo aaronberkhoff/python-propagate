@@ -9,7 +9,6 @@ Author: Aaron Berkhoff
 
 Date: 2025-01-30
 """
-
 from python_propagate.agents import Agent
 
 
@@ -60,7 +59,7 @@ class Spacecraft(Agent):
         ----------
         state : object
             The initial state of the spacecraft.
-        start_time : datetime
+        start_time : datetime, str
             The start time of the simulation.
         duration : float
             The duration of the simulation.
@@ -73,6 +72,8 @@ class Spacecraft(Agent):
         area : float, optional
             The cross-sectional area of the spacecraft (default is None).
         """
+
+
         super().__init__(
             state, start_time, duration, dt, coefficent_of_drag, mass, area=area, name = name
         )

@@ -12,5 +12,6 @@ def load_yaml(yaml_file):
 yaml.add_constructor('!Spacecraft',spacecraft_constructor)
 yaml.add_constructor('!Station',station_constructor)
 yaml.add_constructor('!Scenario',scenario_constructor)
+yaml.add_constructor('!DataGenerator',data_generator_constructor)
 yaml.add_constructor('!State',state_constructor)
 yaml.add_constructor('!OrbitalElements',orbital_elements_constructor)

@@ -25,6 +25,9 @@ ECI = "J2000"
 ECEF = "ITRF93"
 MU = 398600.4415
 
+OrbitalElements = namedtuple(
+    "OrbitalElements", ["sma","ecc","inc","arg","raan","nu"]
+)
 
 
 class State:
@@ -358,21 +361,3 @@ class State:
         if state.stm_dot is not None:
             self.stm_dot = state.stm_dot
 
-def state_constructor(loader, node):
-    """
-    Constructor function for the !State tag in the YAML file.
-
-    Parameters
-    ----------
-    loader : yaml.Loader
-        The YAML loader.
-    node : yaml.Node
-        The YAML node containing the data for the State object.
-
-    Returns
-    -------
-    State
-        An instance of the State class.
-    """
-    values = loader.construct_mapping(node)
-    return State(**values)

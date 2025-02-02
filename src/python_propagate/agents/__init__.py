@@ -7,19 +7,24 @@ Date: 2025-01-30
 
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import numpy as np
 import scipy.integrate as sci_int
 
 from python_propagate.scenario import Scenario
+
 from python_propagate.dynamics import Dynamic
 from python_propagate.dynamics.keplerian import Keplerian
 from python_propagate.dynamics.j2 import J2
 from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
-from python_propagate.agents.state import State
+
+from python_propagate.agents.state import State, OrbitalElements
+
+from python_propagate.utilities.transforms import classical2cart
+from python_propagate.utilities.string_format import DATESTR
 
 
 class Agent:
@@ -56,9 +61,9 @@ class Agent:
             The initial state of the agent.
         start_time : datetime
             The start time of the simulation.
-        duration : timedelta
+        duration : timedelta, dict
             The duration of the simulation.
-        dt : timedelta
+        dt : timedelta, dict
             The time step of the simulation.
         coefficent_of_drag : float, optional
             The coefficient of drag of the agent (default is None).
@@ -66,20 +71,32 @@ class Agent:
             The mass of the agent (default is None).
         area : float, optional
             The area of the agent (default is None).
+
         """
+        if isinstance(start_time,str):
+            start_time = datetime.strptime(start_time,DATESTR)
+
+        if isinstance(duration,dict):
+            duration = timedelta(**duration)
+
+        if isinstance(dt,dict):
+            dt = timedelta(**dt)
+
         self.state = state
         self._start_time = start_time
         self._duration = duration
         self._dt = dt
         self._coefficent_of_drag = coefficent_of_drag
         self._mass = mass
-        self._area = area
+        self._area = area * (1e-6)
         self._name = name
         self.state_data = []
         self.time_data = []
         self.scenario = None
         self.dynamics = []
         
+        
+
 
     @property
     def start_time(self):
@@ -121,7 +138,9 @@ class Agent:
         Parameters
         dynamics : tuple
             A tuple of dynamics to be added to the agent.
+
         """
+        #TODO: Self referenceing to self is not good practice
         for dynamic in dynamics:
             if dynamic == "kepler":
                 self.dynamics.append(Keplerian(scenario=self.scenario, agent=self))
@@ -153,6 +172,20 @@ class Agent:
         """
         #TODO: Explore weakref to avoid circular dependancies
         self.scenario = scenario
+
+        if isinstance(self.state,OrbitalElements):
+
+            state = classical2cart(sma = self.state.sma,
+                                   ecc = self.state.ecc, 
+                                   inc =self.state.inc, 
+                                   arg=self.state.arg, 
+                                   raan=self.state.raan,
+                                   nu=self.state.nu, 
+                                   mu= self.scenario.central_body.mu)
+            
+            self.state = State(position=state[0:3],velocity=state[3:6],frame="inertial", time=self.start_time)
+            
+        
 
     def propagator(self, time, state):
         """

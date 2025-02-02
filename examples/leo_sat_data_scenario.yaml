@@ -1,5 +1,6 @@
 scenario: 
-  !Scenario
+  !DataGenerator
+  name: "LEO_Sat"
   central_body: "Earth"
   flattening: True
   start_time: "2025-01-15T12:30:00"
@@ -7,7 +8,9 @@ scenario:
     days: 1
   dt:
     seconds: 30
-
+  data_types: !!python/tuple ['right_ascension','declination','range','range_rate','azimuth','elevation']
+  plots: !!python/tuple ['ground_track','orbit']
+  output_directory: 'examples\results'
 
 
 
@@ -28,6 +31,8 @@ agents:
     duration: 
       days: 1
     coefficent_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 2.0 #m^2
 
 dynamics: !!python/tuple ['kepler','J2','J3','drag']
 

@@ -67,15 +67,16 @@ class Platform:
         """Gets the altitude of the platform."""
         return self._altitude
     
-    def add_scenario(self,scenario: Scenario):
+    def set_scenario(self,scenario: Scenario):
         """Adds and links the station to a scenario."""        
         self.scenario = scenario
+        self.state = self.calculate_state_ecef()
 
     def calculate_state_ecef(self):
         """Calculates the initial state (position and velocity in the ECEF frame) using spiceypy."""
 
-        curvature = self._scenario.central_body.radius / np.sqrt(
-            1 - self._scenario.central_body.eccentricity * np.sin(self.latitude)
+        curvature = self.scenario.central_body.radius / np.sqrt(
+            1 - self.scenario.central_body.eccentricity * np.sin(self.latitude)
         )
 
         factor = curvature + self._altitude
@@ -83,7 +84,7 @@ class Platform:
         x_ecef = factor * np.cos(self._latitude) * np.cos(self._longitude)
         y_ecef = factor * np.cos(self._latitude) * np.sin(self._longitude)
         z_ecef = (
-            (1 - self._scenario.central_body.eccentricity) * curvature + self._altitude
+            (1 - self.scenario.central_body.eccentricity) * curvature + self._altitude
         ) * np.sin(self._latitude)
 
         state = State(

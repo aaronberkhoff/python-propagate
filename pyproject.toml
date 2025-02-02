@@ -15,7 +15,9 @@ dependencies = [
     "astropy",
     "spiceypy (>=6.0.0,<7.0.0)",
     "click (>=8.1.8,<9.0.0)",
-    "pyyaml (>=6.0.2,<7.0.0)"
+    "pyyaml (>=6.0.2,<7.0.0)",
+    "tables (>=3.10.2,<4.0.0)",
+    "openpyxl (>=3.1.5,<4.0.0)"
 ]
 
 
@@ -39,3 +41,6 @@ line-length = 88
 files = ["src"]
 ignore_missing_imports = true
 strict = true
+
+[tool.poetry.scripts]
+data_gen = "python_propagate.client.generate_data:main"

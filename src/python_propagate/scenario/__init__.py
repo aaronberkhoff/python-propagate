@@ -15,6 +15,10 @@ from datetime import datetime, timedelta
 
 from python_propagate.environment.planets import Planet
 from python_propagate.utilities.load_spice import load_spice
+from python_propagate.utilities.string_format import DATESTR
+
+
+
 
 
 class Scenario:
@@ -54,8 +58,8 @@ class Scenario:
         start_time: datetime,
         duration: timedelta,
         dt: timedelta,
-        agents :list = [],
-        stations:list = [],
+        agents = ...,
+        stations = ...,
     ):
         """
         Initializes the Scenario with the given parameters.
@@ -74,13 +78,28 @@ class Scenario:
             A tuple of agents in the scenario.
         stations : tuple, optional
             A tuple of stations in the scenario (default is empty tuple).
+
         """
+        if isinstance(start_time,str):
+            start_time = datetime.strptime(start_time,DATESTR)
+
+        if isinstance(duration,dict):
+            duration = timedelta(**duration)
+
+        if isinstance(dt,dict):
+            dt = timedelta(**dt)
+
+        if stations is ...:
+            self.stations = []
+
+        if agents is ...:
+            self.agents = []
+            
+
         self._central_body = central_body
         self._start_time = start_time
         self._duration = duration
         self._dt = dt
-        self.agents = agents
-        self.stations = stations
 
         load_spice()
 
@@ -151,3 +170,8 @@ class Scenario:
         """Runs the simulation."""
         for agent in self.agents:
             agent.propagate()
+
+
+
+
+    

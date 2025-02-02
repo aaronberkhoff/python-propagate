@@ -96,15 +96,15 @@ class Station(Platform):
 
     def calculate_range_and_range_rate_from_target(self, state):
         """Calculates the range and range rate from the station to the target agent."""
-        diff_x = self.state.x_ecef - state.x_ecef
-        diff_y = self.state.y_ecef - state.y_ecef
-        diff_z = self.state.z_ecef - state.z_ecef
+        diff_x = self.state.position_ecef[0] - state.position_ecef[0]
+        diff_y = self.state.position_ecef[1] - state.position_ecef[1]
+        diff_z = self.state.position_ecef[2] - state.position_ecef[2]
 
         rho = np.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
 
-        diff_vx = self.state.vx_ecef - state.vx_ecef
-        diff_vy = self.state.vy_ecef - state.vy_ecef
-        diff_vz = self.state.vz_ecef - state.vz_ecef
+        diff_vx = self.state.velocity_ecef[0] - state.velocity_ecef[0]
+        diff_vy = self.state.velocity_ecef[1] - state.velocity_ecef[1]
+        diff_vz = self.state.velocity_ecef[2] - state.velocity_ecef[2]
 
         rho_dot = (diff_x * diff_vx + diff_y * diff_vy + diff_z * diff_vz) / rho
 
@@ -112,22 +112,22 @@ class Station(Platform):
 
     def calculate_azimuth_and_elevation(self, state):
         """Calculates the azimuth and elevation angles from the station to the target"""
-        diff_x = -(self.state.x_ecef - state.x_ecef)
-        diff_y = -(self.state.y_ecef - state.y_ecef)
-        diff_z = -(self.state.z_ecef - state.z_ecef)
+        diff_x = -(self.state.position_ecef[0] - state.position_ecef[0])
+        diff_y = -(self.state.position_ecef[1] - state.position_ecef[1])
+        diff_z = -(self.state.position_ecef[2] - state.position_ecef[2])
 
         enu_matrix = np.array(
             [
-                [-np.sin(self.state.longitude), np.cos(self.state.longitude), 0],
+                [-np.sin(self.state.latlong[1]), np.cos(self.state.latlong[1]), 0],
                 [
-                    -np.sin(self.state.latitude) * np.cos(self.state.longitude),
-                    -np.sin(self.state.latitude) * np.sin(self.state.longitude),
-                    np.cos(self.state.latitude),
+                    -np.sin(self.state.latlong[0]) * np.cos(self.state.latlong[1]),
+                    -np.sin(self.state.latlong[0]) * np.sin(self.state.latlong[1]),
+                    np.cos(self.state.latlong[0]),
                 ],
                 [
-                    np.cos(self.state.latitude) * np.cos(self.state.longitude),
-                    np.cos(self.state.latitude) * np.sin(self.state.longitude),
-                    np.sin(self.state.latitude),
+                    np.cos(self.state.latlong[0]) * np.cos(self.state.latlong[1]),
+                    np.cos(self.state.latlong[0]) * np.sin(self.state.latlong[1]),
+                    np.sin(self.state.latlong[0]),
                 ],
             ]
         )
@@ -143,8 +143,8 @@ class Station(Platform):
 
     def calculate_ra_and_dec(self, state):
         """Calculates the right ascension and declination angles from the station to the target"""
-        dec = np.arcsin(state.z_eci / state.radius)
-        ra = np.arctan2(state.y_eci, state.x_eci)
+        dec = np.arcsin(state.position_eci[2] / np.linalg.norm(state.position_eci))
+        ra = np.arctan2(state.position_eci[1], state.position_eci[2])
 
         return ra, dec
     
