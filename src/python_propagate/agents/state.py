@@ -19,14 +19,14 @@ from collections import namedtuple
 from python_propagate.utilities.transforms import cart2classical, classical2cart
 
 
-#TODO: Remove hard coded TARGET
+# TODO: Remove hard coded TARGET
 TARGET = "EARTH"
 ECI = "J2000"
 ECEF = "ITRF93"
 MU = 398600.4415
 
 OrbitalElements = namedtuple(
-    "OrbitalElements", ["sma","ecc","inc","arg","raan","nu"]
+    "OrbitalElements", ["sma", "ecc", "inc", "arg", "raan", "nu"]
 )
 
 
@@ -126,19 +126,20 @@ class State:
 
         if orbital_elements is not None:
             self.orbital_elements = orbital_elements
-            #TODO Figure out how to handle mu
-            state = classical2cart(sma=orbital_elements[0], 
-                                   ecc=orbital_elements[1],
-                                   inc=orbital_elements[2],
-                                   arg=orbital_elements[3],
-                                   raan=orbital_elements[4],
-                                   nu=orbital_elements[5],
-                                   mu=MU)
+            # TODO Figure out how to handle mu
+            state = classical2cart(
+                sma=orbital_elements[0],
+                ecc=orbital_elements[1],
+                inc=orbital_elements[2],
+                arg=orbital_elements[3],
+                raan=orbital_elements[4],
+                nu=orbital_elements[5],
+                mu=MU,
+            )
             self.position = state[0:3]
             self.velocity = state[3:6]
-           
-    def __repr__(self):
 
+    def __repr__(self):
         """
         Returns a string representation of the State object.
 
@@ -147,12 +148,12 @@ class State:
         str
             A string representation of the State object.
         """
-        return (f"State(position={self.position}, velocity={self.velocity}, acceleration={self.acceleration}, "
-                f"stm={self.stm}, stm_dot={self.stm_dot}, time={self.time}, dimension={self.dimension}, "
-                f"frame={self.frame}, orbital_elements={getattr(self, 'orbital_elements', None)})")
-        
+        return (
+            f"State(position={self.position}, velocity={self.velocity}, acceleration={self.acceleration}, "
+            f"stm={self.stm}, stm_dot={self.stm_dot}, time={self.time}, dimension={self.dimension}, "
+            f"frame={self.frame}, orbital_elements={getattr(self, 'orbital_elements', None)})"
+        )
 
-            
     @property
     def position_eci(self):
         """
@@ -255,7 +256,10 @@ class State:
         tuple
             The latitude and longitude of the position vector in the ECEF frame.
         """
-        lat  = np.arctan2(self.position_ecef[2], np.sqrt(self.position_ecef[0]**2 + self.position_ecef[1]**2))
+        lat = np.arctan2(
+            self.position_ecef[2],
+            np.sqrt(self.position_ecef[0] ** 2 + self.position_ecef[1] ** 2),
+        )
         long = np.arctan2(self.position_ecef[1], self.position_ecef[0])
 
         return (lat, long)
@@ -292,8 +296,8 @@ class State:
         """
         sma, ecc, inc, raan, arg, nu = cart2classical(self.compile(), mu)
         return sma, ecc, inc, raan, arg, nu
-    
-    def to_cartesian(self,mu):
+
+    def to_cartesian(self, mu):
         """
         Converts the state vector to Cartesian coordinates.
 
@@ -303,7 +307,9 @@ class State:
             The position and velocity vectors in Cartesian coordinates.
             TODO: There is a quick fix for nu and M below
         """
-        state = classical2cart(**self.orbital_elements[0:5],nu=self.orbital_elements[-1], mu=mu)
+        state = classical2cart(
+            **self.orbital_elements[0:5], nu=self.orbital_elements[-1], mu=mu
+        )
         return state
 
     def dot(self):
@@ -360,4 +366,3 @@ class State:
 
         if state.stm_dot is not None:
             self.stm_dot = state.stm_dot
-

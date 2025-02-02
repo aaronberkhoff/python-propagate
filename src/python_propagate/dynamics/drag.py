@@ -25,7 +25,8 @@ class Drag(Dynamic):
 
         va = np.sqrt(vax**2 + vay**2 + vz**2)
 
-        dynamic_pressure = (-0.5 
+        dynamic_pressure = (
+            -0.5
             * self.agent.coefficet_of_drag
             * density
             * self.agent.area

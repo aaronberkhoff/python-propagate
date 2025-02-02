@@ -75,9 +75,11 @@ class Station(Platform):
         str
             A string representation of the Station object.
         """
-        return (f"Station(lat_long_alt={self.lat_long_alt}, scenario={self.scenario}, sensor={self.sensor!r}, "
-                f"name={self.name!r}, altitude={self.altitude}, minimum_elevation_angle={self.minimum_elevation_angle}, "
-                f"identity={self._identity})")
+        return (
+            f"Station(lat_long_alt={self.lat_long_alt}, scenario={self.scenario}, sensor={self.sensor!r}, "
+            f"name={self.name!r}, altitude={self.altitude}, minimum_elevation_angle={self.minimum_elevation_angle}, "
+            f"identity={self._identity})"
+        )
 
     @property
     def sensor(self):
@@ -147,4 +149,3 @@ class Station(Platform):
         ra = np.arctan2(state.position_eci[1], state.position_eci[2])
 
         return ra, dec
-    

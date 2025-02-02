@@ -68,7 +68,7 @@ class Planet:
         mu: float,
         angular_velocity: float,
         flattening_bool: bool = False,
-        flattening: float = 0.0
+        flattening: float = 0.0,
     ):
         """
         Initializes the Planet with the given parameters.
@@ -111,10 +111,12 @@ class Planet:
         str
             A string representation of the Planet object.
         """
-        return (f"Planet(name={self._name!r}, radius={self._radius}, J2={self._J2}, "
-                f"J3={self._J3}, spice_id={self._spice_id}, mu={self._mu}, "
-                f"angular_velocity={self._angular_velocity},"
-                f"flattening={self._flattening},flattening_bool={self._flattening_bool})")
+        return (
+            f"Planet(name={self._name!r}, radius={self._radius}, J2={self._J2}, "
+            f"J3={self._J3}, spice_id={self._spice_id}, mu={self._mu}, "
+            f"angular_velocity={self._angular_velocity},"
+            f"flattening={self._flattening},flattening_bool={self._flattening_bool})"
+        )
 
     @property
     def radius(self):
@@ -211,7 +213,7 @@ class Planet:
             The flattening boolean of the planet.
         """
         return self._flattening_bool
-    
+
     @property
     def flattening(self):
         """
@@ -273,7 +275,7 @@ class Earth(Planet):
         spice_id=399,
         mu=398600.4415,
         angular_velocity=7.29211585530066e-5,
-        flattening_bool=False
+        flattening_bool=False,
     ):
         """
         Initializes the Earth with the given parameters.
@@ -315,9 +317,11 @@ class Earth(Planet):
         str
             A string representation of the Planet object.
         """
-        return (f"Earth(name={self._name}, radius={self._radius}, J2={self._j2}, "
-                f"J3={self._j3}, spice_id={self._spice_id}, mu={self._mu}, "
-                f"angular_velocity={self._angular_velocity}, flattening_bool={self._flattening_bool})")
+        return (
+            f"Earth(name={self._name}, radius={self._radius}, J2={self._j2}, "
+            f"J3={self._j3}, spice_id={self._spice_id}, mu={self._mu}, "
+            f"angular_velocity={self._angular_velocity}, flattening_bool={self._flattening_bool})"
+        )
 
     def atmosphere_model(self, radius_spacecraft):
         """

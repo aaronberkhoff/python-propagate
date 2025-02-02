@@ -30,8 +30,9 @@ def spacecraft_constructor(loader, node):
     Spacecraft
         An instance of the Spacecraft class.
     """
-    values = loader.construct_mapping(node,deep=True)
+    values = loader.construct_mapping(node, deep=True)
     return Spacecraft(**values)
+
 
 def station_constructor(loader, node):
     """
@@ -50,8 +51,9 @@ def station_constructor(loader, node):
         An instance of the Station class.
     """
     values = loader.construct_mapping(node)
-    
+
     return Station(**values)
+
 
 def scenario_constructor(loader, node):
     """
@@ -69,16 +71,17 @@ def scenario_constructor(loader, node):
     Station
         An instance of the Station class.
     """
-    values = loader.construct_mapping(node,deep = True)
+    values = loader.construct_mapping(node, deep=True)
 
-    if values['central_body'].lower() == 'earth':
+    if values["central_body"].lower() == "earth":
 
-        central_body = Earth(flattening_bool=values.pop('flattening'))
-        values['central_body'] = central_body
+        central_body = Earth(flattening_bool=values.pop("flattening"))
+        values["central_body"] = central_body
     else:
         raise ValueError(f'central_body <{values["central_body"]}> not support')
 
     return Scenario(**values)
+
 
 def data_generator_constructor(loader, node):
     """
@@ -96,16 +99,17 @@ def data_generator_constructor(loader, node):
     Station
         An instance of the Station class.
     """
-    values = loader.construct_mapping(node,deep = True)
+    values = loader.construct_mapping(node, deep=True)
 
-    if values['central_body'].lower() == 'earth':
+    if values["central_body"].lower() == "earth":
 
-        central_body = Earth(flattening_bool=values.pop('flattening'))
-        values['central_body'] = central_body
+        central_body = Earth(flattening_bool=values.pop("flattening"))
+        values["central_body"] = central_body
     else:
-        raise ValueError(f'central_body <{values["central_body"]}> not support')    
-    
+        raise ValueError(f'central_body <{values["central_body"]}> not support')
+
     return DataGenerator(**values)
+
 
 def state_constructor(loader, node):
     """
@@ -124,8 +128,9 @@ def state_constructor(loader, node):
         An instance of the Station class.
     """
     values = loader.construct_mapping(node)
-    
+
     return State(**values)
+
 
 def orbital_elements_constructor(loader, node):
     """
@@ -144,6 +149,5 @@ def orbital_elements_constructor(loader, node):
         An instance of the Station class.
     """
     values = loader.construct_mapping(node)
-    
-    return OrbitalElements(**values)
 
+    return OrbitalElements(**values)

@@ -9,6 +9,7 @@ Author: Aaron Berkhoff
 
 Date: 2025-01-30
 """
+
 from python_propagate.agents import Agent
 
 
@@ -50,7 +51,7 @@ class Spacecraft(Agent):
         coefficent_of_drag=None,
         mass=None,
         area=None,
-        name=None
+        name=None,
     ):
         """
         Constructs all the necessary attributes for the Spacecraft object.
@@ -73,9 +74,15 @@ class Spacecraft(Agent):
             The cross-sectional area of the spacecraft (default is None).
         """
 
-
         super().__init__(
-            state, start_time, duration, dt, coefficent_of_drag, mass, area=area, name = name
+            state,
+            start_time,
+            duration,
+            dt,
+            coefficent_of_drag,
+            mass,
+            area=area,
+            name=name,
         )
 
     def __repr__(self):
@@ -87,7 +94,7 @@ class Spacecraft(Agent):
         str
             A string representation of the Spacecraft object.
         """
-        return (f"Spacecraft(state={self.state}, start_time={self.start_time}, duration={self.duration}, "
-                f"dt={self.dt}, coefficent_of_drag={self.coefficent_of_drag}, mass={self.mass}, area={self.area}, name={self.name})")
-    
-
+        return (
+            f"Spacecraft(state={self.state}, start_time={self.start_time}, duration={self.duration}, "
+            f"dt={self.dt}, coefficent_of_drag={self.coefficent_of_drag}, mass={self.mass}, area={self.area}, name={self.name})"
+        )

@@ -18,9 +18,6 @@ from python_propagate.utilities.load_spice import load_spice
 from python_propagate.utilities.string_format import DATESTR
 
 
-
-
-
 class Scenario:
     """
     A class to represent a simulation scenario.
@@ -58,8 +55,8 @@ class Scenario:
         start_time: datetime,
         duration: timedelta,
         dt: timedelta,
-        agents = ...,
-        stations = ...,
+        agents=...,
+        stations=...,
     ):
         """
         Initializes the Scenario with the given parameters.
@@ -80,13 +77,13 @@ class Scenario:
             A tuple of stations in the scenario (default is empty tuple).
 
         """
-        if isinstance(start_time,str):
-            start_time = datetime.strptime(start_time,DATESTR)
+        if isinstance(start_time, str):
+            start_time = datetime.strptime(start_time, DATESTR)
 
-        if isinstance(duration,dict):
+        if isinstance(duration, dict):
             duration = timedelta(**duration)
 
-        if isinstance(dt,dict):
+        if isinstance(dt, dict):
             dt = timedelta(**dt)
 
         if stations is ...:
@@ -94,7 +91,6 @@ class Scenario:
 
         if agents is ...:
             self.agents = []
-            
 
         self._central_body = central_body
         self._start_time = start_time
@@ -170,8 +166,3 @@ class Scenario:
         """Runs the simulation."""
         for agent in self.agents:
             agent.propagate()
-
-
-
-
-    

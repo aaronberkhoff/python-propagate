@@ -50,7 +50,7 @@ class Agent:
         coefficent_of_drag=None,
         mass=None,
         area=None,
-        name='Agent'
+        name="Agent",
     ):
         """
         Initializes the Agent with the given parameters.
@@ -73,13 +73,13 @@ class Agent:
             The area of the agent (default is None).
 
         """
-        if isinstance(start_time,str):
-            start_time = datetime.strptime(start_time,DATESTR)
+        if isinstance(start_time, str):
+            start_time = datetime.strptime(start_time, DATESTR)
 
-        if isinstance(duration,dict):
+        if isinstance(duration, dict):
             duration = timedelta(**duration)
 
-        if isinstance(dt,dict):
+        if isinstance(dt, dict):
             dt = timedelta(**dt)
 
         self.state = state
@@ -94,9 +94,6 @@ class Agent:
         self.time_data = []
         self.scenario = None
         self.dynamics = []
-        
-        
-
 
     @property
     def start_time(self):
@@ -127,7 +124,7 @@ class Agent:
     def area(self):
         """Returns the area of the agent."""
         return self._area
-    
+
     @property
     def name(self):
         """Returns the name of the agent."""
@@ -140,7 +137,7 @@ class Agent:
             A tuple of dynamics to be added to the agent.
 
         """
-        #TODO: Self referenceing to self is not good practice
+        # TODO: Self referenceing to self is not good practice
         for dynamic in dynamics:
             if dynamic == "kepler":
                 self.dynamics.append(Keplerian(scenario=self.scenario, agent=self))
@@ -170,22 +167,27 @@ class Agent:
         scenario : Scenario
             The scenario to be set for the agent.
         """
-        #TODO: Explore weakref to avoid circular dependancies
+        # TODO: Explore weakref to avoid circular dependancies
         self.scenario = scenario
 
-        if isinstance(self.state,OrbitalElements):
+        if isinstance(self.state, OrbitalElements):
 
-            state = classical2cart(sma = self.state.sma,
-                                   ecc = self.state.ecc, 
-                                   inc =self.state.inc, 
-                                   arg=self.state.arg, 
-                                   raan=self.state.raan,
-                                   nu=self.state.nu, 
-                                   mu= self.scenario.central_body.mu)
-            
-            self.state = State(position=state[0:3],velocity=state[3:6],frame="inertial", time=self.start_time)
-            
-        
+            state = classical2cart(
+                sma=self.state.sma,
+                ecc=self.state.ecc,
+                inc=self.state.inc,
+                arg=self.state.arg,
+                raan=self.state.raan,
+                nu=self.state.nu,
+                mu=self.scenario.central_body.mu,
+            )
+
+            self.state = State(
+                position=state[0:3],
+                velocity=state[3:6],
+                frame="inertial",
+                time=self.start_time,
+            )
 
     def propagator(self, time, state):
         """

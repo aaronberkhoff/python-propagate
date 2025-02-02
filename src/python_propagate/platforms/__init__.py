@@ -66,9 +66,9 @@ class Platform:
     def altitude(self):
         """Gets the altitude of the platform."""
         return self._altitude
-    
-    def set_scenario(self,scenario: Scenario):
-        """Adds and links the station to a scenario."""        
+
+    def set_scenario(self, scenario: Scenario):
+        """Adds and links the station to a scenario."""
         self.scenario = scenario
         self.state = self.calculate_state_ecef()
 

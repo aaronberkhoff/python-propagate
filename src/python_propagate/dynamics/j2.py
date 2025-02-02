@@ -17,6 +17,7 @@ class J2(Dynamic):
     stm : STM
         The state transition matrix of the dynamic.
     """
+
     def __init__(self, scenario: Scenario, agent=None, stm=None):
         super().__init__(scenario, agent, stm)
 
