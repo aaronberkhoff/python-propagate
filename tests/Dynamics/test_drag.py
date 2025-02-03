@@ -28,7 +28,7 @@ def test_accel_are_equal_drag() -> None:
 
     coefficent_of_drag = 2.0
     mass = 1350
-    area = 3.6 / (1000**2)
+    area = 3.6 
     initial_state = State(position=position, velocity=velocity)
 
     jah_sat = Spacecraft(

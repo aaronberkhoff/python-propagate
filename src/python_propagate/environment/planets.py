@@ -112,8 +112,8 @@ class Planet:
             A string representation of the Planet object.
         """
         return (
-            f"Planet(name={self._name!r}, radius={self._radius}, J2={self._J2}, "
-            f"J3={self._J3}, spice_id={self._spice_id}, mu={self._mu}, "
+            f"Planet(name={self._name!r}, radius={self._radius}, J2={self.j2}, "
+            f"J3={self.j3}, spice_id={self._spice_id}, mu={self._mu}, "
             f"angular_velocity={self._angular_velocity},"
             f"flattening={self._flattening},flattening_bool={self._flattening_bool})"
         )

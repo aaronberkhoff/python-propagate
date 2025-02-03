@@ -46,26 +46,33 @@ class Platform:
         scenario : Scenario
             The scenario to which the platform is attached.
         """
-        self._latitude = lat_long_alt[0] * DEG2RAD
-        self._longitude = lat_long_alt[1] * DEG2RAD
-        self._altitude = lat_long_alt[2]
+        self._lat_long_alt = (
+            lat_long_alt[0] * DEG2RAD,
+            lat_long_alt[1] * DEG2RAD,
+            lat_long_alt[2],
+        )
         self.scenario = None
         self.state = None
 
     @property
     def latitude(self):
         """Gets the latitude of the platform."""
-        return self._latitude
+        return self._lat_long_alt[0]
 
     @property
     def longitude(self):
         """Gets the longitude of the platform."""
-        return self._longitude
+        return self._lat_long_alt[1]
 
     @property
     def altitude(self):
         """Gets the altitude of the platform."""
-        return self._altitude
+        return self._lat_long_alt[2]
+
+    @property
+    def lat_long_alt(self):
+        """Returns the lat long alt tuple"""
+        return self.lat_long_alt
 
     def set_scenario(self, scenario: Scenario):
         """Adds and links the station to a scenario."""
@@ -79,13 +86,13 @@ class Platform:
             1 - self.scenario.central_body.eccentricity * np.sin(self.latitude)
         )
 
-        factor = curvature + self._altitude
+        factor = curvature + self.altitude
 
-        x_ecef = factor * np.cos(self._latitude) * np.cos(self._longitude)
-        y_ecef = factor * np.cos(self._latitude) * np.sin(self._longitude)
+        x_ecef = factor * np.cos(self.latitude) * np.cos(self.longitude)
+        y_ecef = factor * np.cos(self.latitude) * np.sin(self.longitude)
         z_ecef = (
-            (1 - self.scenario.central_body.eccentricity) * curvature + self._altitude
-        ) * np.sin(self._latitude)
+            (1 - self.scenario.central_body.eccentricity) * curvature + self.altitude
+        ) * np.sin(self.latitude)
 
         state = State(
             position=np.array([x_ecef, y_ecef, z_ecef]),

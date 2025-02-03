@@ -1,0 +1,24 @@
+# name: Publish Package
+
+# on:
+#   workflow_run:
+#     workflows: ["Build Package"]
+#     types:
+#       - completed
+
+# jobs:
+#   publish:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Download built package artifact
+#         uses: actions/download-artifact@v3
+#         with:
+#           name: built-package
+#           path: dist
+
+#       - name: Publish package to PyPI
+#         env:
+#           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+#         run: |
+#           pip install poetry
+#           poetry publish --no-interaction --username __token__

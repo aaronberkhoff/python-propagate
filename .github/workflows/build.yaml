@@ -1,0 +1,36 @@
+name: Build Package
+
+on:
+  push:
+    tags:
+      - 'v*'  # Runs when a version tag like "v1.0.0" is pushed.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Build package
+        run: poetry build
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-package
+          path: dist/*

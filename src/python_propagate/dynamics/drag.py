@@ -27,7 +27,7 @@ class Drag(Dynamic):
 
         dynamic_pressure = (
             -0.5
-            * self.agent.coefficet_of_drag
+            * self.agent.coefficent_of_drag
             * density
             * self.agent.area
             / self.agent.mass

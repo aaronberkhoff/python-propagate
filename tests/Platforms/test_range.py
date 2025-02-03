@@ -19,7 +19,7 @@ ECEF = "ITRF93"
 @pytest.fixture
 def scenario():
     # Create a mock scenario object
-    earth = Earth(flattening=0.0)
+    earth = Earth(flattening_bool=False)
 
     start_time = datetime.strptime("2025-01-15T12:30:00", "%Y-%m-%dT%H:%M:%S")
     duration = timedelta(seconds=86400)
@@ -30,7 +30,7 @@ def scenario():
 @pytest.fixture
 def agent():
     # Create a mock scenario object
-    earth = Earth(flattening=0.0)
+    earth = Earth(flattening_bool=False)
 
     start_time = datetime.strptime("2025-01-15T12:30:00", "%Y-%m-%dT%H:%M:%S")
     duration = timedelta(seconds=86400)
@@ -82,7 +82,8 @@ def test_data_from_target(scenario, agent):
     altitude = 0.0  # Example altitude
     assert isinstance(scenario, Scenario)
     assert isinstance(agent, Spacecraft)
-    platform = Station((latitude, longitude), scenario, altitude)
+    platform = Station((latitude, longitude,altitude))
+    platform.set_scenario(scenario=scenario)
 
     range, range_rate = platform.calculate_range_and_range_rate_from_target(
         state=agent.state

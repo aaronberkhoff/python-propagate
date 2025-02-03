@@ -25,6 +25,7 @@ from python_propagate.agents.state import State, OrbitalElements
 
 from python_propagate.utilities.transforms import classical2cart
 from python_propagate.utilities.string_format import DATESTR
+from python_propagate.utilities.units import DEG2RAD
 
 
 class Agent:
@@ -82,13 +83,16 @@ class Agent:
         if isinstance(dt, dict):
             dt = timedelta(**dt)
 
+        if area is not None:
+            self._area = area * (1e-6)
+
         self.state = state
         self._start_time = start_time
         self._duration = duration
         self._dt = dt
         self._coefficent_of_drag = coefficent_of_drag
         self._mass = mass
-        self._area = area * (1e-6)
+
         self._name = name
         self.state_data = []
         self.time_data = []
@@ -111,7 +115,7 @@ class Agent:
         return self._dt
 
     @property
-    def coefficet_of_drag(self):
+    def coefficent_of_drag(self):
         """Returns the coefficient of drag of the agent."""
         return self._coefficent_of_drag
 
@@ -175,10 +179,10 @@ class Agent:
             state = classical2cart(
                 sma=self.state.sma,
                 ecc=self.state.ecc,
-                inc=self.state.inc,
-                arg=self.state.arg,
-                raan=self.state.raan,
-                nu=self.state.nu,
+                inc=self.state.inc * DEG2RAD,
+                arg=self.state.arg * DEG2RAD,
+                raan=self.state.raan * DEG2RAD,
+                nu=self.state.nu * DEG2RAD,
                 mu=self.scenario.central_body.mu,
             )
 

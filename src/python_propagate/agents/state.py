@@ -11,12 +11,13 @@ Author: Aaron Berkhoff
 Date: 2025-01-30
 
 """
+from collections import namedtuple
 
 import numpy as np
 import spiceypy as spice
-from collections import namedtuple
 
 from python_propagate.utilities.transforms import cart2classical, classical2cart
+
 
 
 # TODO: Remove hard coded TARGET
@@ -89,7 +90,6 @@ class State:
         time=None,
         dimension=6,
         frame="inertial",
-        orbital_elements=None,
     ):
         """
         Constructs all the necessary attributes for the State object.
@@ -124,20 +124,6 @@ class State:
         self.time = time
         self.stm_dot = stm_dot
 
-        if orbital_elements is not None:
-            self.orbital_elements = orbital_elements
-            # TODO Figure out how to handle mu
-            state = classical2cart(
-                sma=orbital_elements[0],
-                ecc=orbital_elements[1],
-                inc=orbital_elements[2],
-                arg=orbital_elements[3],
-                raan=orbital_elements[4],
-                nu=orbital_elements[5],
-                mu=MU,
-            )
-            self.position = state[0:3]
-            self.velocity = state[3:6]
 
     def __repr__(self):
         """

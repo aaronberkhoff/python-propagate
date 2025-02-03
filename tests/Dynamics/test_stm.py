@@ -30,7 +30,7 @@ def test_stm_acceleration():
 
     coefficent_of_drag = 2.0
     mass = 1350
-    area = 3.6 / (1000**2)
+    area = 3.6
 
     jah_sat = Spacecraft(
         initial_state,
@@ -80,7 +80,7 @@ def test_stm_final():
 
     coefficent_of_drag = 2.0
     mass = 1350
-    area = 3.6 * 1e-6
+    area = 3.6
 
     jah_sat1 = Spacecraft(
         state1,

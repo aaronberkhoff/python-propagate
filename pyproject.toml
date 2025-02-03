@@ -34,7 +34,7 @@ mypy = "^1.14.1"
 
 [tool.black]
 include = "src/|tests/"  # Only format these folders
-exclude = "migrations/|venv/"
+exclude = "migrations/|venv/|__pycache__/*"
 line-length = 88
 
 [tool.mypy]

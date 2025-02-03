@@ -13,7 +13,6 @@ Date: 2025-01-30
 import numpy as np
 
 from python_propagate.platforms import Platform
-from python_propagate.scenario import Scenario
 
 
 class Station(Platform):
@@ -39,6 +38,7 @@ class Station(Platform):
         name: str = "none",
         minimum_elevation_angle: float = 0.0,
         identity: int = 0,
+        color = 'red'
     ):
         """
         Constructs all the necessary attributes for the Station object.
@@ -65,6 +65,7 @@ class Station(Platform):
         self._name = name
         self._minimum_elevation_angle = minimum_elevation_angle
         self._identity = identity
+        self._color = color
 
     def __repr__(self):
         """
@@ -78,7 +79,7 @@ class Station(Platform):
         return (
             f"Station(lat_long_alt={self.lat_long_alt}, scenario={self.scenario}, sensor={self.sensor!r}, "
             f"name={self.name!r}, altitude={self.altitude}, minimum_elevation_angle={self.minimum_elevation_angle}, "
-            f"identity={self._identity})"
+            f"identity={self._identity}, color={self.color})"
         )
 
     @property
@@ -90,6 +91,16 @@ class Station(Platform):
     def name(self):
         """Gets the name of the station."""
         return self._name
+
+    @property
+    def identity(self):
+        """Gets the identity of the station."""
+        return self._identity
+    
+    @property
+    def color(self):
+        """Gets the color of the station."""
+        return self._color
 
     @property
     def minimum_elevation_angle(self):

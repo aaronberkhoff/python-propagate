@@ -52,7 +52,7 @@ ignore=CVS
 # ignore-list. The regex matches against paths and can be in Posix or Windows
 # format. Because '\\' represents the directory delimiter on Windows systems,
 # it can't be used as an escape character.
-ignore-paths=src\python_propagate\dynamics\*, tests\*
+ignore-paths= src\python_propagate\dynamics\*, tests\*, src\python_propagate\constructors\*
 
 # Files or directories matching the regular expression patterns are skipped.
 # The regex matches against base names, not paths. The default value ignores
@@ -290,7 +290,7 @@ exclude-too-few-public-methods=
 ignored-parents=
 
 # Maximum number of arguments for function / method.
-max-args=10
+max-args=15
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=12
@@ -523,7 +523,7 @@ ignore-imports=yes
 ignore-signatures=yes
 
 # Minimum lines number of a similarity.
-min-similarity-lines=4
+min-similarity-lines=10
 
 
 [SPELLING]

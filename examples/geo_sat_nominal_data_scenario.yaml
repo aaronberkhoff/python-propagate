@@ -1,11 +1,11 @@
 scenario:
   !DataGenerator
-  name: "LEO_Sat"
+  name: "GEO_Sat_nominal"
   central_body: "Earth"
   flattening: True
   start_time: "2025-01-15T12:30:00"
   duration: 
-    days: 1
+    days: 5
   dt:
     seconds: 30
   data_types: !!python/tuple ['right_ascension','declination','range','range_rate','azimuth','elevation']
@@ -16,15 +16,15 @@ scenario:
 
 agents: 
   - !Spacecraft
-    name: "LEO_Sat1"
+    name: "GEO_Sat1_nominal"
     start_time: "2025-01-15T12:30:00"
     state: !OrbitalElements
-              sma: 7700
+              sma: 42164
               ecc: 0.0
-              inc: 30 
+              inc: 0.0 
               arg: 0.0
               raan: 0.0
-              nu: 0.0
+              nu: 180.0
 
     dt: 
       seconds: 30
@@ -34,26 +34,7 @@ agents:
     mass: 150.0 #kg
     area: 2.0 #m^2
 
-  - !Spacecraft
-    name: "GEO_Sat1"
-    start_time: "2025-01-15T12:30:00"
-    state: !OrbitalElements
-              sma: 35786
-              ecc: 0.0
-              inc: 30 
-              arg: 0.0
-              raan: 0.0
-              nu: 0.0
-
-    dt: 
-      seconds: 30
-    duration: 
-      days: 1
-    coefficent_of_drag: 2.0
-    mass: 150.0 #kg
-    area: 2.0 #m^2
-
-dynamics: !!python/tuple ['kepler','J2','J3','drag']
+dynamics: !!python/tuple ['kepler']
 
 
 stations: 
