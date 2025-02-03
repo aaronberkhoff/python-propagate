@@ -13,10 +13,27 @@ scenario:
   output_directory: 'examples\results'
 
 
+dynamics: !!python/tuple ['kepler','J2','J3','drag']
 
 agents: 
   - !Spacecraft
-    name: "LEO_Sat1"
+    name: "LEO_Sat1_1m2"
+    start_time: "2018-03-23T8:55:03"
+    state: !State
+              position: [6984.45711518852, 1612.2547582643, 13.0925904314402]
+              velocity: [-1.67667852227336, 7.26143715396544, 0.259889857225218]
+              
+
+    dt: 
+      seconds: 30
+    duration: 
+      days: 1
+    coefficent_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 1.0 #m^2
+
+  - !Spacecraft
+    name: "LEO_Sat1_5m2"
     start_time: "2018-03-23T8:55:03"
     state: !State
               position: [6984.45711518852, 1612.2547582643, 13.0925904314402]
@@ -31,28 +48,43 @@ agents:
     mass: 150.0 #kg
     area: 5.0 #m^2
 
-dynamics: !!python/tuple ['kepler','J2','J3','drag']
+  - !Spacecraft
+    name: "LEO_Sat1_10m2"
+    start_time: "2018-03-23T8:55:03"
+    state: !State
+              position: [6984.45711518852, 1612.2547582643, 13.0925904314402]
+              velocity: [-1.67667852227336, 7.26143715396544, 0.259889857225218]
+              
+
+    dt: 
+      seconds: 30
+    duration: 
+      days: 1
+    coefficent_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 10.0 #m^2
+
 
 
 stations: 
     - !Station
       name: 'Kwaj'
       lat_long_alt: !!python/tuple [9.3965,167.4743, 0.0]
-      minimum_elevation_angle: 15.0
+      minimum_elevation_angle: 5.0
       identity: 1
       color: 'red'
  
     - !Station
       name: 'Diego'
       lat_long_alt: !!python/tuple [-7.313, 72.411, 0.0]
-      minimum_elevation_angle: 15.0
+      minimum_elevation_angle: 5.0
       identity: 2
       color: 'green'
 
     - !Station
       name: 'Arecibo'
       lat_long_alt: !!python/tuple [18.344, -66.752, 0.0]
-      minimum_elevation_angle: 15.0
+      minimum_elevation_angle: 5.0
       identity: 0
       color: 'blue'
 
