@@ -14,6 +14,7 @@ Date: 2025-01-30
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from collections.abc import Iterable
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
@@ -55,6 +56,7 @@ class DataGenerator(Scenario):
         plots=None,
         output_directory: str = "examples/results",
         name: str = "None",
+        output_type = "csv"
     ):
         """
         Initializes the DataGenerator instance.
@@ -80,6 +82,13 @@ class DataGenerator(Scenario):
         self._output_directory = Path(output_directory)
         self._output_directory.mkdir(parents=True, exist_ok=True)
 
+        if isinstance(output_type,str):
+            self._output_type [output_type]
+        if isinstance(output_type,Iterable):
+            self._output_type = output_type
+        
+        
+
     @property
     def data_types(self):
         """Returns the data types to be generated."""
@@ -99,6 +108,11 @@ class DataGenerator(Scenario):
     def name(self):
         """Returns the scenario name."""
         return self._name
+    
+    @property
+    def output_type(self):
+        """Returns the scenario output_type."""
+        return self._output_type
 
     def run(self):
         """
@@ -149,26 +163,41 @@ class DataGenerator(Scenario):
                     rho, rhodot = station.calculate_range_and_range_rate_from_target(
                         state=state
                     )
-                    rho += np.random.normal(0,10e-3)
-                    rhodot += np.random.normal(0,10e-6)
+                    rho += np.random.normal(0,1e-3)
+                    rhodot += np.random.normal(0,1e-6)
 
                     # Store data if elevation is above the station's minimum threshold
-                    if el > station.minimum_elevation_angle:
-                        data_agent.append(
-                            {
-                                "agent": agent.name,
-                                "index": i,
-                                "time": state.time.strftime("%Y-%m-%dT%H:%M:%S"),
-                                "RA_DEG": ra,
-                                "DEC_DEG": dec,
-                                "AZ_DEG": az,
-                                "EL_DEG": el,
-                                "Range_KM": rho,
-                                "Range_Rate_KMS": rhodot,
-                                "station": station.name,
-                                "station_id": station.identity,
-                            }
-                        )
+                if el > station.minimum_elevation_angle:
+                    data_entry = {
+                        "agent": agent.name,
+                        "index": i,
+                        "time": state.time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "station": station.name,
+                        "station_id": station.identity,
+                    }
+                    
+                    # Dictionary mapping data types to their values
+                    available_data = {
+                        "RA_DEG": ra,
+                        "DEC_DEG": dec,
+                        "AZ_DEG": az,
+                        "EL_DEG": el,
+                        "RANGE_KM": rho,
+                        "RANGE_RATE_KMS": rhodot,
+                        "X_INERTIAL_KM": state.position[0],
+                        "Y_INERTIAL_KM": state.position[1],
+                        "Z_INERTIAL_KM": state.position[2],
+                        "VX_INERTIAL_KMS": state.velocity[0],
+                        "VY_INERTIAL_KMS": state.velocity[1],
+                        "VZ_INERTIAL_KMS": state.velocity[2],  # Corrected key from VY to VZ
+                    }
+
+                    # Dynamically add the requested data types
+                    for data_type in self.data_types:
+                        if data_type in available_data:
+                            data_entry[data_type] = available_data[data_type]
+
+                    data_agent.append(data_entry)
 
             data_all.extend(data_agent)
 
@@ -176,18 +205,26 @@ class DataGenerator(Scenario):
         df = pd.DataFrame(data_all)
 
         # Define output file paths
-        output_path_h5 = self.output_directory / f"{self.name}.h5"
-        output_path_xlsx = self.output_directory / f"{self.name}.xlsx"
-        output_path_csv = self.output_directory / f"{self.name}.csv"
+        if 'csv' in self.output_type:
+            output_path_csv = self.output_directory / f"{self.name}.csv"
+            df.to_csv(output_path_csv, index=False)
+            print(
+            f"CSV File written:\n CSV: {output_path_csv}"
+            )
 
-        # Save data to various formats
-        df.to_hdf(output_path_h5, key="df", mode="w")
-        df.to_excel(output_path_xlsx, index=False)
-        df.to_csv(output_path_csv, index=False)
+        if 'h5' in self.output_type:
+            output_path_h5 = self.output_directory / f"{self.name}.h5"
+            df.to_hdf(output_path_h5, key="df", mode="w")
+            print(
+            f"h5 File written:\n h5: {output_path_h5}"
+            )
 
-        print(
-            f"Files written:\n  HDF5: {output_path_h5}\n  Excel: {output_path_xlsx}\n  CSV: {output_path_csv}"
-        )
+        if 'xlsx' in self.output_type:
+            output_path_xlsx = self.output_directory / f"{self.name}.xlsx"
+            df.to_excel(output_path_xlsx, index=False)
+            print(
+            f"XLSX File written:\n xlsx: {output_path_xlsx}"
+            )
             
 
     def plot_orbit(self):
