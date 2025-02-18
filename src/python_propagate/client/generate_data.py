@@ -5,6 +5,7 @@ Description:
     Client that generates satellite data
 
 """
+
 import click
 
 from python_propagate.constructors.yaml_loader import load_yaml
@@ -20,7 +21,6 @@ from python_propagate.constructors.yaml_loader import load_yaml
 # @click.option('--plot_ground', type=bool, help= "Plot the ground track of the scenario", default = False, required = False)
 # @click.option('--plot_orbit', type=bool, help= "Plot the isometric view of the scenario", default = False, required = False)
 def main(infile: str):
-
     """
     Description:
         main client funtion
@@ -47,7 +47,6 @@ def main(infile: str):
     data_generator.add_stations(stations)
 
     data_generator.run()
-
 
     # TODO: handle orbital elements
 

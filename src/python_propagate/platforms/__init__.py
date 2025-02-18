@@ -15,7 +15,7 @@ import spiceypy as spice
 import numpy as np
 
 from python_propagate.utilities.units import RAD2DEG, DEG2RAD
-from python_propagate.agents.state import State
+from python_propagate.states import State
 from python_propagate.scenario import Scenario
 
 

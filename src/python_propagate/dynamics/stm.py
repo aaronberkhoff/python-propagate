@@ -3,24 +3,29 @@ from numpy import sqrt
 
 from python_propagate.scenario import Scenario
 from python_propagate.dynamics import Dynamic
-from python_propagate.agents.state import State
+from python_propagate.states import State
 
 # TODO: explore specifying the difference between the classes for normal dynamics and STMs
 
 
 class STM(Dynamic):
 
-    def __init__(self, scenario: Scenario, agent=None, stm=True):
-        super().__init__(scenario, agent, stm)
+    def __init__(self, scenario: Scenario, agent=None, stm=True, function=None):
+        if function is None:
+            function = self.stm_function
 
-    def function(self, state: State, time: float):
+        super().__init__(scenario, agent, stm, function=function)
+
+    def stm_function(self, state: State, time: float):
 
         stm = state.stm
         A_matrix = self.a_matrix(state)
 
         stm_dot = A_matrix @ stm
 
-        return State(stm_dot=stm_dot, time=time)
+        return State(
+            stm_dot=stm_dot.flatten(), time=time, acceleration=np.array([0.0, 0.0, 0.0])
+        )
 
     def a_matrix(self, state: State):
 
@@ -35,7 +40,7 @@ class STM(Dynamic):
         j3 = self.scenario.central_body.j3
 
         rho0, h0, scale_height = self.scenario.central_body.atmosphere_model(radius)
-        cd = self.agent.coefficet_of_drag
+        cd = self.agent.coefficient_of_drag
         area = self.agent.area
         mass = self.agent.mass
         angular_velocity = self.scenario.central_body.angular_velocity

@@ -2,7 +2,7 @@ import numpy as np
 
 from python_propagate.scenario import Scenario
 from python_propagate.dynamics import Dynamic
-from python_propagate.agents.state import State
+from python_propagate.states import State
 
 
 class Keplerian(Dynamic):
@@ -21,8 +21,12 @@ class Keplerian(Dynamic):
         The function of the dynamic.
     """
 
-    def __init__(self, scenario: Scenario, agent=None, stm=None):
-        super().__init__(scenario, agent, stm)
+    def __init__(self, scenario, agent=None, stm=None, function=None):
+        if function is None:
+            function = self.kep_function  # Assign the default function
+
+        super().__init__(scenario, agent, stm, function)
+
         """
         Constructs all the necessary attributes for the Keplerian object.
 
@@ -37,7 +41,7 @@ class Keplerian(Dynamic):
 
         """
 
-    def function(self, state: State, time: float):
+    def kep_function(self, state: State, time: float = None):
         """
         The function of the Keplerian dynamic.
 

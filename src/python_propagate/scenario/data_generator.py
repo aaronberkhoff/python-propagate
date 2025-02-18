@@ -107,16 +107,15 @@ class DataGenerator(Scenario):
         print("Generating Data...")
         self.generate_data()
 
-        #Now plot the orbit
-        if 'orbit' in self.plots:
+        # Now plot the orbit
+        if "orbit" in self.plots:
             print(f"Plotting Orbit...\n")
             self.plot_orbit()
-        if 'ground_track' in self.plots:
+        if "ground_track" in self.plots:
             print("Plotting Ground track...")
-            plot_ground_track(self.agents,
-                              self.stations,
-                              self.output_directory,
-                              name=self.name)
+            plot_ground_track(
+                self.agents, self.stations, self.output_directory, name=self.name
+            )
 
     def generate_data(self):
 
@@ -133,24 +132,24 @@ class DataGenerator(Scenario):
                     az *= RAD2DEG
                     el *= RAD2DEG
 
-                    #TODO: Hard coded noise to data
-                    az += np.random.normal(0,5 * ARC2DEG)
-                    el += np.random.normal(0,5 * ARC2DEG)
+                    # TODO: Hard coded noise to data
+                    az += np.random.normal(0, 5 * ARC2DEG)
+                    el += np.random.normal(0, 5 * ARC2DEG)
 
                     # Calculate right ascension and declination (convert to degrees)
                     ra, dec = station.calculate_ra_and_dec(state=state)
                     ra *= RAD2DEG
                     dec *= RAD2DEG
 
-                    ra += np.random.normal(0,5 * ARC2DEG)
-                    dec += np.random.normal(0,5 * ARC2DEG)
+                    ra += np.random.normal(0, 5 * ARC2DEG)
+                    dec += np.random.normal(0, 5 * ARC2DEG)
 
                     # Calculate range and range rate
                     rho, rhodot = station.calculate_range_and_range_rate_from_target(
                         state=state
                     )
-                    rho += np.random.normal(0,10e-3)
-                    rhodot += np.random.normal(0,10e-6)
+                    rho += np.random.normal(0, 10e-3)
+                    rhodot += np.random.normal(0, 10e-6)
 
                     # Store data if elevation is above the station's minimum threshold
                     if el > station.minimum_elevation_angle:
@@ -188,7 +187,6 @@ class DataGenerator(Scenario):
         print(
             f"Files written:\n  HDF5: {output_path_h5}\n  Excel: {output_path_xlsx}\n  CSV: {output_path_csv}"
         )
-            
 
     def plot_orbit(self):
         """
@@ -201,41 +199,53 @@ class DataGenerator(Scenario):
         The central body is represented by a sphere at the origin with a color gradient in the 3D view.
         Its radius is determined by self.central_body.radius.
         """
-        
+
         # Create a new figure with a grid of subplots
         fig = plt.figure(figsize=(14, 14))
         axxy = fig.add_subplot(221)
         axxz = fig.add_subplot(223)
         axyz = fig.add_subplot(224)
-        ax3d = fig.add_subplot(222, projection='3d')
+        ax3d = fig.add_subplot(222, projection="3d")
 
         # Determine sphere properties for the central body
         sphere_radius = self.central_body.radius
-        central_color = 'blue'  # Base color for 2D plots
-        sphere_alpha = 0.3      # Transparency for the sphere
+        central_color = "blue"  # Base color for 2D plots
+        sphere_alpha = 0.3  # Transparency for the sphere
 
         # Draw the sphere on the 2D plots as a circle centered at (0, 0)
-        sphere_circle = Circle((0, 0), sphere_radius, color=central_color, alpha=sphere_alpha)
+        sphere_circle = Circle(
+            (0, 0), sphere_radius, color=central_color, alpha=sphere_alpha
+        )
         axxy.add_patch(sphere_circle)
-        sphere_circle_xz = Circle((0, 0), sphere_radius, color=central_color, alpha=sphere_alpha)
+        sphere_circle_xz = Circle(
+            (0, 0), sphere_radius, color=central_color, alpha=sphere_alpha
+        )
         axxz.add_patch(sphere_circle_xz)
-        sphere_circle_yz = Circle((0, 0), sphere_radius, color=central_color, alpha=sphere_alpha)
+        sphere_circle_yz = Circle(
+            (0, 0), sphere_radius, color=central_color, alpha=sphere_alpha
+        )
         axyz.add_patch(sphere_circle_yz)
 
         # Draw the sphere on the 3D plot using a parametric surface with a color gradient.
         # Generate the mesh for the sphere.
-        u, v = np.mgrid[0:2 * np.pi:20j, 0:np.pi:10j]
+        u, v = np.mgrid[0 : 2 * np.pi : 20j, 0 : np.pi : 10j]
         x_sphere = sphere_radius * np.cos(u) * np.sin(v)
         y_sphere = sphere_radius * np.sin(u) * np.sin(v)
         z_sphere = sphere_radius * np.cos(v)
-        
+
         # Use a colormap (e.g., 'viridis') to create a color gradient across the surface.
         # The colormap will map the z_sphere values to colors.
-        surface = ax3d.plot_surface(x_sphere, y_sphere, z_sphere,
-                                    cmap='viridis',  # Choose your favorite colormap here
-                                    alpha=sphere_alpha,
-                                    rstride=1, cstride=1,  # Adjust these parameters for resolution
-                                    linewidth=0, antialiased=True)
+        surface = ax3d.plot_surface(
+            x_sphere,
+            y_sphere,
+            z_sphere,
+            cmap="viridis",  # Choose your favorite colormap here
+            alpha=sphere_alpha,
+            rstride=1,
+            cstride=1,  # Adjust these parameters for resolution
+            linewidth=0,
+            antialiased=True,
+        )
 
         # # Optionally, add a color bar for reference
         # fig.colorbar(surface, ax=ax3d, shrink=0.5, aspect=10)
@@ -243,54 +253,104 @@ class DataGenerator(Scenario):
         # Loop through all agents to plot their orbits and key points (start and end)
         for agent in self.agents:
             # Plot start and end markers along with the trajectory on the XY plane
-            axxy.plot(agent.state_data[0].position[0], agent.state_data[0].position[1],
-                    'g*', label='start', fillstyle='none')
-            axxy.plot(agent.state_data[-1].position[0], agent.state_data[-1].position[1],
-                    'rs', label='end', fillstyle='none')
-            axxy.plot([state.position[0] for state in agent.state_data],
-                    [state.position[1] for state in agent.state_data],
-                    label=agent.name, linewidth=1.0)
-            axxy.set_xlabel('X [KM]')
-            axxy.set_ylabel('Y [KM]')
+            axxy.plot(
+                agent.state_data[0].position[0],
+                agent.state_data[0].position[1],
+                "g*",
+                label="start",
+                fillstyle="none",
+            )
+            axxy.plot(
+                agent.state_data[-1].position[0],
+                agent.state_data[-1].position[1],
+                "rs",
+                label="end",
+                fillstyle="none",
+            )
+            axxy.plot(
+                [state.position[0] for state in agent.state_data],
+                [state.position[1] for state in agent.state_data],
+                label=agent.name,
+                linewidth=1.0,
+            )
+            axxy.set_xlabel("X [KM]")
+            axxy.set_ylabel("Y [KM]")
 
             # Plot on the XZ plane
-            axxz.plot(agent.state_data[0].position[0], agent.state_data[0].position[2],
-                    'g*', label='start', fillstyle='none')
-            axxz.plot(agent.state_data[-1].position[0], agent.state_data[-1].position[2],
-                    'rs', label='end', fillstyle='none')
-            axxz.plot([state.position[0] for state in agent.state_data],
-                    [state.position[2] for state in agent.state_data],
-                    label=agent.name, linewidth=1.0)
-            axxz.set_xlabel('X [KM]')
-            axxz.set_ylabel('Z [KM]')
+            axxz.plot(
+                agent.state_data[0].position[0],
+                agent.state_data[0].position[2],
+                "g*",
+                label="start",
+                fillstyle="none",
+            )
+            axxz.plot(
+                agent.state_data[-1].position[0],
+                agent.state_data[-1].position[2],
+                "rs",
+                label="end",
+                fillstyle="none",
+            )
+            axxz.plot(
+                [state.position[0] for state in agent.state_data],
+                [state.position[2] for state in agent.state_data],
+                label=agent.name,
+                linewidth=1.0,
+            )
+            axxz.set_xlabel("X [KM]")
+            axxz.set_ylabel("Z [KM]")
 
             # Plot on the YZ plane
-            axyz.plot(agent.state_data[0].position[1], agent.state_data[0].position[2],
-                    'g*', label='start', fillstyle='none')
-            axyz.plot(agent.state_data[-1].position[1], agent.state_data[-1].position[2],
-                    'rs', label='end', fillstyle='none')
-            axyz.plot([state.position[1] for state in agent.state_data],
-                    [state.position[2] for state in agent.state_data],
-                    label=agent.name, linewidth=1.0)
-            axyz.set_xlabel('Y [KM]')
-            axyz.set_ylabel('Z [KM]')
+            axyz.plot(
+                agent.state_data[0].position[1],
+                agent.state_data[0].position[2],
+                "g*",
+                label="start",
+                fillstyle="none",
+            )
+            axyz.plot(
+                agent.state_data[-1].position[1],
+                agent.state_data[-1].position[2],
+                "rs",
+                label="end",
+                fillstyle="none",
+            )
+            axyz.plot(
+                [state.position[1] for state in agent.state_data],
+                [state.position[2] for state in agent.state_data],
+                label=agent.name,
+                linewidth=1.0,
+            )
+            axyz.set_xlabel("Y [KM]")
+            axyz.set_ylabel("Z [KM]")
 
             # Plot on the 3D view
-            ax3d.plot([state.position[0] for state in agent.state_data],
-                    [state.position[1] for state in agent.state_data],
-                    [state.position[2] for state in agent.state_data],
-                    label=agent.name, linewidth=1.0)
-            ax3d.plot([agent.state_data[0].position[0]],
-                    [agent.state_data[0].position[1]],
-                    [agent.state_data[0].position[2]],
-                    'g*', label='start', fillstyle='none')
-            ax3d.plot([agent.state_data[-1].position[0]],
-                    [agent.state_data[-1].position[1]],
-                    [agent.state_data[-1].position[2]],
-                    'rs', label='end', fillstyle='none')
-            ax3d.set_xlabel('X [KM]')
-            ax3d.set_ylabel('Y [KM]')
-            ax3d.set_zlabel('Z [KM]')
+            ax3d.plot(
+                [state.position[0] for state in agent.state_data],
+                [state.position[1] for state in agent.state_data],
+                [state.position[2] for state in agent.state_data],
+                label=agent.name,
+                linewidth=1.0,
+            )
+            ax3d.plot(
+                [agent.state_data[0].position[0]],
+                [agent.state_data[0].position[1]],
+                [agent.state_data[0].position[2]],
+                "g*",
+                label="start",
+                fillstyle="none",
+            )
+            ax3d.plot(
+                [agent.state_data[-1].position[0]],
+                [agent.state_data[-1].position[1]],
+                [agent.state_data[-1].position[2]],
+                "rs",
+                label="end",
+                fillstyle="none",
+            )
+            ax3d.set_xlabel("X [KM]")
+            ax3d.set_ylabel("Y [KM]")
+            ax3d.set_zlabel("Z [KM]")
 
         # Add legend and grid to the 2D subplots
         axxy.legend()
@@ -298,10 +358,10 @@ class DataGenerator(Scenario):
         axxz.grid(True)
         axyz.grid(True)
 
-        axxy.set_aspect('equal', adjustable='datalim')
-        axxz.set_aspect('equal', adjustable='datalim')
-        axyz.set_aspect('equal', adjustable='datalim')
-        ax3d.set_aspect('equal', adjustable='datalim')
+        axxy.set_aspect("equal", adjustable="datalim")
+        axxz.set_aspect("equal", adjustable="datalim")
+        axyz.set_aspect("equal", adjustable="datalim")
+        ax3d.set_aspect("equal", adjustable="datalim")
 
         plt.tight_layout()
 
@@ -312,11 +372,13 @@ class DataGenerator(Scenario):
         plt.close(fig)
 
 
-def plot_ground_track(agents, stations, output_directory, name="ground_track_visibility"):
+def plot_ground_track(
+    agents, stations, output_directory, name="ground_track_visibility"
+):
     """
     Plots the entire ground track of each agent and overlays points (in the station's color)
     where the agent's elevation exceeds the station's minimum elevation angle.
-    
+
     Args:
         agents (list): List of agent objects. Each must have a `state_data` attribute where each
                        element (state) has attributes `latitude` and `longitude` in radians.
@@ -327,40 +389,49 @@ def plot_ground_track(agents, stations, output_directory, name="ground_track_vis
         output_directory (str or Path): Directory where the resulting plot will be saved.
         name (str, optional): Base name for the output file. Defaults to "ground_track_visibility".
     """
-    
+
     # Create a figure with a PlateCarree projection (suitable for geographic data)
     fig = plt.figure(figsize=(14, 8))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    
+
     # Add map features: coastlines and borders
     ax.coastlines(resolution="110m", color="black", linewidth=0.7)
     ax.add_feature(cfeature.BORDERS, linestyle=":", edgecolor="gray")
-    
+
     # Optionally add gridlines with labels
-    gl = ax.gridlines(draw_labels=True, linewidth=0.5, color="gray", alpha=0.7, linestyle="--")
+    gl = ax.gridlines(
+        draw_labels=True, linewidth=0.5, color="gray", alpha=0.7, linestyle="--"
+    )
     gl.xlabel_style = {"size": 10, "color": "gray"}
     gl.ylabel_style = {"size": 10, "color": "gray"}
     ax.set_global()
-    
+
     # Plot the entire ground track for each agent (in a neutral color)
     for agent in agents:
         # Compute full track: convert longitudes and latitudes from radians to degrees
         track_lons = [state.latlong[1] * RAD2DEG for state in agent.state_data]
         track_lats = [state.latlong[0] * RAD2DEG for state in agent.state_data]
-        ax.plot(track_lons, track_lats, color="k", marker = 'x',linestyle = 'none',
-                transform=ccrs.PlateCarree(), label=f"{agent.name} Track")
-        
+        ax.plot(
+            track_lons,
+            track_lats,
+            color="k",
+            marker="x",
+            linestyle="none",
+            transform=ccrs.PlateCarree(),
+            label=f"{agent.name} Track",
+        )
+
     # Now, for each station, find and plot the points where the agent is visible.
     # (That is, where the elevation > station.minimum_elevation_angle.)
     for station in stations:
         # Set a default color if the station does not have one
         station_color = getattr(station, "color", "magenta")
-        
+
         # Loop through agents and accumulate the visible points
         for agent in agents:
             visible_lons = []
             visible_lats = []
-            
+
             for state in agent.state_data:
                 # Calculate azimuth and elevation at the given state from this station.
                 az, el = station.calculate_azimuth_and_elevation(state=state)
@@ -368,39 +439,55 @@ def plot_ground_track(agents, stations, output_directory, name="ground_track_vis
                 if (el * RAD2DEG) > station.minimum_elevation_angle:
                     visible_lons.append(state.latlong[1] * RAD2DEG)
                     visible_lats.append(state.latlong[0] * RAD2DEG)
-            
+
             # If there are any visible points for this agent at this station, plot them.
             if visible_lons:
-                ax.plot(visible_lons, visible_lats, marker="o", linestyle="None",
-                        color=station_color, markersize=6,
-                        transform=ccrs.PlateCarree(),
-                        label=f"{station.name} Visibility")
-    
+                ax.plot(
+                    visible_lons,
+                    visible_lats,
+                    marker="o",
+                    linestyle="None",
+                    color=station_color,
+                    markersize=6,
+                    transform=ccrs.PlateCarree(),
+                    label=f"{station.name} Visibility",
+                )
+
     # Plot station locations with a distinctive marker.
     for station in stations:
         st_lon = station.longitude * RAD2DEG
         st_lat = station.latitude * RAD2DEG
         station_color = getattr(station, "color", "magenta")
-        ax.plot(st_lon, st_lat, marker="*", color=station_color, markersize=15,
-                transform=ccrs.PlateCarree(), label=station.name)
-    
+        ax.plot(
+            st_lon,
+            st_lat,
+            marker="*",
+            color=station_color,
+            markersize=15,
+            transform=ccrs.PlateCarree(),
+            label=station.name,
+        )
+
     # Set map limits (optional: full globe)
     ax.set_xlim([-180, 180])
     ax.set_ylim([-90, 90])
-    
+
     # Create a legend and remove duplicate labels
     handles, labels = ax.get_legend_handles_labels()
     from collections import OrderedDict
+
     unique = OrderedDict()
     for h, l in zip(handles, labels):
         if l not in unique:
             unique[l] = h
-    ax.legend(unique.values(), unique.keys(), loc="lower left", fontsize="small", ncol=2)
-    
+    ax.legend(
+        unique.values(), unique.keys(), loc="lower left", fontsize="small", ncol=2
+    )
+
     ax.set_xlabel("Longitude [deg]")
     ax.set_ylabel("Latitude [deg]")
     plt.title("Ground Track with Station Visibility")
-    
+
     # Save the plot to file
     output_path = output_directory / f"{name}_ground_track.png"
     plt.tight_layout()

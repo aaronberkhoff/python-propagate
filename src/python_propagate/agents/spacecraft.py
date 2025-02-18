@@ -29,7 +29,7 @@ class Spacecraft(Agent):
         The duration of the simulation.
     dt : float
         The time step for the simulation.
-    coefficent_of_drag : float, optional
+    coefficient_of_drag : float, optional
         The coefficient of drag of the spacecraft (default is None).
     mass : float, optional
         The mass of the spacecraft (default is None).
@@ -38,7 +38,7 @@ class Spacecraft(Agent):
 
     Methods
     -------
-    __init__(self, state, start_time, duration, dt, coefficent_of_drag=None, mass=None, area=None):
+    __init__(self, state, start_time, duration, dt, coefficient_of_drag=None, mass=None, area=None):
         Initializes the Spacecraft with the given parameters.
     """
 
@@ -48,10 +48,11 @@ class Spacecraft(Agent):
         start_time,
         duration,
         dt,
-        coefficent_of_drag=None,
+        coefficient_of_drag=None,
         mass=None,
         area=None,
         name=None,
+        scenario = None
     ):
         """
         Constructs all the necessary attributes for the Spacecraft object.
@@ -66,7 +67,7 @@ class Spacecraft(Agent):
             The duration of the simulation.
         dt : float
             The time step for the simulation.
-        coefficent_of_drag : float, optional
+        coefficient_of_drag : float, optional
             The coefficient of drag of the spacecraft (default is None).
         mass : float, optional
             The mass of the spacecraft (default is None).
@@ -79,10 +80,11 @@ class Spacecraft(Agent):
             start_time,
             duration,
             dt,
-            coefficent_of_drag,
+            coefficient_of_drag,
             mass,
             area=area,
             name=name,
+            scenario=scenario
         )
 
     def __repr__(self):
@@ -96,5 +98,5 @@ class Spacecraft(Agent):
         """
         return (
             f"Spacecraft(state={self.state}, start_time={self.start_time}, duration={self.duration}, "
-            f"dt={self.dt}, coefficent_of_drag={self.coefficent_of_drag}, mass={self.mass}, area={self.area}, name={self.name})"
+            f"dt={self.dt}, coefficient_of_drag={self.coefficient_of_drag}, mass={self.mass}, area={self.area}, name={self.name})"
         )

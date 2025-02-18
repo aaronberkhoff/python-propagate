@@ -7,7 +7,7 @@ from python_propagate.platforms.station import Station
 from python_propagate.scenario import Scenario
 from datetime import datetime, timedelta
 from python_propagate.environment.planets import Earth
-from python_propagate.agents.state import State
+from python_propagate.states import State
 from python_propagate.agents.spacecraft import Spacecraft
 
 

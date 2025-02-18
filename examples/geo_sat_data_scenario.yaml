@@ -1,8 +1,11 @@
+central_body: &earth !Earth
+  flattening_bool: False
+
+
 scenario:
   !DataGenerator
   name: "GEO_Sat_anom"
-  central_body: "Earth"
-  flattening: True
+  central_body: *earth
   start_time: "2025-01-15T12:30:00"
   duration: 
     days: 10
@@ -30,7 +33,7 @@ agents:
       seconds: 30
     duration: 
       days: 1
-    coefficent_of_drag: 2.0
+    coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
 
