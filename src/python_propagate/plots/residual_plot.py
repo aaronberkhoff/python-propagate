@@ -8,7 +8,7 @@ from python_propagate.utilities.units import RAD2DEG
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_residuals(data_handler: DataHandler, path: str, plot_type: str = 'position', ylim = None):
+def plot_residuals(data_handler: DataHandler, path: str, plot_type: str = 'position', ylim = None, show = False):
     """
     Plots either state residuals or measurement residuals with ±3σ bounds.
     
@@ -20,18 +20,21 @@ def plot_residuals(data_handler: DataHandler, path: str, plot_type: str = 'posit
     if plot_type == 'position':
         cov = np.array(data_handler.covariance_estimate_history)
         res = np.array([res.ravel() for res in data_handler.state_residuals])
+        times = data_handler.state_times
         labels = ["X [KM]", "Y [KM]", "Z [KM]"]
         title = "Position Residuals"
         index = 0
     elif plot_type == 'velocity':
         cov = np.array(data_handler.covariance_estimate_history)
         res = np.array([res.ravel() for res in data_handler.state_residuals])
+        times = data_handler.state_times
         labels = ["Vx [KM/S]", "Vx [KM/S]", "Vz [KM/S]"]
         title = "Velocity Residuals"
         index = 3
     elif plot_type == 'measurement':
         cov = np.array(data_handler.measurement_covariances) 
         res = np.array([res.ravel() for res in data_handler.residuals]) 
+        times = data_handler.measurement_times
         labels = ["RA [DEG]", "DEC [DEG]"]
         title = "Measurement Residuals"
         index = 0
@@ -42,12 +45,13 @@ def plot_residuals(data_handler: DataHandler, path: str, plot_type: str = 'posit
     fig.suptitle(title, fontsize=16)
 
     for i, (ax, label) in enumerate(zip(axs, labels)):
-        plot_single_residual(ax, res[:, i+index], cov[:, i+index, i+index], data_handler.times, label,ylim=ylim)
+        plot_single_residual(ax, res[:, i+index], cov[:, i+index, i+index], times, label,ylim=ylim)
 
     axs[-1].set_xlabel("Time [HR]")
     fig.tight_layout()
     fig.savefig(path)
-    # plt.show()
+    if show:
+        plt.show()
 
 def plot_single_residual(ax, residuals, variances, times, label, ylim = None):
     """

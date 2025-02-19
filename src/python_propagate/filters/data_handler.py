@@ -11,19 +11,21 @@ class DataHandler:
         self.states = []
         self.measurement_means = []
         self.measurement_covariances = []
-        self.times = []
+        self.state_times = []
+        self.measurement_times = []
         self.residuals = []
         self.truths = truths
 
     def add_state(self,state: FilterState, time: float):
 
         self.states.append(state)
-        self.times.append(time / 3600)
+        self.state_times.append(time)
 
-    def add_measurement(self,measurement_mean, measurement_covariance):
+    def add_measurement(self,measurement_mean, measurement_covariance,time):
 
         self.measurement_means.append(measurement_mean)
         self.measurement_covariances.append(measurement_covariance)
+        self.measurement_times.append(time)
 
     def add_residual(self,residual):
         self.residuals.append(residual)

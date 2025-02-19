@@ -131,7 +131,7 @@ class UnscentedKalman(Filter):
     def time_update(self, state_estimate, covariance_estimate, duration: int, parallel = False):
 
         sigma_points = SigmaPoints(state_estimate, covariance_estimate)
-        pass
+        
         sigma_points.propagate(agent=self.spacecraft, duration=duration, parallel=parallel)
 
         return sigma_points
@@ -188,7 +188,7 @@ class UnscentedKalman(Filter):
 
         self.state_estimate_hist.append(state_estimate)
         self.covariance_estimate_hist.append(covariance_estimate)
-
+        #TODO refactor to handle the memory better. Try saving these values to the filter state
         return state_estimate, covariance_estimate, measurement_mean, measurement_covariance
 
     def plot_state_res(self, path, truths):

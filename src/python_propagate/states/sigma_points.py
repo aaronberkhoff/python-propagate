@@ -5,9 +5,10 @@ import copy
 import numpy as np
 
 
-from python_propagate.utilities.transforms import unscented_transform
+from python_propagate.utilities.transforms import unscented_transform, unscented_weights, reconstruct_sigma_points
 from python_propagate.states import State
 from python_propagate.agents import Agent
+from python_propagate.sensors import Sensor
 
 
 class SigmaPoints:
@@ -17,6 +18,7 @@ class SigmaPoints:
         sigma_points = unscented_transform(mean, covariance)
         self.sigma_points = sigma_points
         self._shape = sigma_points.shape
+        self._weights = unscented_weights(shape=sigma_points.shape)
 
     def __iter__(self):
         return iter(self.states)
@@ -52,8 +54,8 @@ class SigmaPoints:
         return self.sigma_points
 
     @property
-    def matrix(self):
-        return self.sigma_points
+    def weights(self):
+        return self._weights
 
     @property
     def shape(self):
@@ -94,9 +96,25 @@ class SigmaPoints:
             for i, sigma_point in enumerate(self):
 
                 agent.state = sigma_point  # Update the current state with a sigma point
-                agent.propagate(duration=duration,tolerance=1e-14)  # Propagate the state
+                agent.propagate(duration=duration)  # Propagate the state
                 self.sigma_points[0:6, i] = agent.state.compile()
 
+    def measurement_map(self,sensor:Sensor):
+
+        measurement_map = (
+            np.hstack([sensor.measurement_map(state) for state in self])
+            + self.noise
+        )
+
+        measurement_mean, measurement_covariance = reconstruct_sigma_points(
+            measurement_map, weights=self.weights
+        )
+
+        return measurement_mean, measurement_covariance
+    
+    def reconstruct_state(self):
+
+        return reconstruct_sigma_points(sigma_points= self.state, weights=self.weights)
 
 def parallel_propagate(sigma_point: np.ndarray, agent: Agent, duration: int = 30):
 
