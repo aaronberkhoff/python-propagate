@@ -52,7 +52,7 @@ class Spacecraft(Agent):
         mass=None,
         area=None,
         name=None,
-        scenario = None
+        scenario=None,
     ):
         """
         Constructs all the necessary attributes for the Spacecraft object.
@@ -84,7 +84,7 @@ class Spacecraft(Agent):
             mass,
             area=area,
             name=name,
-            scenario=scenario
+            scenario=scenario,
         )
 
     def __repr__(self):

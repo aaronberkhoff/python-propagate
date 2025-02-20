@@ -58,7 +58,7 @@ class Scenario:
         agents=...,
         stations=...,
         use_spice=False,
-        name = 'Scenario'
+        name="Scenario",
     ):
         """
         Initializes the Scenario with the given parameters.

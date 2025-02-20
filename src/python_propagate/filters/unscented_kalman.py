@@ -30,8 +30,10 @@ class UnscentedKalman(Filter):
         process_noise_mean,
         process_noise_covariance,
     ):
-        process_noise_mean = np.array(process_noise_mean)[:,np.newaxis]
-        process_noise_covariance = np.array(process_noise_covariance) * np.eye(len(process_noise_mean))
+        process_noise_mean = np.array(process_noise_mean)[:, np.newaxis]
+        process_noise_covariance = np.array(process_noise_covariance) * np.eye(
+            len(process_noise_mean)
+        )
 
         state = FilterState(
             state_mean=mean[:, np.newaxis],
@@ -77,30 +79,27 @@ class UnscentedKalman(Filter):
     def weights_covariance(self):
         return self._weights_covariance
 
-    def run(self,time,measurements):
+    def run(self, time, measurements):
 
         # process first measurement:
-        
+
         sigma_points = SigmaPoints(self.state.mean, self.state.covariance)
 
-        state_estimate, covariance_estimate, _,_ = self.measurement_update(
+        state_estimate, covariance_estimate, _, _ = self.measurement_update(
             measurement=measurements[0],
             sigma_points=sigma_points,
             state_bar=self.state.state_mean,
             covariance_bar=self.state.state_covariance,
         )
 
-
         # new initial guess
         self.state.state_mean = state_estimate
         self.state.state_covariance = covariance_estimate
-
 
         for i, (tk, tkm1, measurement) in enumerate(
             zip(time[1:], time[0:-1], measurements[1:])
         ):
 
-            
             sigma_points = self.time_update(
                 self.state.mean, self.state.covariance, duration=tk - tkm1
             )
@@ -128,16 +127,25 @@ class UnscentedKalman(Filter):
 
         return state_estimate, covariance_estimate
 
-    def time_update(self, state_estimate, covariance_estimate, duration: int, parallel = False):
+    def time_update(
+        self, state_estimate, covariance_estimate, duration: int, parallel=False
+    ):
 
         sigma_points = SigmaPoints(state_estimate, covariance_estimate)
-        
-        sigma_points.propagate(agent=self.spacecraft, duration=duration, parallel=parallel)
+
+        sigma_points.propagate(
+            agent=self.spacecraft, duration=duration, parallel=parallel
+        )
 
         return sigma_points
 
     def measurement_update(
-        self, measurement: np.ndarray, sigma_points, state_bar, covariance_bar
+        self,
+        measurement: np.ndarray,
+        sigma_points,
+        state_bar,
+        covariance_bar,
+        return_kalman=False,
     ):
 
         # measurement_sigma = np.vstack([(self.sensor.measurement_map(sigma_point) + sigma_point.noise[:,np.newaxis]).T for sigma_point in sigma_points])
@@ -146,7 +154,7 @@ class UnscentedKalman(Filter):
             np.hstack([self.sensor.measurement_map(state) for state in sigma_points])
             + sigma_points.noise
         )
-
+        # TODO Figure out a way to return new sigma point object representing measurements
         measurement_mean, measurement_covariance = reconstruct_sigma_points(
             measurement_sigma, weights=self.weights
         )
@@ -167,9 +175,7 @@ class UnscentedKalman(Filter):
         # kalman_gain = np.linalg.solve(measurement_covariance, cross_covariance.T).T
         kalman_gain = np.linalg.solve(measurement_covariance.T, cross_covariance.T).T
 
-        state_estimate = state_bar + kalman_gain @ (
-            measurement[:, np.newaxis] - measurement_mean
-        )
+        state_estimate = state_bar + kalman_gain @ (measurement - measurement_mean)
         covariance_estimate = (
             covariance_bar
             - cross_covariance @ kalman_gain.T
@@ -178,7 +184,7 @@ class UnscentedKalman(Filter):
         )
 
         self.residuals_data[0].append(innovation[0, 0])
-        self.residuals_data[1].append(innovation[1, 1])
+        self.residuals_data[1].append(innovation[1, 0])
 
         self.residual_cov_data[0].append(3 * np.sqrt(measurement_covariance[0, 0]))
         self.residual_cov_data[1].append(-3 * np.sqrt(measurement_covariance[0, 0]))
@@ -188,8 +194,21 @@ class UnscentedKalman(Filter):
 
         self.state_estimate_hist.append(state_estimate)
         self.covariance_estimate_hist.append(covariance_estimate)
-        #TODO refactor to handle the memory better. Try saving these values to the filter state
-        return state_estimate, covariance_estimate, measurement_mean, measurement_covariance
+        # TODO refactor to handle the memory better. Try saving these values to the filter state
+        if return_kalman:
+            return (
+                state_estimate,
+                covariance_estimate,
+                measurement_mean,
+                measurement_covariance,
+                kalman_gain,
+            )
+        return (
+            state_estimate,
+            covariance_estimate,
+            measurement_mean,
+            measurement_covariance,
+        )
 
     def plot_state_res(self, path, truths):
 

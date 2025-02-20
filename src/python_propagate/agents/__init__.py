@@ -56,8 +56,8 @@ class Agent:
         mass=None,
         area=None,
         name="Agent",
-        dynamics = [],
-        scenario = None
+        dynamics=[],
+        scenario=None,
     ):
         """
         Initializes the Agent with the given parameters.

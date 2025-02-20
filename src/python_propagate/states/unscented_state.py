@@ -37,14 +37,19 @@ class FilterState(State):
 
         super().__init__(position=state_mean[0:3], velocity=state_mean[3:6])
 
-    def __eq__(self,other):
-        if not isinstance(other,FilterState):
+    def __eq__(self, other):
+        if not isinstance(other, FilterState):
             return False
-        return (self.state_mean,self.state_covariance) == (other.state_mean,other.state_covariance)
+        return (self.state_mean, self.state_covariance) == (
+            other.state_mean,
+            other.state_covariance,
+        )
 
     def __hash__(self):
-        return hash((tuple(self.state_mean.ravel()),tuple(self.state_covariance.flatten())))
-    
+        return hash(
+            (tuple(self.state_mean.ravel()), tuple(self.state_covariance.flatten()))
+        )
+
     @property
     def mean(self):
         return np.vstack([self.state_mean, self.process_noise_mean, self.noise_mean])

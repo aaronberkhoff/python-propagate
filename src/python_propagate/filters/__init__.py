@@ -20,7 +20,6 @@ class Filter:
         self._process_noise_mean = process_noise_mean
         self._process_noise_covariance = process_noise_covariance
 
-
     @property
     def sensor(self):
         return self._sensor
