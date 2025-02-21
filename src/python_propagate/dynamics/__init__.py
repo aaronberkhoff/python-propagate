@@ -15,7 +15,7 @@ Date: 2025-01-30
 import numpy as np
 
 from python_propagate.scenario import Scenario
-from python_propagate.agents.state import State
+from python_propagate.states import State
 
 
 class Dynamic:
@@ -34,7 +34,7 @@ class Dynamic:
         The function of the dynamic.
     """
 
-    def __init__(self, scenario: Scenario, agent=None, stm=None):
+    def __init__(self, scenario: Scenario, agent=None, stm=None, function=None):
         """
         Constructs all the necessary attributes for the Dynamic object.
 
@@ -50,6 +50,7 @@ class Dynamic:
         self.stm = stm
         self.scenario = scenario
         self.agent = agent
+        self.function = function if function is not None else self.default_function
 
     def __call__(self, state: State, time: np.array):
         """
@@ -68,4 +69,7 @@ class Dynamic:
             The result of the function.
         """
 
-        return self.function(state, time)
+        return self.function(state=state, time=time)
+
+    def default_function(self, state: State, time):
+        raise NotImplementedError("Dynamic function must be provided or overridden.")

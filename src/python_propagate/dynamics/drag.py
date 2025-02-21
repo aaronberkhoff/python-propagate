@@ -1,14 +1,18 @@
 import numpy as np
 from python_propagate.scenario import Scenario
 from python_propagate.dynamics import Dynamic
-from python_propagate.agents.state import State
+from python_propagate.states import State
 
 
 class Drag(Dynamic):
-    def __init__(self, scenario: Scenario, agent=None, stm=None):
-        super().__init__(scenario, agent, stm)
+    def __init__(self, scenario: Scenario, agent=None, stm=None, function=None):
 
-    def function(self, state: State, time: float):
+        if function is None:
+            function = self.drag_function  # Assign the default function
+
+        super().__init__(scenario, agent, stm, function)
+
+    def drag_function(self, state: State, time: float):
 
         rx, ry, rz = state.extract_position()
         vx, vy, vz = state.extract_velocity()
@@ -27,7 +31,7 @@ class Drag(Dynamic):
 
         dynamic_pressure = (
             -0.5
-            * self.agent.coefficent_of_drag
+            * self.agent.coefficient_of_drag
             * density
             * self.agent.area
             / self.agent.mass

@@ -57,6 +57,8 @@ class Scenario:
         dt: timedelta,
         agents=...,
         stations=...,
+        use_spice=False,
+        name="Scenario",
     ):
         """
         Initializes the Scenario with the given parameters.
@@ -97,7 +99,8 @@ class Scenario:
         self._duration = duration
         self._dt = dt
 
-        load_spice()
+        if use_spice:
+            load_spice()
 
     @property
     def central_body(self):

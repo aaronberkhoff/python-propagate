@@ -1,7 +1,7 @@
 import numpy as np
 from python_propagate.scenario import Scenario
 from python_propagate.dynamics import Dynamic
-from python_propagate.agents.state import State
+from python_propagate.states import State
 
 
 class J2(Dynamic):
@@ -18,10 +18,14 @@ class J2(Dynamic):
         The state transition matrix of the dynamic.
     """
 
-    def __init__(self, scenario: Scenario, agent=None, stm=None):
-        super().__init__(scenario, agent, stm)
+    def __init__(self, scenario, agent=None, stm=None, function=None):
 
-    def function(self, state: State, time: float):
+        if function is None:
+            function = self.j2_function  # Assign the default function
+
+        super().__init__(scenario, agent, stm, function)
+
+    def j2_function(self, state: State, time: float):
 
         rx, ry, rz = state.extract_position()
 

@@ -8,9 +8,9 @@ Date: 2025-01-30
 """
 
 from datetime import datetime, timedelta
-
 import numpy as np
 import scipy.integrate as sci_int
+
 
 from python_propagate.scenario import Scenario
 
@@ -21,11 +21,15 @@ from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
 
-from python_propagate.agents.state import State, OrbitalElements
+from python_propagate.states import State, OrbitalElements
 
 from python_propagate.utilities.transforms import classical2cart
 from python_propagate.utilities.string_format import DATESTR
 from python_propagate.utilities.units import DEG2RAD
+
+# from python_propagate.states.sigma_points import SigmaPoints
+
+# from python_propagate.filters.unscented_kalman import FilterState
 
 
 class Agent:
@@ -48,10 +52,12 @@ class Agent:
         start_time,
         duration,
         dt,
-        coefficent_of_drag=None,
+        coefficient_of_drag=None,
         mass=None,
         area=None,
         name="Agent",
+        dynamics=[],
+        scenario=None,
     ):
         """
         Initializes the Agent with the given parameters.
@@ -66,7 +72,7 @@ class Agent:
             The duration of the simulation.
         dt : timedelta, dict
             The time step of the simulation.
-        coefficent_of_drag : float, optional
+        coefficient_of_drag : float, optional
             The coefficient of drag of the agent (default is None).
         mass : float, optional
             The mass of the agent (default is None).
@@ -90,14 +96,14 @@ class Agent:
         self._start_time = start_time
         self._duration = duration
         self._dt = dt
-        self._coefficent_of_drag = coefficent_of_drag
+        self._coefficient_of_drag = coefficient_of_drag
         self._mass = mass
 
         self._name = name
         self.state_data = []
         self.time_data = []
-        self.scenario = None
-        self.dynamics = []
+        self.scenario = scenario
+        self.dynamics = dynamics
 
     @property
     def start_time(self):
@@ -115,9 +121,9 @@ class Agent:
         return self._dt
 
     @property
-    def coefficent_of_drag(self):
+    def coefficient_of_drag(self):
         """Returns the coefficient of drag of the agent."""
-        return self._coefficent_of_drag
+        return self._coefficient_of_drag
 
     @property
     def mass(self):
@@ -143,6 +149,10 @@ class Agent:
         """
         # TODO: Self referenceing to self is not good practice
         for dynamic in dynamics:
+
+            if isinstance(dynamic, type) and issubclass(dynamic, Dynamic):
+                dynamic = dynamic(scenario=self.scenario, agent=self)
+
             if dynamic == "kepler":
                 self.dynamics.append(Keplerian(scenario=self.scenario, agent=self))
 
@@ -211,13 +221,23 @@ class Agent:
         # TODO: Specifying an object in the propagation loop will increase comp time
         # TODO THis sTm config is a quick fix
         # TODO Create own propagators
+        # TODO: Consider putting the propagator in State
+        # state = State(
+        #     position=state[0:3],
+        #     velocity=state[3:6],
+        #     acceleration=np.array([0.0, 0.0, 0.0]))
+
         state = State(
-            position=state[0:3], velocity=state[3:6], acceleration=np.array([0, 0, 0])
+            position=state[0:3],
+            velocity=state[3:6],
+            acceleration=np.array([0.0, 0.0, 0.0]),
+            process_noise=self.state.process_noise,
         )
 
         for dynamic in self.dynamics:
             # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
-            state.update_acceleration_from_state(dynamic(state, time))
+            # state.update_acceleration_from_state(dynamic(state, time))
+            state @= dynamic(state, time)
 
         return state.dot()
 
@@ -246,17 +266,18 @@ class Agent:
         state = State(
             position=state[0:3],
             velocity=state[3:6],
-            acceleration=np.array([0, 0, 0]),
+            acceleration=np.array([0.0, 0.0, 0.0]),
             stm=np.reshape(state[6:], (6, 6)),
+            stm_dot=np.array(state[6:].size * [0.0]),
         )
 
         for dynamic in self.dynamics:
             # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
-            state.update_acceleration_from_state(dynamic(state, time))
+            state @= dynamic(state, time)
 
         return state.dot()
 
-    def propagate(self, tolerance=1e-12):
+    def propagate(self, tolerance=1e-12, duration=None):
         """
         Propagates the agent's state using numerical integration.
 
@@ -265,15 +286,18 @@ class Agent:
         tolerance : float, optional
             The tolerance for the numerical integration (default is 1e-12).
         """
+        if duration is None:
+            time = [0, self.duration.total_seconds()]
+            t_eval = np.arange(time[0], time[1] + self.dt.seconds, self.dt.seconds)
+        else:
+            time = [0, duration]
+            t_eval = None
 
         # TODO Create own propagators instead of using scipy
 
-        time = [0, self.duration.total_seconds()]
         method = "RK45"
 
-        rtol = tolerance
-        atol = tolerance
-        t_eval = np.arange(time[0], time[1] + self.dt.seconds, self.dt.seconds)
+        # rtol = tolerance
 
         if self.state.stm is not None:
             ode_state = sci_int.solve_ivp(
@@ -281,21 +305,20 @@ class Agent:
                 time,
                 self.state.compile(),
                 method=method,
-                rtol=rtol,
-                atol=atol,
+                rtol=tolerance,
                 t_eval=t_eval,
             )
             self.state.position = ode_state.y[0:3, -1]
             self.state.velocity = ode_state.y[3:6, -1]
             self.state.stm = np.reshape(ode_state.y[6:, -1], (6, 6))
+
         else:
             ode_state = sci_int.solve_ivp(
                 self.propagator,
                 time,
                 self.state.compile(),
                 method=method,
-                rtol=rtol,
-                atol=atol,
+                rtol=tolerance,
                 t_eval=t_eval,
             )
             self.state.position = ode_state.y[0:3, -1]

@@ -3,7 +3,7 @@ import pytest
 from python_propagate.scenario import Scenario
 from python_propagate.environment.planets import Earth
 from python_propagate.agents.spacecraft import Spacecraft
-from python_propagate.agents.state import State
+from python_propagate.states import State
 from datetime import datetime, timedelta
 
 
@@ -22,7 +22,7 @@ def test_scenario():
     position = [1340.745, -6663.403, -132.528]
     velocity = [5.457807, 1.368701, -5.614317]
 
-    coefficent_of_drag = 2.0
+    coefficient_of_drag = 2.0
     mass = 1350
     area = 3.6 / (1000**2)
     initial_state = State(position=position, velocity=velocity)
@@ -32,7 +32,7 @@ def test_scenario():
         start_time=start_time,
         duration=duration,
         dt=scenario.dt,
-        coefficent_of_drag=coefficent_of_drag,
+        coefficient_of_drag=coefficient_of_drag,
         mass=mass,
         area=area,
     )
