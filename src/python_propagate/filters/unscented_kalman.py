@@ -86,7 +86,7 @@ class UnscentedKalman(Filter):
         sigma_points = SigmaPoints(self.state.mean, self.state.covariance)
 
         state_estimate, covariance_estimate, _, _ = self.measurement_update(
-            measurement=measurements[0],
+            measurement=measurements[0][:,np.newaxis],
             sigma_points=sigma_points,
             state_bar=self.state.state_mean,
             covariance_bar=self.state.state_covariance,
@@ -109,7 +109,7 @@ class UnscentedKalman(Filter):
             )
 
             state_estimate, covariance_estimate, _, _ = self.measurement_update(
-                measurement=measurement,
+                measurement=measurement[:,np.newaxis],
                 sigma_points=sigma_points,
                 state_bar=state_bar,
                 covariance_bar=covariance_bar,
@@ -216,7 +216,7 @@ class UnscentedKalman(Filter):
 
         covariance_estimates = np.array(self.covariance_estimate_hist)
 
-        state_res = truths - state_estimates.T
+        state_res = (truths - state_estimates).T
 
         pos_labels = ["X [KM]", "Y [KM]", "Z [KM]"]
         vel_labels = ["Vx [KM/S^2]", "Vy [KM/S^2]", "Vz [KM/S^2]"]
@@ -243,7 +243,7 @@ class UnscentedKalman(Filter):
             axs_pos[i].grid(True)
             axs_pos[i].ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
             axs_pos[i].legend(fontsize=14)
-            axs_pos[i].set_ylim([-2.5, 2.5])
+            # axs_pos[i].set_ylim([-2.5, 2.5])
             axs_pos[i].set_title(
                 f"RMS:{np.sqrt(np.mean(np.square(state_res[:, i]))):.4e} " + "[KM]"
             )
@@ -251,6 +251,7 @@ class UnscentedKalman(Filter):
         axs_pos[-1].set_xlabel("Time in Steps of 540 Seconds")
         fig_pos.tight_layout()
         fig_pos.savefig(path.replace(".png", "_position.png"))
+        plt.show()
 
         # Velo-------------------------------------------------------------
         fig_vel, axs_vel = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
@@ -268,7 +269,7 @@ class UnscentedKalman(Filter):
             axs_vel[i].plot(-sigma, color="red", label=r"$\pm3\sigma$")
 
             axs_vel[i].set_ylabel(vel_labels[i])
-            axs_vel[i].set_ylim([-0.005, 0.005])
+            # axs_vel[i].set_ylim([-0.005, 0.005])
             axs_vel[i].grid(True)
             axs_vel[i].ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
             axs_vel[i].legend(fontsize=14)
@@ -281,6 +282,7 @@ class UnscentedKalman(Filter):
 
         fig_vel.tight_layout()
         fig_vel.savefig(path.replace(".png", "_velocity.png"))
+        plt.show()
 
     def plot_res(self, path):
 
@@ -293,7 +295,7 @@ class UnscentedKalman(Filter):
         )
         ax1.plot(self.residual_cov_data[0], color="red", label=r"$\pm 3\sigma$")
         ax1.plot(self.residual_cov_data[1], color="red")
-        ax1.set_ylim([-1.5e-3, 1.5e-3])
+        # ax1.set_ylim([-1.5e-3, 1.5e-3])
         ax1.set_title(
             r"$\alpha$  "
             + f"RMS:{np.sqrt(np.mean(np.square(self.residuals_data[0]))):.4e} "
@@ -308,7 +310,7 @@ class UnscentedKalman(Filter):
         ax2.plot(self.residuals_data[1], marker="x", linestyle="none")
         ax2.plot(self.residual_cov_data[2], color="red", label=r"$\pm 3\sigma$")
         ax2.plot(self.residual_cov_data[3], color="red")
-        ax2.set_ylim([-5e-4, 5e-4])
+        # ax2.set_ylim([-5e-4, 5e-4])
         ax2.set_title(
             r"$\delta$  "
             + f"RMS:{np.sqrt(np.mean(np.square(self.residuals_data[1]))):.4e} "
@@ -322,7 +324,7 @@ class UnscentedKalman(Filter):
         plt.tight_layout()
         plt.savefig(path)
 
-        # plt.show()
+        plt.show()
 
 
 class NoiseDynamic(Dynamic):

@@ -52,7 +52,7 @@ class Dynamic:
         self.agent = agent
         self.function = function if function is not None else self.default_function
 
-    def __call__(self, state: State, time: np.array):
+    def __call__(self, state: State, time: np.ndarray):
         """
         Calls the function of the dynamic.
 

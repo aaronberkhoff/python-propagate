@@ -103,7 +103,8 @@ class Agent:
         self.state_data = []
         self.time_data = []
         self.scenario = scenario
-        self.dynamics = dynamics
+        self.dynamics = []
+        self.add_dynamics(dynamics=dynamics)
 
     @property
     def start_time(self):
@@ -140,13 +141,14 @@ class Agent:
         """Returns the name of the agent."""
         return self._name
 
-    def add_dynamics(self, dynamics: tuple):
+    def add_dynamics(self, dynamics: list):
         """Adds dynamics to the agent.
         Parameters
         dynamics : tuple
             A tuple of dynamics to be added to the agent.
 
         """
+        
         # TODO: Self referenceing to self is not good practice
         for dynamic in dynamics:
 
@@ -170,6 +172,10 @@ class Agent:
 
             elif isinstance(dynamic, Dynamic):
                 self.dynamics.append(dynamic)
+
+            elif issubclass(dynamic, Dynamic):
+
+                self.dynamics.append(dynamic) 
             else:
                 raise NotImplementedError(
                     f"Dynamic <{dynamic}> is not an option or is spelled wrong"
@@ -203,6 +209,8 @@ class Agent:
                 time=self.start_time,
             )
 
+        return self
+
     def propagator(self, time, state):
         """
         Propagates the agent's state using numerical integration.
@@ -227,19 +235,23 @@ class Agent:
         #     velocity=state[3:6],
         #     acceleration=np.array([0.0, 0.0, 0.0]))
 
-        state = State(
-            position=state[0:3],
-            velocity=state[3:6],
-            acceleration=np.array([0.0, 0.0, 0.0]),
-            process_noise=self.state.process_noise,
-        )
+        # state = State(
+        #     position=state[0:3],
+        #     velocity=state[3:6],
+        #     acceleration=np.array([0.0, 0.0, 0.0]),
+        #     process_noise=self.state.process_noise,
+        # )
+
+        self.state.position = state[:3]
+        self.state.velocity = state[3:6]
+        self.state.acceleration = np.array([0.0,0.0,0.0])
 
         for dynamic in self.dynamics:
             # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
             # state.update_acceleration_from_state(dynamic(state, time))
-            state @= dynamic(state, time)
+            self.state @= dynamic(self.state, time)
 
-        return state.dot()
+        return self.state.dot()
 
     def stm_propagator(self, time, state):
         """

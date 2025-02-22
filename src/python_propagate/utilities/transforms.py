@@ -148,7 +148,7 @@ def true2mean(true_anomaly, eccentricity):
     return mean_anomaly
 
 
-def inetrial_to_ric(state):
+def inertial_to_ric(state):
     """
     Convert a vector from the ECI frame to the RIC frame for a given satellite state.
 

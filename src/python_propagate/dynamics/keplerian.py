@@ -61,8 +61,8 @@ class Keplerian(Dynamic):
 
         r = np.sqrt(rx**2 + ry**2 + rz**2)
 
-        ax = -self.scenario.central_body.mu * rx / r**3
-        ay = -self.scenario.central_body.mu * ry / r**3
-        az = -self.scenario.central_body.mu * rz / r**3
+        ax = -self.agent.scenario.central_body.mu * rx / r**3
+        ay = -self.agent.scenario.central_body.mu * ry / r**3
+        az = -self.agent.scenario.central_body.mu * rz / r**3
 
         return State(acceleration=np.array([ax, ay, az]), time=time)

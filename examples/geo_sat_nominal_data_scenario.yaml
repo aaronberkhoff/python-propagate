@@ -1,8 +1,10 @@
+central_body: &earth !Earth
+  flattening_bool: False
+
 scenario:
   !DataGenerator
   name: "GEO_Sat_nominal"
-  central_body: "Earth"
-  flattening: True
+  central_body: *earth
   start_time: "2025-01-15T12:30:00"
   duration: 
     days: 1

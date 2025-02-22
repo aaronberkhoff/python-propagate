@@ -79,6 +79,8 @@ class Platform:
         self.scenario = scenario
         self.state = self.calculate_state_ecef()
 
+        return self
+
     def calculate_state_ecef(self):
         """Calculates the initial state (position and velocity in the ECEF frame) using spiceypy."""
 

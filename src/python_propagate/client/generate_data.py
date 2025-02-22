@@ -8,7 +8,7 @@ Description:
 
 import click
 
-from python_propagate.constructors.yaml_loader import load_yaml
+from python_propagate.constructors.yaml_constructors import load_yaml
 
 
 @click.command()
@@ -32,21 +32,13 @@ def main(infile: str):
     config = load_yaml(yaml_file=infile)
 
     data_generator = config["scenario"]
-    agents = config["agents"]
-    stations = config["stations"]
-    dynamics = config["dynamics"]
+
     # TODO: I do not like that I have to set the scenarion first then the dynamics in that order
-    for agent in agents:
-        agent.set_scenario(data_generator)
-        agent.add_dynamics(dynamics)
 
-    for station in stations:
-        station.set_scenario(data_generator)
-
-    data_generator.add_agents(agents)
-    data_generator.add_stations(stations)
 
     data_generator.run()
+
+    pass
 
     # TODO: handle orbital elements
 

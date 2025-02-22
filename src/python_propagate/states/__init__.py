@@ -80,7 +80,7 @@ class State:
         Returns the time derivative of the state vector.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, frame = "inertial",**kwargs):
         """
         Constructs all the necessary attributes for the State object.
 
@@ -106,6 +106,7 @@ class State:
             The orbital elements of the agent (default is None).
         """
         self.stm = None
+        self.frame = frame
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -142,12 +143,15 @@ class State:
             return NotImplemented  # Ensures correct behavior with unsupported types
 
         # Check if both states have valid accelerations
-        if self.acceleration is None or other.acceleration is None:
-            raise ValueError("Both states must have non-None acceleration attributes.")
+        # if self.acceleration is None or other.acceleration is None:
+        #     raise ValueError("Both states must have non-None acceleration attributes.")
 
         # Update the current object's acceleration by adding the other state's acceleration
         if hasattr(other, "acceleration"):
             self.acceleration += other.acceleration  # In-place update
+
+        if hasattr(other, "velocity"):
+            self.velocity += other.velocity  # In-place update
 
         if hasattr(other, "stm_dot"):
             self.stm_dot += other.stm_dot

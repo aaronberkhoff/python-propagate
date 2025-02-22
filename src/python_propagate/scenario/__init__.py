@@ -55,8 +55,8 @@ class Scenario:
         start_time: datetime,
         duration: timedelta,
         dt: timedelta,
-        agents=...,
-        stations=...,
+        agents=[],
+        stations=[],
         use_spice=False,
         name="Scenario",
     ):
@@ -88,16 +88,24 @@ class Scenario:
         if isinstance(dt, dict):
             dt = timedelta(**dt)
 
-        if stations is ...:
-            self.stations = []
-
-        if agents is ...:
-            self.agents = []
 
         self._central_body = central_body
         self._start_time = start_time
         self._duration = duration
         self._dt = dt
+
+        if agents:
+            self.agents = [agent.set_scenario(self) for agent in agents]
+        else:
+            self.agents = agents
+
+        if stations:
+            self.stations = [station.set_scenario(self) for station in stations]
+        else:
+            self.stations = stations
+
+
+
 
         if use_spice:
             load_spice()

@@ -16,7 +16,7 @@ from python_propagate.scenario.data_generator import DataGenerator
 from python_propagate.scenario.data_generator import Scenario
 from python_propagate.agents.spacecraft import Spacecraft
 from python_propagate.states import State, OrbitalElements
-
+from python_propagate.dynamics.manuevers import ImpulseManuever, ThrustManuever
 
 class ClassConstructor:
 
@@ -43,6 +43,8 @@ def load_yaml(yaml_file):
         "!OrbitalElements", ClassConstructor(OrbitalElements).constructor
     )
     yaml.add_constructor("!Earth", ClassConstructor(Earth).constructor)
+    yaml.add_constructor("!ImpulseManuever", ClassConstructor(ImpulseManuever).constructor)
+    yaml.add_constructor("!ThrustManuever", ClassConstructor(ThrustManuever).constructor)
 
     with open(yaml_file, "r") as file:
         # raw = file.read()
