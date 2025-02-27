@@ -50,8 +50,6 @@ agents:
     mass: 150.0 #kg
     area: 2.0 #m^2
 
-dynamics: !!python/tuple ['kepler']
-
 
 stations: 
     - !Station

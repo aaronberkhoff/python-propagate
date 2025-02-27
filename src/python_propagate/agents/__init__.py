@@ -308,6 +308,7 @@ class Agent:
         # TODO Create own propagators instead of using scipy
 
         method = "RK45"
+        max_step = self.dt.total_seconds()
 
         # rtol = tolerance
 
@@ -332,6 +333,7 @@ class Agent:
                 method=method,
                 rtol=tolerance,
                 t_eval=t_eval,
+                max_step = max_step
             )
             self.state.position = ode_state.y[0:3, -1]
             self.state.velocity = ode_state.y[3:6, -1]
