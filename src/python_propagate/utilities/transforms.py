@@ -180,7 +180,7 @@ def inertial_to_ric(state):
     return transform
 
 
-def unscented_transform(mean: np.array, covariance: np.array, beta: float = 2, alpha=1):
+def unscented_transform(mean: np.array, covariance: np.array, alpha=1):
 
     state_length = mean.shape[0]
     kappa = 3 - state_length

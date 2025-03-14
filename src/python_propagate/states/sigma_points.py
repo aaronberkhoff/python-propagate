@@ -23,6 +23,7 @@ class SigmaPoints:
         self.sigma_points = sigma_points
         self._shape = sigma_points.shape
         self._weights = unscented_weights(shape=sigma_points.shape)
+        self.state_data = []
 
     def __iter__(self):
         return iter(self.states)
@@ -54,10 +55,6 @@ class SigmaPoints:
         return self.sigma_points[6:9]
 
     @property
-    def matrix(self):
-        return self.sigma_points
-
-    @property
     def weights(self):
         return self._weights
 
@@ -67,15 +64,24 @@ class SigmaPoints:
 
     @property
     def states(self):
-        return [
-            State(
-                position=sigma_point[0:3],
-                velocity=sigma_point[3:6],
-                noise=sigma_point[9:],
-                process_noise=sigma_point[6:9],
-            )
-            for sigma_point in self.sigma_points.T
-        ]
+        if self.shape[0] > 6:
+            return [
+                State(
+                    position=sigma_point[0:3],
+                    velocity=sigma_point[3:6],
+                    noise=sigma_point[9:],
+                    process_noise=sigma_point[6:9],
+                )
+                for sigma_point in self.sigma_points.T
+            ]
+        else:
+            return [
+                State(
+                    position=sigma_point[0:3],
+                    velocity=sigma_point[3:6],
+                )
+                for sigma_point in self.sigma_points.T
+            ] 
 
     def propagate(self, agent: Agent, duration: int = 30, parallel: bool = False):
 
@@ -94,14 +100,17 @@ class SigmaPoints:
             self.sigma_points[0:6, :] = np.array(
                 [state.compile() for state in state_final]
             ).T
+            # self.state_data = 
         else:
             # Collect the updated states in a list
-
+            # self.state_data = [[]] * self.shape[1]
             for i, sigma_point in enumerate(self):
 
                 agent.state = sigma_point  # Update the current state with a sigma point
                 agent.propagate(duration=duration)  # Propagate the state
                 self.sigma_points[0:6, i] = agent.state.compile()
+                self.state_data.append(agent.state_data)
+                agent.state_data = []
 
         return self
 

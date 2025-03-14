@@ -12,7 +12,7 @@ def mahalanobis_distance(x, y, covariance):
     return np.sqrt(mahal_dist_sq)[0, 0]
 
 
-def calc_ellipse(mean, covariance, sigma=3, resolution=100):
+def calc_ellipse(mean, covariance, sigma=3, resolution=100, rotate = True, translate = True):
 
     # Compute eigenvalues and eigenvectors
     eigenvals, eigenvecs = np.linalg.eigh(covariance)
@@ -25,9 +25,29 @@ def calc_ellipse(mean, covariance, sigma=3, resolution=100):
         ]
     )
 
-    rotated_ellipse = eigenvecs @ ellipse_points
+    if rotate:
+        rotated_ellipse = eigenvecs @ ellipse_points
+    else:
+        rotated_ellipse = ellipse_points
+
 
     # The ellipse width and height: 2*nsigma*sqrt(eigenvalue)
-    translated_ellipse = rotated_ellipse + mean
+    if translate:
+        translated_ellipse = rotated_ellipse + mean
+    else:
+        translated_ellipse = rotated_ellipse
 
-    return translated_ellipse
+    return translated_ellipse, eigenvecs
+
+def orbital_period(sma, mu):
+    """
+    Calculates the orbital period of an object.
+
+    Parameters:
+    sma (float): Semi-major axis in meters
+    mu (float): Gravitational parameter (m^3/s^2)
+
+    Returns:
+    float: Orbital period in seconds
+    """
+    return 2 * np.pi * np.sqrt(sma**3 / mu)

@@ -288,6 +288,42 @@ class Agent:
             state @= dynamic(state, time)
 
         return state.dot()
+    
+    def entropy_propagator(self, time, state):
+        """
+        Propagates the agent's state and stm using numerical integration.
+
+        Parameters
+        ----------
+        time : float
+            The current time in seconds.
+        state : array-like
+            The current state vector of the agent.
+        Returns
+        -------
+        array-like
+            The derivative of the state vector.
+
+
+        """
+
+        # result = Result()
+        # TODO: Specifying an object in the propagation loop will increase comp time
+        # TODO THis sTm config is a quick fix
+        # TODO Create own propagators
+        state = State(
+            position=state[0:3],
+            velocity=state[3:6],
+            acceleration=np.array([0.0, 0.0, 0.0]),
+            entropy = state[6],
+            entropy_dot = np.array([0.0]),
+        )
+
+        for dynamic in self.dynamics:
+            # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
+            state @= dynamic(state, time)
+
+        return np.hstack([state.velocity,state.acceleration,state.entropy_dot])
 
     def propagate(self, tolerance=1e-12, duration=None):
         """
@@ -312,7 +348,22 @@ class Agent:
 
         # rtol = tolerance
 
-        if self.state.stm is not None:
+        if hasattr(self.state,'entropy'):
+
+            ode_state = sci_int.solve_ivp(
+                self.entropy_propagator,
+                time,
+                np.hstack([self.state.position,self.state.velocity,self.state.entropy]),
+                method=method,
+                rtol=tolerance,
+                t_eval=t_eval,
+            )
+            self.state.position = ode_state.y[0:3, -1]
+            self.state.velocity = ode_state.y[3:6, -1]
+            self.state.entropy  = ode_state.y[6:7,-1]
+            self.save_entropy_data(ode_state=ode_state)
+
+        elif self.state.stm is not None:
             ode_state = sci_int.solve_ivp(
                 self.stm_propagator,
                 time,
@@ -367,6 +418,26 @@ class Agent:
                 State(
                     position=state[0:3],
                     velocity=state[3:6],
+                    time=self.start_time + delta_time,
+                )
+            )
+
+    def save_entropy_data(self, ode_state):
+        """
+        Saves the state data from the ODE solver.
+
+        Parameters
+        ----------
+        ode_state : OdeResult
+            The result object from the ODE solver containing the state and time data.
+        """
+        for state, time in zip(ode_state.y.transpose(), ode_state.t):
+            delta_time = timedelta(seconds=time)
+            self.state_data.append(
+                State(
+                    position=state[0:3],
+                    velocity=state[3:6],
+                    entropy = state[6],
                     time=self.start_time + delta_time,
                 )
             )

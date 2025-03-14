@@ -156,6 +156,9 @@ class State:
         if hasattr(other, "stm_dot"):
             self.stm_dot += other.stm_dot
 
+        if hasattr(other, "entropy_dot"):
+            self.entropy_dot += other.entropy_dot
+
         # Return the updated object itself
         return self
 
