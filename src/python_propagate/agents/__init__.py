@@ -20,6 +20,7 @@ from python_propagate.dynamics.j2 import J2
 from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
+from python_propagate.dynamics.three_body import ThreeBody
 
 from python_propagate.states import State
 from python_propagate.states.orbital_elements import OrbitalElements
@@ -137,6 +138,9 @@ class Agent:
 
             elif dynamic == "stm":
                 self.dynamics.append(STM(scenario=self.scenario, agent=self))
+            
+            elif dynamic == "3body":
+                self.dynamics.append(ThreeBody(scenario=self.scenario, agent=self))
 
             elif isinstance(dynamic, Dynamic):
                 self.dynamics.append(dynamic)

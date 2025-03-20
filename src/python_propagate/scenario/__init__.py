@@ -12,6 +12,7 @@ Date: 2025-01-30
 """
 
 from datetime import datetime, timedelta
+from typing import Iterable
 
 from python_propagate.environment.planets import Planet
 from python_propagate.utilities.load_spice import load_spice
@@ -59,6 +60,7 @@ class Scenario:
         stations=[],
         use_spice=False,
         name="Scenario",
+        celestial_bodies: Iterable[Planet] = []
     ):
         """
         Initializes the Scenario with the given parameters.
@@ -90,6 +92,7 @@ class Scenario:
 
 
         self._central_body = central_body
+        self._celestial_bodies = celestial_bodies
         self._start_time = start_time
         self._duration = duration
         self._dt = dt
@@ -121,6 +124,19 @@ class Scenario:
             The central body of the scenario.
         """
         return self._central_body
+
+
+    @property
+    def celestial_bodies(self):
+        """
+        Returns the celestial bodies of the scenario.
+
+        Returns
+        -------
+        Planet
+            The celestial bodies of the scenario.
+        """
+        return self._celestial_bodies
 
     @property
     def start_time(self):
