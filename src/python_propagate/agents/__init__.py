@@ -21,7 +21,8 @@ from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
 
-from python_propagate.states import State, OrbitalElements
+from python_propagate.states import State
+from python_propagate.states.orbital_elements import OrbitalElements
 
 from python_propagate.utilities.transforms import classical2cart
 from python_propagate.utilities.string_format import DATESTR
@@ -58,6 +59,7 @@ class Agent:
         name="Agent",
         dynamics=[],
         scenario=None,
+        manuevers = [],
     ):
         """
         Initializes the Agent with the given parameters.
@@ -90,56 +92,22 @@ class Agent:
             dt = timedelta(**dt)
 
         if area is not None:
-            self._area = area * (1e-6)
+            self.area = area * (1e-6)
 
         self.state = state
-        self._start_time = start_time
-        self._duration = duration
-        self._dt = dt
-        self._coefficient_of_drag = coefficient_of_drag
-        self._mass = mass
+        self.start_time = start_time
+        self.duration = duration
+        self.dt = dt
+        self.coefficient_of_drag = coefficient_of_drag
+        self.mass = mass
 
-        self._name = name
+        self.name = name
         self.state_data = []
         self.time_data = []
         self.scenario = scenario
         self.dynamics = []
+        self.manuevers = manuevers
         self.add_dynamics(dynamics=dynamics)
-
-    @property
-    def start_time(self):
-        """Returns the start time of the simulation."""
-        return self._start_time
-
-    @property
-    def duration(self):
-        """Returns the duration of the simulation."""
-        return self._duration
-
-    @property
-    def dt(self):
-        """Returns the time step of the simulation."""
-        return self._dt
-
-    @property
-    def coefficient_of_drag(self):
-        """Returns the coefficient of drag of the agent."""
-        return self._coefficient_of_drag
-
-    @property
-    def mass(self):
-        """Returns the mass of the agent."""
-        return self._mass
-
-    @property
-    def area(self):
-        """Returns the area of the agent."""
-        return self._area
-
-    @property
-    def name(self):
-        """Returns the name of the agent."""
-        return self._name
 
     def add_dynamics(self, dynamics: list):
         """Adds dynamics to the agent.
@@ -187,30 +155,33 @@ class Agent:
         scenario : Scenario
             The scenario to be set for the agent.
         """
-        # TODO: Explore weakref to avoid circular dependancies
+        # TODO: Explore weakref to avoid circular dependencies
         self.scenario = scenario
+        self.ensure_cart_state()
+        return self
+        
+    def ensure_cart_state(self): 
 
         if isinstance(self.state, OrbitalElements):
 
             state = classical2cart(
-                sma=self.state.sma,
-                ecc=self.state.ecc,
-                inc=self.state.inc * DEG2RAD,
-                arg=self.state.arg * DEG2RAD,
-                raan=self.state.raan * DEG2RAD,
-                nu=self.state.nu * DEG2RAD,
-                mu=self.scenario.central_body.mu,
+            sma=self.state.sma,
+            ecc=self.state.ecc,
+            inc=self.state.inc * DEG2RAD,
+            arg=self.state.arg * DEG2RAD,
+            raan=self.state.raan * DEG2RAD,
+            nu=self.state.nu * DEG2RAD,
+            mu=self.scenario.central_body.mu,
             )
 
             self.state = State(
-                position=state[0:3],
-                velocity=state[3:6],
-                frame="inertial",
-                time=self.start_time,
+            position=state[0:3],
+            velocity=state[3:6],
+            frame="inertial",
+            time=self.start_time,
             )
 
         return self
-
     def propagator(self, time, state):
         """
         Propagates the agent's state using numerical integration.
@@ -245,6 +216,7 @@ class Agent:
         self.state.position = state[:3]
         self.state.velocity = state[3:6]
         self.state.acceleration = np.array([0.0,0.0,0.0])
+        
 
         for dynamic in self.dynamics:
             # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
@@ -298,6 +270,8 @@ class Agent:
         tolerance : float, optional
             The tolerance for the numerical integration (default is 1e-12).
         """
+        self.ensure_cart_state()
+        self.dynamics.extend(self.manuevers)
         if duration is None:
             time = [0, self.duration.total_seconds()]
             t_eval = np.arange(time[0], time[1] + self.dt.seconds, self.dt.seconds)

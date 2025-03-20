@@ -85,7 +85,7 @@ class ThrustManuever(Dynamic):
     def manuever_function(self,state:State,time:float):
         
         if time > self.execution_time and time < (self.execution_time+self.execution_duration):
-            print(f'Thrust Manuever at time = {time}')
+            # print(f'Thrust Manuever at time = {time}')
             self.execute_bool = False
             transform = inertial_to_ric(state=state.compile())
             acc_inertial = transform.T @ (self.magnitude * self.direction_ric)
