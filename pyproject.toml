@@ -48,4 +48,4 @@ ignore_missing_imports = true
 strict = true
 
 [tool.poetry.scripts]
-data_gen = "python_propagate.client.generate_data:main"
+forge = "python_propagate.client.forge_main:main"

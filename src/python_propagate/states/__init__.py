@@ -26,9 +26,9 @@ ECI = "J2000"
 ECEF = "ITRF93"
 MU = 398600.4415
 
-OrbitalElements = namedtuple(
-    "OrbitalElements", ["sma", "ecc", "inc", "arg", "raan", "nu"]
-)
+# OrbitalElements = namedtuple(
+#     "OrbitalElements", ["sma", "ecc", "inc", "arg", "raan", "nu"]
+# )
 
 
 class State:
@@ -115,22 +115,155 @@ class State:
         if not isinstance(other, State):
             return NotImplemented
 
-        new_state = State(**vars(self))  # Copy attributes to new instance
+        new_state = type(self)(**vars(self)) # Copy attributes to new instance
 
-        for key in vars(self).keys() | vars(other).keys():  # Union of keys from both
+
+        for key in vars(self).keys() | vars(other).keys(): 
+             # Union of keys from both
             self_val = getattr(self, key, None)
             other_val = getattr(other, key, None)
 
-            if self_val is None and other_val is None:
-                setattr(new_state, key, None)  # Keep None if both are None
-            elif self_val is None:
-                setattr(new_state, key, other_val)  # Take other if self is None
-            elif other_val is None:
-                setattr(new_state, key, self_val)  # Take self if other is None
+            if isinstance(self_val,str):
+                continue
             else:
-                setattr(new_state, key, self_val + other_val)  # Normal addition
+                if self_val is None and other_val is None:
+                    setattr(new_state, key, None)  # Keep None if both are None
+                elif self_val is None:
+                    setattr(new_state, key, other_val)  # Take other if self is None
+                elif other_val is None:
+                    setattr(new_state, key, self_val)  # Take self if other is None
+                else:
+                    setattr(new_state, key, self_val + other_val)  # Normal addition
 
         return new_state
+    
+    def __sub__(self, other):
+        if not isinstance(other, State):
+            return NotImplemented
+
+        new_state = type(self)(**vars(self)) # Copy attributes to new instance
+
+        for key in vars(self).keys() | vars(other).keys(): 
+             # Union of keys from both
+            self_val = getattr(self, key, None)
+            other_val = getattr(other, key, None)
+
+            if isinstance(self_val,str):
+                continue
+            else:
+                if self_val is None and other_val is None:
+                    setattr(new_state, key, None)  # Keep None if both are None
+                elif self_val is None:
+                    setattr(new_state, key, other_val)  # Take other if self is None
+                elif other_val is None:
+                    setattr(new_state, key, self_val)  # Take self if other is None
+                else:
+                    setattr(new_state, key, self_val - other_val)  # Normal addition
+
+        return new_state
+    
+    def __mul__(self, other):
+
+        new_state = type(self)(**vars(self))  # Copy attributes to new instance
+
+        if isinstance(other,State):
+
+            for key in vars(self).keys() | vars(other).keys(): 
+                # Union of keys from both
+                self_val = getattr(self, key, None)
+                other_val = getattr(other, key, None)
+
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other_val is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other_val)  # Take other if self is None
+                    elif other_val is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val * other_val)  # Normal addition
+
+        elif isinstance(other,int) or isinstance(other,float):
+
+            for key in vars(self).keys():
+                self_val = getattr(self, key, None)
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other)  # Take other if self is None
+                    elif other is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val * other)  # Normal addition
+
+        else: 
+            return NotImplemented
+
+
+
+        return new_state
+    
+    __rmul__ = __mul__
+
+
+    def __truediv__(self, other):
+
+        new_state = type(self)(**vars(self))  # Copy attributes to new instance
+
+        if isinstance(other,State):
+
+            for key in vars(self).keys() | vars(other).keys(): 
+                # Union of keys from both
+                self_val = getattr(self, key, None)
+                other_val = getattr(other, key, None)
+
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other_val is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other_val)  # Take other if self is None
+                    elif other_val is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    elif other_val == 0.0:
+                        print(f'Division by zero for attribute <{key}>. Defaulting to original value')
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val / other_val)  # Normal addition
+
+        elif isinstance(other,int) or isinstance(other,float):
+
+            for key in vars(self).keys():
+                self_val = getattr(self, key, None)
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other)  # Take other if self is None
+                    elif other is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    elif other == 0.0:
+                        print(f'Division by zero for attribute <{key}>. Defaulting to original value')
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val / other)  # Normal addition
+
+        else: 
+            return NotImplemented
+
+
+
+        return new_state
+
+
 
     def __iadd__(self, other):
         result = self + other  # Use __add__ logic
