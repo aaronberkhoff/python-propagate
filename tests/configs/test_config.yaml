@@ -1,0 +1,61 @@
+central_body: &earth !Earth
+  flattening_bool: False
+
+scenario: &scenario !Scenario
+  central_body: *earth
+  start_time: "2025-01-15T12:30:00" 
+  duration: 
+    days: 10
+  dt: 
+    seconds: 30
+  name: 'Base'
+
+manuevers: 
+  - &manuever1 !ThrustManuever
+    magnitude: -0.001 #km/s
+    direction_ric: [0.0,1.0,0.0]
+    execution_time: 
+      days: 2
+    execution_duration:
+      minutes: 1
+  - &manuever2 !ThrustManuever
+      magnitude: 0.001 #km/s
+      direction_ric: [0.0,1.0,0.0]
+      execution_time: 
+        days: 7
+      execution_duration:
+        minutes: 1
+
+
+agents: 
+  - &sat1 !Spacecraft
+    name: "GEO_Sat1_nominal"
+    start_time: "2025-01-15T12:30:00"
+    state: !OrbitalElements
+              sma: 42164
+              ecc: 0.1
+              inc: 30.0 
+              arg: 1.0
+              raan: 1.0
+              nu: 180.0
+    dt: 
+      seconds: 30
+    duration: 
+      days: 3
+    coefficient_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 2.0 #m^2
+    dynamics: ['kepler','J2','J3']
+    scenario: *scenario
+    manuevers: [*manuever1]
+
+
+
+
+    
+
+
+
+
+    
+

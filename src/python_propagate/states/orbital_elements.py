@@ -1,8 +1,5 @@
-from python_propagate.states import State
+# Removed the class and placed it in states __init__
 
-class OrbitalElements(State):
 
-    def __init__(self, frame="inertial", **kwargs):
-        super().__init__(frame, **kwargs)
 
     

@@ -103,7 +103,7 @@ class AstroForge(Forge):
 
         return data_all
         
-    def generate_data_parallel(self,cores):
+    def generate_doata_parallel(self,cores):
 
         import concurrent.futures
 

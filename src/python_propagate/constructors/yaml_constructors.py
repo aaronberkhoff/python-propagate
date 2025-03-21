@@ -15,8 +15,8 @@ from python_propagate.scenario import Scenario
 from python_propagate.scenario.data_generator import DataGenerator
 from python_propagate.scenario.data_generator import Scenario
 from python_propagate.agents.spacecraft import Spacecraft
-from python_propagate.states import State
-from python_propagate.states.orbital_elements import OrbitalElements
+from python_propagate.states import State, OrbitalElements
+
 from python_propagate.dynamics.manuevers import ImpulseManuever, ThrustManuever
 from python_propagate.forge import Forge
 from python_propagate.forge.astrometric_forge import AstroForge
