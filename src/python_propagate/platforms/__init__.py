@@ -15,7 +15,7 @@ import spiceypy as spice
 import numpy as np
 
 from python_propagate.utilities.units import RAD2DEG, DEG2RAD
-from python_propagate.agents.state import State
+from python_propagate.states import State
 from python_propagate.scenario import Scenario
 
 
@@ -78,6 +78,8 @@ class Platform:
         """Adds and links the station to a scenario."""
         self.scenario = scenario
         self.state = self.calculate_state_ecef()
+
+        return self
 
     def calculate_state_ecef(self):
         """Calculates the initial state (position and velocity in the ECEF frame) using spiceypy."""

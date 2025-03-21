@@ -2,7 +2,7 @@ import numpy as np
 
 from python_propagate.scenario import Scenario
 from python_propagate.dynamics import Dynamic
-from python_propagate.agents.state import State
+from python_propagate.states import State
 
 
 class Keplerian(Dynamic):
@@ -21,8 +21,12 @@ class Keplerian(Dynamic):
         The function of the dynamic.
     """
 
-    def __init__(self, scenario: Scenario, agent=None, stm=None):
-        super().__init__(scenario, agent, stm)
+    def __init__(self, scenario, agent=None, stm=None, function=None):
+        if function is None:
+            function = self.kep_function  # Assign the default function
+
+        super().__init__(scenario, agent, stm, function)
+
         """
         Constructs all the necessary attributes for the Keplerian object.
 
@@ -37,7 +41,7 @@ class Keplerian(Dynamic):
 
         """
 
-    def function(self, state: State, time: float):
+    def kep_function(self, state: State, time: float = None):
         """
         The function of the Keplerian dynamic.
 
@@ -57,8 +61,8 @@ class Keplerian(Dynamic):
 
         r = np.sqrt(rx**2 + ry**2 + rz**2)
 
-        ax = -self.scenario.central_body.mu * rx / r**3
-        ay = -self.scenario.central_body.mu * ry / r**3
-        az = -self.scenario.central_body.mu * rz / r**3
+        ax = -self.agent.scenario.central_body.mu * rx / r**3
+        ay = -self.agent.scenario.central_body.mu * ry / r**3
+        az = -self.agent.scenario.central_body.mu * rz / r**3
 
         return State(acceleration=np.array([ax, ay, az]), time=time)

@@ -30,7 +30,7 @@ agents:
       seconds: 30
     duration: 
       days: 1
-    coefficent_of_drag: 2.0
+    coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
 
@@ -49,7 +49,7 @@ agents:
       seconds: 30
     duration: 
       days: 1
-    coefficent_of_drag: 2.0
+    coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
 

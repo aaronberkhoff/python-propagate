@@ -38,7 +38,7 @@ class Station(Platform):
         name: str = "none",
         minimum_elevation_angle: float = 0.0,
         identity: int = 0,
-        color = 'red'
+        color="red",
     ):
         """
         Constructs all the necessary attributes for the Station object.
@@ -96,7 +96,7 @@ class Station(Platform):
     def identity(self):
         """Gets the identity of the station."""
         return self._identity
-    
+
     @property
     def color(self):
         """Gets the color of the station."""

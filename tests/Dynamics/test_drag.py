@@ -26,7 +26,7 @@ def test_accel_are_equal_drag() -> None:
     position = [1340.745, -6663.403, -132.528]
     velocity = [5.457807, 1.368701, -5.614317]
 
-    coefficent_of_drag = 2.0
+    coefficient_of_drag = 2.0
     mass = 1350
     area = 3.6 
     initial_state = State(position=position, velocity=velocity)
@@ -36,7 +36,7 @@ def test_accel_are_equal_drag() -> None:
         start_time=start_time,
         duration=duration,
         dt=scenario.dt,
-        coefficent_of_drag=coefficent_of_drag,
+        coefficient_of_drag=coefficient_of_drag,
         mass=mass,
         area=area,
     )
@@ -68,7 +68,7 @@ def test_end_states_are_equal_drag() -> None:
     velocity = [5.457807, 1.368701, -5.614317]
     initial_state = State(position=position, velocity=velocity)
 
-    coefficent_of_drag = 2.0
+    coefficient_of_drag = 2.0
     mass = 1350
     area = 3.6 * 1e-6
 
@@ -77,7 +77,7 @@ def test_end_states_are_equal_drag() -> None:
         start_time=start_time,
         duration=duration,
         dt=scenario.dt,
-        coefficent_of_drag=coefficent_of_drag,
+        coefficient_of_drag=coefficient_of_drag,
         mass=mass,
         area=area,
     )

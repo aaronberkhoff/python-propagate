@@ -1,5 +1,5 @@
 """
-generate_data.py
+forge_main.py
 
 Description:
     Client that generates satellite data
@@ -7,8 +7,10 @@ Description:
 """
 
 import click
+import matplotlib.pyplot as plt
 
 from python_propagate.constructors.yaml_constructors import load_yaml
+from python_propagate.utilities.load_spice import load_spice
 
 
 @click.command()
@@ -18,9 +20,15 @@ from python_propagate.constructors.yaml_constructors import load_yaml
     help="YAML infile for the scenario to generate data",
     required=True,
 )
+@click.option(
+    "--parallel",
+    type=int,
+    help="YAML infile for the scenario to generate data",
+    required=False,
+)
 # @click.option('--plot_ground', type=bool, help= "Plot the ground track of the scenario", default = False, required = False)
 # @click.option('--plot_orbit', type=bool, help= "Plot the isometric view of the scenario", default = False, required = False)
-def main(infile: str):
+def main(infile: str, parallel = 0):
     """
     Description:
         main client funtion
@@ -31,12 +39,12 @@ def main(infile: str):
 
     config = load_yaml(yaml_file=infile)
 
-    data_generator = config["scenario"]
-
-    # TODO: I do not like that I have to set the scenarion first then the dynamics in that order
+    forge = config["forge"]
 
 
-    data_generator.run()
+    load_spice()
+    forge.run(parallel=parallel)
+    plt.show()
 
     pass
 

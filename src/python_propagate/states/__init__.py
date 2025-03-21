@@ -11,6 +11,7 @@ Author: Aaron Berkhoff
 Date: 2025-01-30
 
 """
+
 from collections import namedtuple
 
 import numpy as np
@@ -19,16 +20,15 @@ import spiceypy as spice
 from python_propagate.utilities.transforms import cart2classical, classical2cart
 
 
-
 # TODO: Remove hard coded TARGET
 TARGET = "EARTH"
 ECI = "J2000"
 ECEF = "ITRF93"
 MU = 398600.4415
 
-OrbitalElements = namedtuple(
-    "OrbitalElements", ["sma", "ecc", "inc", "arg", "raan", "nu"]
-)
+# OrbitalElements = namedtuple(
+#     "OrbitalElements", ["sma", "ecc", "inc", "arg", "raan", "nu"]
+# )
 
 
 class State:
@@ -80,17 +80,7 @@ class State:
         Returns the time derivative of the state vector.
     """
 
-    def __init__(
-        self,
-        position=None,
-        velocity=None,
-        acceleration=None,
-        stm=None,
-        stm_dot=None,
-        time=None,
-        dimension=6,
-        frame="inertial",
-    ):
+    def __init__(self, frame = "inertial",**kwargs):
         """
         Constructs all the necessary attributes for the State object.
 
@@ -115,15 +105,192 @@ class State:
         orbital_elements : tuple, optional
             The orbital elements of the agent (default is None).
         """
-        self.position = position  # Assume kilometers by default
-        self.velocity = velocity  # Assume kilometers per second
-        self.acceleration = acceleration
+        self.stm = None
         self.frame = frame
-        self.dimension = dimension
-        self.stm = stm
-        self.time = time
-        self.stm_dot = stm_dot
 
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def __add__(self, other):
+        if not isinstance(other, State):
+            return NotImplemented
+
+        new_state = type(self)(**vars(self)) # Copy attributes to new instance
+
+
+        for key in vars(self).keys() | vars(other).keys(): 
+             # Union of keys from both
+            self_val = getattr(self, key, None)
+            other_val = getattr(other, key, None)
+
+            if isinstance(self_val,str):
+                continue
+            else:
+                if self_val is None and other_val is None:
+                    setattr(new_state, key, None)  # Keep None if both are None
+                elif self_val is None:
+                    setattr(new_state, key, other_val)  # Take other if self is None
+                elif other_val is None:
+                    setattr(new_state, key, self_val)  # Take self if other is None
+                else:
+                    setattr(new_state, key, self_val + other_val)  # Normal addition
+
+        return new_state
+    
+    def __sub__(self, other):
+        if not isinstance(other, State):
+            return NotImplemented
+
+        new_state = type(self)(**vars(self)) # Copy attributes to new instance
+
+        for key in vars(self).keys() | vars(other).keys(): 
+             # Union of keys from both
+            self_val = getattr(self, key, None)
+            other_val = getattr(other, key, None)
+
+            if isinstance(self_val,str):
+                continue
+            else:
+                if self_val is None and other_val is None:
+                    setattr(new_state, key, None)  # Keep None if both are None
+                elif self_val is None:
+                    setattr(new_state, key, other_val)  # Take other if self is None
+                elif other_val is None:
+                    setattr(new_state, key, self_val)  # Take self if other is None
+                else:
+                    setattr(new_state, key, self_val - other_val)  # Normal addition
+
+        return new_state
+    
+    def __mul__(self, other):
+
+        new_state = type(self)(**vars(self))  # Copy attributes to new instance
+
+        if isinstance(other,State):
+
+            for key in vars(self).keys() | vars(other).keys(): 
+                # Union of keys from both
+                self_val = getattr(self, key, None)
+                other_val = getattr(other, key, None)
+
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other_val is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other_val)  # Take other if self is None
+                    elif other_val is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val * other_val)  # Normal addition
+
+        elif isinstance(other,int) or isinstance(other,float):
+
+            for key in vars(self).keys():
+                self_val = getattr(self, key, None)
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other)  # Take other if self is None
+                    elif other is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val * other)  # Normal addition
+
+        else: 
+            return NotImplemented
+
+
+
+        return new_state
+    
+    __rmul__ = __mul__
+
+
+    def __truediv__(self, other):
+
+        new_state = type(self)(**vars(self))  # Copy attributes to new instance
+
+        if isinstance(other,State):
+
+            for key in vars(self).keys() | vars(other).keys(): 
+                # Union of keys from both
+                self_val = getattr(self, key, None)
+                other_val = getattr(other, key, None)
+
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other_val is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other_val)  # Take other if self is None
+                    elif other_val is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    elif other_val == 0.0:
+                        print(f'Division by zero for attribute <{key}>. Defaulting to original value')
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val / other_val)  # Normal addition
+
+        elif isinstance(other,int) or isinstance(other,float):
+
+            for key in vars(self).keys():
+                self_val = getattr(self, key, None)
+                if isinstance(self_val,str):
+                    continue
+                else:
+                    if self_val is None and other is None:
+                        setattr(new_state, key, None)  # Keep None if both are None
+                    elif self_val is None:
+                        setattr(new_state, key, other)  # Take other if self is None
+                    elif other is None:
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    elif other == 0.0:
+                        print(f'Division by zero for attribute <{key}>. Defaulting to original value')
+                        setattr(new_state, key, self_val)  # Take self if other is None
+                    else:
+                        setattr(new_state, key, self_val / other)  # Normal addition
+
+        else: 
+            return NotImplemented
+
+
+
+        return new_state
+
+
+
+    def __iadd__(self, other):
+        result = self + other  # Use __add__ logic
+        for key, value in vars(result).items():
+            setattr(self, key, value)
+        return self
+
+    def __matmul__(self, other):
+        if not isinstance(other, State):
+            return NotImplemented  # Ensures correct behavior with unsupported types
+
+        # Check if both states have valid accelerations
+        # if self.acceleration is None or other.acceleration is None:
+        #     raise ValueError("Both states must have non-None acceleration attributes.")
+
+        # Update the current object's acceleration by adding the other state's acceleration
+        if hasattr(other, "acceleration"):
+            self.acceleration += other.acceleration  # In-place update
+
+        if hasattr(other, "velocity"):
+            self.velocity += other.velocity  # In-place update
+
+        if hasattr(other, "stm_dot"):
+            self.stm_dot += other.stm_dot
+
+        # Return the updated object itself
+        return self
 
     def __repr__(self):
         """
@@ -134,11 +301,7 @@ class State:
         str
             A string representation of the State object.
         """
-        return (
-            f"State(position={self.position}, velocity={self.velocity}, acceleration={self.acceleration}, "
-            f"stm={self.stm}, stm_dot={self.stm_dot}, time={self.time}, dimension={self.dimension}, "
-            f"frame={self.frame}, orbital_elements={getattr(self, 'orbital_elements', None)})"
-        )
+        return f"State({vars(self)})"
 
     @property
     def position_eci(self):

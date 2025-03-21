@@ -28,7 +28,7 @@ def test_stm_acceleration():
 
     initial_state = State(position=position, velocity=velocity, stm=np.eye(6))
 
-    coefficent_of_drag = 2.0
+    coefficient_of_drag = 2.0
     mass = 1350
     area = 3.6
 
@@ -37,7 +37,7 @@ def test_stm_acceleration():
         start_time=start_time,
         duration=duration,
         dt=scenario.dt,
-        coefficent_of_drag=coefficent_of_drag,
+        coefficient_of_drag=coefficient_of_drag,
         mass=mass,
         area=area,
     )
@@ -78,7 +78,7 @@ def test_stm_final():
         stm=np.eye(6),
     )
 
-    coefficent_of_drag = 2.0
+    coefficient_of_drag = 2.0
     mass = 1350
     area = 3.6
 
@@ -87,7 +87,7 @@ def test_stm_final():
         start_time=start_time,
         duration=duration,
         dt=scenario.dt,
-        coefficent_of_drag=coefficent_of_drag,
+        coefficient_of_drag=coefficient_of_drag,
         mass=mass,
         area=area,
     )
@@ -97,7 +97,7 @@ def test_stm_final():
         start_time=start_time,
         duration=duration,
         dt=scenario.dt,
-        coefficent_of_drag=coefficent_of_drag,
+        coefficient_of_drag=coefficient_of_drag,
         mass=mass,
         area=area,
     )

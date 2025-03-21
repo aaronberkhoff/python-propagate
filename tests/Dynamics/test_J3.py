@@ -7,7 +7,7 @@ from scipy.io import loadmat
 from python_propagate.scenario import Scenario
 from python_propagate.environment.planets import Earth
 from python_propagate.agents.spacecraft import Spacecraft
-from python_propagate.agents.state import State
+from python_propagate.states import State
 from python_propagate.dynamics.j3 import J3
 
 
