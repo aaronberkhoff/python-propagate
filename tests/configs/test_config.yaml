@@ -45,9 +45,9 @@ agents:
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
-    dynamics: ['kepler','J2','J3']
+    dynamics: ['kepler']
     scenario: *scenario
-    manuevers: [*manuever1]
+    # manuevers: [*manuever1]
 
 
 

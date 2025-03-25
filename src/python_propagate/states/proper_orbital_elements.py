@@ -30,10 +30,10 @@ class ProperElements():
 
         sma_data =  np.array([oe.sma for oe in orbital_element_data])
         ecc_data =  np.array([oe.ecc for oe in orbital_element_data])
-        inc_data =  np.array([oe.inc for oe in orbital_element_data]) % 180
-        arg_data =  np.array([oe.arg for oe in orbital_element_data]) % 360
-        raan_data = np.array([oe.raan for oe in orbital_element_data]) % 360
-        nu_data =   np.array([oe.nu for oe in orbital_element_data]) % 360
+        inc_data =  np.array([oe.inc for oe in orbital_element_data])
+        arg_data =  np.array([oe.arg for oe in orbital_element_data]) 
+        raan_data = np.array([oe.raan for oe in orbital_element_data]) 
+        nu_data =   np.array([oe.nu for oe in orbital_element_data]) 
 
         orbital_period = (2*np.pi * np.sqrt(sma_data[0]**3/ orbital_element_data[0].mu))
         # orbital_period = dt.total_seconds() * len(orbital_element_data)

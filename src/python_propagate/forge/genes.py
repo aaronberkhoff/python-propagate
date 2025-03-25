@@ -44,7 +44,7 @@ def set_subattribute(agent, public_attrs, attribute, value, name_index = None):
             continue
 
     if not set_bool:
-        raise AttributeError(
+        print(
             f'<{attribute}> is not a settable attribute of {agent.name}'
         )
 
@@ -137,7 +137,7 @@ def combine(genes: Iterable):
     chromosome_lists = [gene.chromosomes for gene in genes]
     public_attrs = [attr for attr in dir(genes[0].agent_base) if not attr.startswith("_")]
 
-    test = [chrom.manuevers[0].direction_ric for chrom in genes[0].chromosomes]
+    # test = [chrom.manuevers[0].direction_ric for chrom in genes[0].chromosomes]
     # Iterate over every combination of chromosomes
     for chromosome_combination in itertools.product(*chromosome_lists):
         base_agent = deepcopy(chromosome_combination[0])  # Start with the first chromosome

@@ -33,11 +33,20 @@ class J2(Dynamic):
         r2 = rx**2 + ry**2 + rz**2  # Square of the radial distance
         r = np.sqrt(r2)  # Radial distance
         r5 = r**5
-        R2 = self.agent.scenario.central_body.radius**2  # Earth's radius squared
+        try:
+            R2 = self.agent.scenario.central_body.radius**2  # Earth's radius squared
 
-        # Central body's parameters
-        J2 = self.agent.scenario.central_body.j2  # J2 coefficient
-        mu = self.agent.scenario.central_body.mu  # Gravitational parameter
+            # Central body's parameters
+            J2 = self.agent.scenario.central_body.j2  # J2 coefficient
+            mu = self.agent.scenario.central_body.mu  # Gravitational parameter
+
+        except AttributeError:
+
+            R2 = self.scenario.central_body.radius**2  # Earth's radius squared
+
+            # Central body's parameters
+            J2 = self.scenario.central_body.j2  # J2 coefficient
+            mu = self.scenario.central_body.mu  # Gravitational parameter
 
         alpha = -3 * J2 * mu * R2
         beta = 1 - 5 * rz**2 / r2

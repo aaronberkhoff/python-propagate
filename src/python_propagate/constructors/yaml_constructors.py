@@ -17,7 +17,7 @@ from python_propagate.scenario.data_generator import Scenario
 from python_propagate.agents.spacecraft import Spacecraft
 from python_propagate.states import State, OrbitalElements
 
-from python_propagate.dynamics.manuevers import ImpulseManuever, ThrustManuever
+from python_propagate.dynamics.manuevers import ImpulseManuever, ThrustManuever, StationKeepLoss
 from python_propagate.forge import Forge
 from python_propagate.forge.astrometric_forge import AstroForge
 from python_propagate.forge.genes import Genes, Gene
@@ -50,6 +50,7 @@ def load_yaml(yaml_file):
     yaml.add_constructor("!Earth", ClassConstructor(Earth).constructor)
     yaml.add_constructor("!ImpulseManuever", ClassConstructor(ImpulseManuever).constructor)
     yaml.add_constructor("!ThrustManuever", ClassConstructor(ThrustManuever).constructor)
+    yaml.add_constructor("!StationKeepLoss", ClassConstructor(StationKeepLoss).constructor)
     yaml.add_constructor("!AstroForge", ClassConstructor(AstroForge).constructor)
     yaml.add_constructor("!Gene", ClassConstructor(Gene).constructor)
     yaml.add_constructor("!Genes", ClassConstructor(Genes).constructor)

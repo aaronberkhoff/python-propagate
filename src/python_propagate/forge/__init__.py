@@ -6,7 +6,7 @@ from python_propagate.plots.plot_orbital_elements import plot_orbital_elements
 
 class Forge:
 
-    def __init__(self, scenario, genes,output_directory, datatypes, output_types, plots = None, name = 'Forge'):
+    def __init__(self, scenario, genes,output_directory, datatypes, output_types, add_noise = False, plots = None, name = 'Forge'):
 
         self.scenario = scenario
         self.database = None
@@ -18,6 +18,8 @@ class Forge:
 
         self.output_directory = Path(output_directory)
         self.output_directory.mkdir(parents=True, exist_ok=True)
+
+        self.add_noise = add_noise
 
         if isinstance(output_types,str):
             self.output_types [output_types]

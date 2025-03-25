@@ -2,21 +2,7 @@ central_body: &earth !Earth
   flattening_bool: False
 
 
-manuevers: 
-  - &manuever1 !ThrustManuever
-    magnitude: -0.001 #km/s
-    direction_ric: [0.0,1.0,0.0]
-    execution_time: 
-      days: 2
-    execution_duration:
-      minutes: 1
-  - &manuever2 !ThrustManuever
-      magnitude: 0.001 #km/s
-      direction_ric: [0.0,1.0,0.0]
-      execution_time: 
-        days: 7
-      execution_duration:
-        minutes: 1
+
 
 stations: 
     - &arecibo !Station
@@ -34,6 +20,29 @@ scenario: &scenario !Scenario
     seconds: 30
   name: 'Base'
   stations: [*arecibo]
+
+manuevers: 
+  - &manuever1 !ThrustManuever
+    magnitude: -0.001 #km/s
+    direction_ric: [0.0,1.0,0.0]
+    execution_time: 
+      days: 5
+    execution_duration:
+      minutes: 1
+  - &manuever2 !ThrustManuever
+      magnitude: 0.001 #km/s
+      direction_ric: [0.0,1.0,0.0]
+      execution_time: 
+        days: 7
+      execution_duration:
+        minutes: 1
+  - &manuever3 !StationKeepLoss
+      scenario: *scenario
+      dynamics: ['J2','J3']
+      execution_time: 
+        days: 5
+      execution_duration:
+        days: 2
 
 
 agents: 
@@ -53,13 +62,13 @@ agents:
     dt: 
       seconds: 30
     duration: 
-      days: 3
+      days: 10
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
     dynamics: ['kepler']
     scenario: *scenario
-    manuevers: [*manuever1]
+    manuevers: [*manuever3]
 
 #################################Start Genes#############################
 gene_state: &gene_state !Gene
@@ -70,7 +79,7 @@ gene_state: &gene_state !Gene
               inc: 0.0001 
               arg: 0.0
               raan: 0.0
-              nu: 110.0
+              nu: 180.0
 
   state_max: !OrbitalElements
               sma: 42164.0
@@ -78,7 +87,7 @@ gene_state: &gene_state !Gene
               inc: 0.0001 
               arg: 0.0
               raan: 0.0
-              nu: 180.0
+              nu: 220.0
   samples: 5
   agent_base: *sat1 
 
@@ -112,13 +121,14 @@ gene_direction_ric: &gene_direction_ric !Gene
     
 
 genes: !Genes &genes
-  # genes: [*gene_state,*gene_mass]
-  genes: [*gene_magnitude,*gene_direction_ric]
+  genes: [*gene_state]
+  # genes: [*gene_magnitude,*gene_direction_ric]
   # genes: [*gene_magnitude]
 
 forge:
   !AstroForge
-  name: "AstroForge"
+  name: "AstroForge_station5days-2days"
+  # name: "AstroForge_StationLoss5days-2days"
   scenario: *scenario
   genes: *genes
   data_types:
@@ -134,9 +144,31 @@ forge:
      - 'VX_INERTIAL_KMS' 
      - 'VY_INERTIAL_KMS' 
      - 'VZ_INERTIAL_KMS'
-  plots: ['orbital_elements','orbit']
+
+     - "SMA_KM" 
+     - "ECC_KM" 
+     - "INC_DEG" 
+     - "ARG_DEG" 
+     - "RAAN_DEG"
+     - "NU_DEG" 
+
+     - "MEAN_SMA_KM" 
+     - "MEAN_ECC_KM" 
+     - "MEAN_INC_DEG" 
+     - "MEAN_ARG_DEG" 
+     - "MEAN_RAAN_DEG"
+     - "MEAN_NU_DEG" 
+
+     - "PROP_SMA_KM"
+     - "PROP_ECC_KM"
+     - "PROP_INC_DEG"
+     - "PROP_ARG_DEG"
+     - "PROP_RAAN_DEG" 
+     - "PROP_NU_DEG" 
+  add_noise: False
+  plots: ['orbital_elements','orbit','ground_track']
   output_directory: 'examples/results/AstroForgeExample'
-  output_types: ['csv', 'h5']
+  output_types: ['h5']
 
 
 
