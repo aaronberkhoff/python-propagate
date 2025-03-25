@@ -444,7 +444,8 @@ class State:
             The Keplerian elements (sma, ecc, inc, raan, arg, nu).
         """
         sma, ecc, inc, raan, arg, nu = cart2classical(self.compile(), mu)
-        return sma, ecc, inc, raan, arg, nu
+        
+        return OrbitalElements(sma=sma, ecc=ecc, inc=inc, raan=raan, arg=arg, nu=nu, mu=mu)
 
     def to_cartesian(self, mu):
         """
@@ -515,3 +516,19 @@ class State:
 
         if state.stm_dot is not None:
             self.stm_dot = state.stm_dot
+
+class OrbitalElements(State):
+
+    def __init__(self, frame="inertial", **kwargs):
+        super().__init__(frame, **kwargs)
+
+    def __repr__(self):
+        """
+        Returns a string representation of the State object.
+
+        Returns
+        -------
+        str
+            A string representation of the State object.
+        """
+        return f"OrbitalElements({vars(self)})"

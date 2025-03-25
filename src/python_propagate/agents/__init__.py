@@ -21,8 +21,8 @@ from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
 
-from python_propagate.states import State
-from python_propagate.states.orbital_elements import OrbitalElements
+from python_propagate.states import State, OrbitalElements
+
 
 from python_propagate.utilities.transforms import classical2cart
 from python_propagate.utilities.string_format import DATESTR

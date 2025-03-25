@@ -20,11 +20,21 @@ class J3(Dynamic):
         r2 = rx**2 + ry**2 + rz**2  # Square of the radial distance
         r = np.sqrt(r2)  # Radial distance
         r7 = r**7  # r^7
-        R3 = self.agent.scenario.central_body.radius**3  # Earth's radius cubed
 
-        # Central body's parameters
-        J3 = self.agent.scenario.central_body.j3  # J3 coefficient
-        mu = self.agent.scenario.central_body.mu  # Gravitational parameter
+        try:
+            R3 = self.agent.scenario.central_body.radius**3  # Earth's radius cubed
+
+            # Central body's parameters
+            J3 = self.agent.scenario.central_body.j3  # J3 coefficient
+            mu = self.agent.scenario.central_body.mu  # Gravitational parameter
+
+        except AttributeError:
+
+            R3 = self.scenario.central_body.radius**3  # Earth's radius cubed
+
+            # Central body's parameters
+            J3 = self.scenario.central_body.j3  # J3 coefficient
+            mu = self.scenario.central_body.mu  # Gravitational parameter
 
         alpha = -5 * J3 * mu * R3 / (2 * r7)
         beta = 3 * rz - 7 * rz**3 / r2
