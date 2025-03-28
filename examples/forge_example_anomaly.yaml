@@ -31,7 +31,7 @@ manuevers:
       magnitude: 0.001 #km/s
       direction_ric: [0.0,1.0,0.0]
       execution_time: 
-        days: 7
+        days: 5
       execution_duration:
         minutes: 1
   - &manuever3 !StationKeepLoss
@@ -46,9 +46,6 @@ agents:
   - &sat1 !Spacecraft
     name: "GEO_Sat1_nominal"
     start_time: "2025-01-15T12:30:00"
-    # state: !State
-    #           position: [-2012.990, -381.065, 6315.376]
-    #           velocity: [5.439783, -5.965319, 1.33398]
     state: !OrbitalElements
               sma: 42164
               ecc: 0.0
@@ -65,7 +62,7 @@ agents:
     area: 2.0 #m^2
     dynamics: ['kepler']
     scenario: *scenario
-    # manuevers: [*manuever3]
+    manuevers: [*manuever1]
 
 #################################Start Genes#############################
 gene_state: &gene_state !Gene
@@ -84,48 +81,17 @@ gene_state: &gene_state !Gene
               inc: 0.0001 
               arg: 0.0
               raan: 0.0
-              nu: 220.0
-  samples: 5
-  agent_base: *sat1 
-
-gene_mass: &gene_mass !Gene
-  attribute: 'mass'
-  mass_min: 50
-  mass_max: 150
-  samples: 5
-  agent_base: *sat1 
-
-gene_cd: &gene_cd !Gene
-  attribute: 'coefficient_of_drag'
-  coefficient_of_drag_min: 1.0
-  coefficient_of_drag_max: 3.0
-  samples: 11
-  agent_base: *sat1 
-
-gene_magnitude: &gene_magnitude !Gene
-  attribute: 'magnitude'
-  magnitude_min: -0.001
-  magnitude_max: 0.001
-  samples: 5
-  agent_base: *sat1 
-
-gene_direction_ric: &gene_direction_ric !Gene
-  attribute: 'direction_ric'
-  direction_ric_min: [0.0,1.0,-1.0]
-  direction_ric_max: [0.0,1.0, 1.0]
-  samples: 5
-  agent_base: *sat1 
-    
+              nu: 313.0
+  samples: 1
+  agent_base: *sat1     
 
 genes: !Genes &genes
   genes: [*gene_state]
-  # genes: [*gene_magnitude,*gene_direction_ric]
-  # genes: [*gene_magnitude]
+
 
 forge:
   !AstroForge
-  name: "AstroForge_station5days-2days"
-  # name: "AstroForge_StationLoss5days-2days"
+  name: "geo_sat_anomaly_data_scenario_multiple_objects_widely_spaced"
   scenario: *scenario
   genes: *genes
   data_types:
@@ -135,6 +101,7 @@ forge:
      - 'RANGE_RATE_KMS' 
      - 'AZ_DEG' 
      - 'EL_DEG'
+
      - 'X_INERTIAL_KM' 
      - 'Y_INERTIAL_KM' 
      - 'Z_INERTIAL_KM'
@@ -145,31 +112,10 @@ forge:
      - 'LAT_DEG'
      - 'LON_DEG'
      - 'ALT_KM'
-
-     - "SMA_KM" 
-     - "ECC_KM" 
-     - "INC_DEG" 
-     - "ARG_DEG" 
-     - "RAAN_DEG"
-     - "NU_DEG" 
-
-     - "MEAN_SMA_KM" 
-     - "MEAN_ECC_KM" 
-     - "MEAN_INC_DEG" 
-     - "MEAN_ARG_DEG" 
-     - "MEAN_RAAN_DEG"
-     - "MEAN_NU_DEG" 
-
-     - "PROP_SMA_KM"
-     - "PROP_ECC_KM"
-     - "PROP_INC_DEG"
-     - "PROP_ARG_DEG"
-     - "PROP_RAAN_DEG" 
-     - "PROP_NU_DEG" 
   add_noise: False
   plots: ['orbital_elements','orbit','ground_track']
-  output_directory: 'examples/results/AstroForgeExample'
-  output_types: ['h5']
+  output_directory: 'examples/results'
+  output_types: ['h5','csv']
 
 
 

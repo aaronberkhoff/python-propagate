@@ -100,6 +100,10 @@ def process_agent(agent, scenario, datatypes, add_noise = False):
                         "VY_INERTIAL_KMS": state.velocity[1],
                         "VZ_INERTIAL_KMS": state.velocity[2],
 
+                        "LAT_DEG": state.latlong[0] * RAD2DEG,
+                        "LON_DEG": state.latlong[1] * RAD2DEG,
+                        "ALT_KM": np.linalg.norm(state.position) - agent.scenario.central_body.radius,
+
                         "SMA_KM"   : oe.sma + sma_noise,
                         "ECC_KM"   : oe.ecc + ecc_noise,
                         "INC_DEG"  : (oe.inc * RAD2DEG + inc_noise) % 180,
