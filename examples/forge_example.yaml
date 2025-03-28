@@ -2,8 +2,6 @@ central_body: &earth !Earth
   flattening_bool: False
 
 
-
-
 stations: 
     - &arecibo !Station
       name: 'Arecibo'
@@ -43,7 +41,6 @@ manuevers:
         days: 5
       execution_duration:
         days: 2
-
 
 agents: 
   - &sat1 !Spacecraft
