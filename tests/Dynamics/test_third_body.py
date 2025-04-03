@@ -204,7 +204,7 @@ def plot_orbit(agents, output_directory, name, central_body):
 earth = Earth()
 
 start_time = datetime.strptime("2025-01-15T12:30:00", "%Y-%m-%dT%H:%M:%S")
-duration = timedelta(seconds=7*86400)
+duration = timedelta(seconds=86400)
 dt = timedelta(seconds=30)
 
 celestial_bodies = [Sun(), Moon()]
@@ -242,7 +242,7 @@ jah_sat.add_dynamics(dynamics=dynamics)
 
 jah_sat.propagate()
 output_directory = "tests/results"
-name = "third_body_test_3"
+name = "third_body_test"
 plot_orbit([jah_sat], Path(output_directory), name, earth)
 plot_orbital_elements([jah_sat], scenario, Path(output_directory), name = name,legend = True)
 plt.show()
