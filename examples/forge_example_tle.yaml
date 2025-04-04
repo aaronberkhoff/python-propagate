@@ -4,12 +4,8 @@ central_body: &earth !Earth
 celestial_bodies:
  - &moon !Moon
    name: 'Moon'
-   
-  
  - &sun  !Sun
    name: 'Sun'
-  
-
 
 stations: 
     - &arecibo !Station
