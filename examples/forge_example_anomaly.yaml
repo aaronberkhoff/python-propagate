@@ -11,7 +11,7 @@ stations:
 
 scenario: &scenario !Scenario
   central_body: *earth
-  start_time: "2025-01-15T12:30:00" 
+  start_time: "2025-01-15T12:30:00.0" 
   duration: 
     days: 10
   dt: 
@@ -45,7 +45,7 @@ manuevers:
 agents: 
   - &sat1 !Spacecraft
     name: "GEO_Sat1_nominal"
-    start_time: "2025-01-15T12:30:00"
+    start_time: "2025-01-15T12:30:00.0"
     state: !OrbitalElements
               sma: 42164
               ecc: 0.0
