@@ -26,8 +26,6 @@ from python_propagate.utilities.load_spice import load_spice
     help="YAML infile for the scenario to generate data",
     required=False,
 )
-# @click.option('--plot_ground', type=bool, help= "Plot the ground track of the scenario", default = False, required = False)
-# @click.option('--plot_orbit', type=bool, help= "Plot the isometric view of the scenario", default = False, required = False)
 def main(infile: str, parallel = 0):
     """
     Description:
@@ -47,9 +45,6 @@ def main(infile: str, parallel = 0):
     plt.show()
 
     pass
-
-    # TODO: handle orbital elements
-
 
 if __name__ == "__main__":
 

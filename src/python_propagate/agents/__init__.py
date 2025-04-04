@@ -278,10 +278,17 @@ class Agent:
         self.dynamics.extend(self.manuevers)
         if duration is None:
             time = [0, self.duration.total_seconds()]
-            t_eval = np.arange(time[0], time[1] + self.dt.seconds, self.dt.seconds)
+            t_eval = np.arange(time[0], time[1], self.dt.seconds)
+            if t_eval[-1] < self.duration.total_seconds():
+                # Ensure the last point is included in t_eval if it doesn't end exactly on the duration
+                t_eval = np.append(t_eval, self.duration.total_seconds())
         else:
             time = [0, duration]
             t_eval = None
+
+            
+
+
 
         # TODO Create own propagators instead of using scipy
 

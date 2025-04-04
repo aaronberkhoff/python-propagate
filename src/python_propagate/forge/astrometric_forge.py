@@ -1,15 +1,29 @@
 import pandas as pd
 import numpy as np
 import h5py
+from collections import namedtuple
+import sqlite3
+from datetime import datetime, timedelta
+from copy import deepcopy
 
-from python_propagate.utilities.units import RAD2DEG, ARC2DEG
+from sgp4.api import Satrec
+
+from python_propagate.utilities.units import RAD2DEG, ARC2DEG, DEG2RAD
 from python_propagate.forge import Forge
 from python_propagate.utilities.load_spice import load_spice
 from python_propagate.states.proper_orbital_elements import ProperElements
 
-def process_agent(agent, scenario, datatypes, add_noise = False):
+from python_propagate.agents import Agent
+from python_propagate.utilities.string_format import DATESTR
+from python_propagate.states import OrbitalElements, State  
+
+from python_propagate.utilities.transforms import mean2true
+
+
+def process_agent(agent, scenario, datatypes, add_noise = False, propagate=True):
         load_spice()
-        agent.propagate()  # Update agent state
+        if propagate:
+            agent.propagate()  # Update agent state
 
         elements = [state.to_keplerian(agent.scenario.central_body.mu) for state in agent.state_data]
 
@@ -214,5 +228,129 @@ class AstroForge(Forge):
         # Convert collected data into a pandas DataFrame.
         self.save_data_to_files(data_all=data_all)
         self.genes.agents = updated_agents
+
+
+class TLEForge(AstroForge):
+    """
+    TLEForge is a specialized forge for generating TLE data, inheriting from AstroForge.
+    """
+
+    def __init__(self, scenario, database, norad_ids, agent_base: Agent, output_directory, data_types, output_types, add_noise=False, plots=None, name='TLEForge'):
+
+        Genes = namedtuple('Genes', ['agents'])  # Create a namedtuple for genes, as TLEForge needs agents to be passed in.
+        self.agent_base = agent_base  # Store the agent base for TLEForge, used to extract agents from the database.
+        genes = Genes(agents=self._get_agents_from_database(database=database,norad_ids=norad_ids,scenario=scenario))  # Extract agents from the database.
+
+        super().__init__(scenario, genes, output_directory, data_types, output_types, add_noise=add_noise, plots=plots, name=name)
+
+
+    def _get_agents_from_database(self,database,norad_ids,scenario):
+        """
+        Helper function to extract agents from the database for TLEForge, if needed.
+        """
+        # Placeholder for extracting agents from a database, if applicable.
+        # This would typically involve querying a database and returning the agents.
+        conn = sqlite3.connect(database)
+        cursor = conn.cursor()
+
+        # Query to get the list of all table names in the database
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+
+        tables = cursor.fetchall()
+
+        # Execute a query to get data from the TLE table, sorted by NORAD ID
+
+        agents = []
+
+        for norad_id in norad_ids:
+            cursor.execute(f"SELECT * FROM {tables[0][0]} WHERE norad_cat_id = {norad_id}")  # Adjust 'tle_data' and 'norad_id' to your table/column names
+
+            # Fetch all the sorted rows of the query result
+            rows = cursor.fetchall()
+
+            agent = deepcopy(self.agent_base)
+            
+
+            for i, row in enumerate(rows):
+
+                if scenario.duration > (datetime.strptime(row[11], DATESTR) - datetime.strptime(rows[0][11], DATESTR)):
+
+                    sat = Satrec.twoline2rv(row[39], row[40])
+
+                    jd, fr = sat.jdsatepoch, sat.jdsatepochF
+                    _, radius, velo = sat.sgp4(jd, fr)
+
+                    state = State(position=np.array(radius),  # Position in km
+                                  velocity=np.array(velo),  # Velocity in km/s
+                                  time=datetime.strptime(row[11], DATESTR))
+                    
+                    agent.name = f"Agent_{norad_id}"  # Set a unique name for the agent based on NORAD ID
+                    agent.state = state
+                    # agent.ensure_cart_state()  # Ensure the agent has state data for propagation
+                    # agent.state.time = datetime.strptime(row[3], DATESTR)  # Set the initial time for the agent from the database row
+                    
+
+                    if i == len(rows) - 1:
+                        agent.start_time = datetime.strptime(rows[0][11], DATESTR)  
+                    else:
+                        agent.start_time = datetime.strptime(row[11], DATESTR)  
+                        duration = datetime.strptime(rows[i+1][11], DATESTR) - agent.start_time  # Assuming row[1] is the epoch time in the database, adjust as needed
+
+                        if duration.total_seconds() == 0:
+                            pass
+                        else:
+                            agent.duration = duration  # Set the duration for the agent based on the TLE data
+                            agent.propagate()  # Propagate the agent for the duration of the TLE data
+
+                        times = [state.time for state in agent.state_data]  # Get the times of the propagated states
+
+                    pass 
+                else: 
+                    break
+
+            agents.append(agent)  # Append the agent to the list of agents
+            print(f"Extracted agent for NORAD ID {norad_id}: {agent.name} with {len(agent.state_data)} states.")  # Debugging output
+            pass 
+
+        return agents
+    
+
+    def generate_data(self):
+        
+        data_all = []  # List to store data for all agents
+
+        for agent in self.genes.agents:
+            data_agent, agent = process_agent(agent,self.scenario,self.datatypes,add_noise=self.add_noise,propagate=False)
+            data_all.extend(data_agent)
+
+        self.save_data_to_files(data_all)
+        return data_all
+        
+    def generate_data_parallel(self,cores):
+
+        import concurrent.futures
+
+        # In your main method, replace the serial loop with a parallel one:
+        data_all = []
+        updated_agents = []
+
+        # Choose the appropriate executor: ProcessPoolExecutor for CPU-bound tasks,
+        # or ThreadPoolExecutor for I/O-bound tasks.
+        with concurrent.futures.ProcessPoolExecutor(max_workers=cores) as executor:
+            # Submit a task for each agent.
+            # Note: if you need to deepcopy agent_base or similar inside each task,
+            # you can do that within process_agent.
+            futures = [
+                executor.submit(process_agent, agent, self.scenario, self.datatypes,add_noise=self.add_noise,propagate=False)
+                for agent in self.genes.agents
+            ]
+            # As each future completes, extend the data_all list.
+            for future in concurrent.futures.as_completed(futures):
+                agent_data, updated_agent = future.result()
+                updated_agents.append(updated_agent)  # Store the updated agent
+                data_all.extend(agent_data)  # Store collected data
+
+        # Convert collected data into a pandas DataFrame.
+        self.save_data_to_files(data_all=data_all)
 
 

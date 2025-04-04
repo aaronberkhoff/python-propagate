@@ -172,6 +172,7 @@ Results will be stored in `examples/results/AstroForgeExample/` and may include:
 
 # Todos
 1. Photometric Forge
-2. Proper orbital elements output 
-
+2. Add TLE option to agent state
+3. Make process_agent in forge unique to each forge
+4. Gravity field model
 
