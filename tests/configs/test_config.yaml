@@ -3,7 +3,7 @@ central_body: &earth !Earth
 
 scenario: &scenario !Scenario
   central_body: *earth
-  start_time: "2025-01-15T12:30:00" 
+  start_time: "2025-01-15T12:30:00.0" 
   duration: 
     days: 10
   dt: 
@@ -30,7 +30,7 @@ manuevers:
 agents: 
   - &sat1 !Spacecraft
     name: "GEO_Sat1_nominal"
-    start_time: "2025-01-15T12:30:00"
+    start_time: "2025-01-15T12:30:00.0"
     state: !OrbitalElements
               sma: 42164
               ecc: 0.1
@@ -46,6 +46,48 @@ agents:
     mass: 150.0 #kg
     area: 2.0 #m^2
     dynamics: ['kepler']
+    scenario: *scenario
+    # manuevers: [*manuever1]
+
+  - &sat2 !Spacecraft
+    name: "LEO_complex_drag"
+    start_time: "2025-01-15T12:30:00.0"
+    state: !OrbitalElements
+              sma: 7700
+              ecc: 0.1
+              inc: 30.0 
+              arg: 1.0
+              raan: 1.0
+              nu: 180.0
+    dt: 
+      seconds: 30
+    duration: 
+      days: 3
+    coefficient_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 2.0 #m^2
+    dynamics: ['kepler','complex_drag']
+    scenario: *scenario
+    # manuevers: [*manuever1]
+
+  - &sat3 !Spacecraft
+    name: "LEO_drag"
+    start_time: "2025-01-15T12:30:00.0"
+    state: !OrbitalElements
+              sma: 7700
+              ecc: 0.1
+              inc: 30.0 
+              arg: 1.0
+              raan: 1.0
+              nu: 180.0
+    dt: 
+      seconds: 30
+    duration: 
+      days: 3
+    coefficient_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 2.0 #m^2
+    dynamics: ['kepler','drag'] # Note: 'drag' is a simplified drag model, 'complex_drag' can be used for more complex models
     scenario: *scenario
     # manuevers: [*manuever1]
 

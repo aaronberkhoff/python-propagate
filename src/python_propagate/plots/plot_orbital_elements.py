@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from python_propagate.utilities.units import RAD2DEG
+from pathlib import Path
 
 def plot_orbital_elements(agents, scenario, output_directory, name="orbital_elements",legend = True, save = True):
     """
@@ -73,6 +74,12 @@ def plot_orbital_elements(agents, scenario, output_directory, name="orbital_elem
     
     if save:
         plt.tight_layout()
+        if not isinstance(output_directory, Path):
+            output_directory = Path(output_directory)
+        if not output_directory.exists():
+            print(f"Creating output directory: {output_directory}")
+            output_directory.mkdir(parents=True, exist_ok=True)
+        # Save the figure to the designated output directory
         output_path = output_directory / f"{name}_orbital_elements.png"
         plt.savefig(output_path, dpi=150)
         plt.close(fig)
