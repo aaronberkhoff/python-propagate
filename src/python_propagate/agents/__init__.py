@@ -61,6 +61,7 @@ class Agent:
         dynamics=[],
         scenario=None,
         manuevers = [],
+        bus=None # Allow passing a bus object to the agent, default is None
     ):
         """
         Initializes the Agent with the given parameters.
@@ -118,7 +119,7 @@ class Agent:
 
         """
         
-        # TODO: Self referenceing to self is not good practice
+        # TODO: Self referencing to self is not good practice
         for dynamic in dynamics:
 
             if isinstance(dynamic, type) and issubclass(dynamic, Dynamic):
@@ -135,6 +136,9 @@ class Agent:
 
             elif dynamic == "drag":
                 self.dynamics.append(Drag(scenario=self.scenario, agent=self))
+
+            elif dynamic == "complex_drag":
+                self.dynamics.append(Drag(scenario=self.scenario, agent=self, complex_drag=True))
 
             elif dynamic == "stm":
                 self.dynamics.append(STM(scenario=self.scenario, agent=self))
