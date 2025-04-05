@@ -21,6 +21,7 @@ from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
 from python_propagate.dynamics.three_body import ThreeBody
+from python_propagate.dynamics.srp import SRP
 
 from python_propagate.states import State, OrbitalElements
 
@@ -145,6 +146,9 @@ class Agent:
             
             elif dynamic == "3body":
                 self.dynamics.append(ThreeBody(scenario=self.scenario, agent=self))
+
+            elif dynamic == "complex_srp":
+                self.dynamics.append(SRP(scenario=self.scenario, agent=self, complex_srp=True))
 
             elif isinstance(dynamic, Dynamic):
                 self.dynamics.append(dynamic)
