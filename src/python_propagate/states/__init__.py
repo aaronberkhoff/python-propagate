@@ -317,7 +317,7 @@ class State:
             position = self.position
         elif self.frame == "ECEF":
             et = spice.str2et(self.time.strftime("%Y-%m-%dT%H:%M:%S"))
-            rotation_matrix = spice.pxform("ECEF", "ECI", et)
+            rotation_matrix = spice.pxform(ECEF, ECI, et)
             position = rotation_matrix @ self.position
         else:
             raise ValueError(

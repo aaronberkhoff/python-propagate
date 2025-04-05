@@ -35,11 +35,11 @@ def calc_ellipse(mean, covariance, sigma=3, resolution=100):
 
 def calc_shadow(state_agent, state_sun, reference_body_radius):
 
-    rsat = np.linalg.norm(state_agent.position)  # Satellite position vector (in km)
-    rsun = np.linalg.norm(state_sun.position)  # Sun position vector (in km)
+    rsat = np.linalg.norm(state_agent.position_eci)  # Satellite position vector (in km)
+    rsun = np.linalg.norm(state_sun.position_eci)  # Sun position vector (in km)
 
-    rsathat = state_agent.position / rsat
-    rsunhat = state_sun.position / rsun
+    rsathat = state_agent.position_eci / rsat
+    rsunhat = state_sun.position_eci / rsun
 
     # Angular radii (in radians) for umbra and penumbra
     alpha_umb = 0.264121687

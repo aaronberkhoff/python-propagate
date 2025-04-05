@@ -75,7 +75,7 @@ class SRP(Dynamic):
 
         # Compute reflectivity model coefficients
         mus = 0.5 * cs_data         # Albedo coefficient for SRP
-        nu = (1.0 / 3.0) * cd_data    # Drag coefficient (not used in SRP but computed for completeness)
+        nu = (1.0 / 3.0) * cd_data    
         btheta = 2 * nu * cos_theta + 4 * mus * cos_theta**2
 
         # Compute the vector from the spacecraft to the sun and its magnitude
@@ -84,7 +84,7 @@ class SRP(Dynamic):
         agent_to_sun_unit = agent_to_sun / r_sun
 
         # Compute the distance in AU (note: r_sun is in meters)
-        distance_au = r_sun / AU
+        distance_au = (r_sun / AU)**2
 
         # Compute the SRP force per unit area for each exposed face.
         # Note: The formulation below follows Vallado (2013) style, where the force is applied 

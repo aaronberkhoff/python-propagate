@@ -7,6 +7,14 @@ celestial_bodies:
  - &sun  !Sun
    name: 'Sun'
 
+
+stations: 
+    - &arecibo !Station
+      name: 'Arecibo'
+      lat_long_alt: [18.344, -66.752, 0.0]
+      minimum_elevation_angle: 15.0
+      identity: 0
+
 scenario: &scenario !Scenario
   central_body: *earth
   start_time: "2025-01-15T12:30:00.0"
@@ -16,6 +24,9 @@ scenario: &scenario !Scenario
   dt: 
     seconds: 30
   name: 'Base'
+  stations: 
+    # Stations can be used for ground tracking, etc.
+    - *arecibo
 
 
 manuevers: 
@@ -53,7 +64,7 @@ agents:
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
-    dynamics: ['kepler']
+    dynamics: ['kepler',complex_srp]
     scenario: *scenario
     # manuevers: [*manuever1]
 
@@ -70,7 +81,7 @@ agents:
     dt: 
       seconds: 30
     duration: 
-      days: 3
+      days: 1
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
@@ -91,7 +102,7 @@ agents:
     dt: 
       seconds: 30
     duration: 
-      days: 3
+      days: 1
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
@@ -112,7 +123,7 @@ agents:
     dt: 
       seconds: 30
     duration: 
-      days: 3
+      days: 1
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
@@ -133,7 +144,7 @@ agents:
     dt: 
       seconds: 30
     duration: 
-      days: 3
+      days: 1
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
