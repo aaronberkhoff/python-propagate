@@ -56,7 +56,7 @@ class PhotoForge(Forge):
             agent.propagate()  # Update agent state
 
         data_agent = []
-        flxxxx = []
+        state_data = []
         orientation_data = self.get_orientation_history_from_manuever(agent,[i * agent.dt.total_seconds() for i, _ in enumerate(agent.state_data)])
         for i, (state, orientation) in enumerate(zip(agent.state_data,orientation_data)):
             
@@ -75,13 +75,13 @@ class PhotoForge(Forge):
                 cnt = 0
 
                 flux_received, apparent_magnitude, is_visible = station.calculate_light_flux(state=state,agent=agent)
-                flxxxx.append(flux_received)
 
                 state.metadata['flux_w_m2'] = flux_received # Preserve any existing metadata in the state object, if present.
                 state.metadata['apparent_magnitude'] = apparent_magnitude # Store the apparent magnitude in the state metadata for reference.
                 state.metadata['orientation'] = orientation
 
-
+                state_data.append(deepcopy(state)) #TODO: SOmething is wrong here. I should Not have to do a deep copy
+                
                 if add_noise:
 
                     az_noise = np.random.normal(0, 5 * ARC2DEG)
@@ -149,5 +149,5 @@ class PhotoForge(Forge):
 
                     data_agent.append(filtered_data_entry)
                     cnt += 1
-
+        agent.state_data = state_data
         return data_agent, agent
