@@ -41,6 +41,18 @@ manuevers:
         days: 5
       execution_duration:
         days: 2
+  - &manuever4 !FreeRotate
+      execution_time: 
+        days: 3
+      execution_duration:
+        days: 7
+
+buses:
+  - &bus1 !Bus
+    name: "GEO_Sat1_bus"
+    extents: [2.0, 2.0, 2.0] # Dimensions of the bus in meters (width, height, depth) (3 for a box)
+    orientation: 'nadir' # Only supports Nadir 
+    properties_file: "data/bus/default_properties.json" #File that defines the reflectivity and emissivity properties of the bus. This file can be found in the data directory of the package.    
 
 agents: 
   - &sat1 !Spacecraft
@@ -65,7 +77,8 @@ agents:
     area: 2.0 #m^2
     dynamics: ['kepler']
     scenario: *scenario
-    # manuevers: [*manuever3]
+    manuevers: [*manuever4]
+    bus: *bus1
 
 #################################Start Genes#############################
 gene_state: &gene_state !Gene
@@ -85,7 +98,7 @@ gene_state: &gene_state !Gene
               arg: 0.0
               raan: 0.0
               nu: 220.0
-  samples: 5
+  samples: 1
   agent_base: *sat1 
 
 gene_mass: &gene_mass !Gene

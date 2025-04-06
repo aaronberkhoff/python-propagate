@@ -42,7 +42,7 @@ def main(infile: str, parallel = 0):
 
     load_spice()
     forge.run(parallel=parallel)
-    plt.show()
+    # plt.show()
 
     pass
 

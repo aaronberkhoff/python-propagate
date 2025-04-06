@@ -38,15 +38,30 @@ class PhotoForge(Forge):
     def __init__(self, scenario, genes, output_directory, data_types, output_types, add_noise=False, plots=None, name='PhotoForge'):
         super().__init__(scenario, genes, output_directory, data_types, output_types, add_noise, plots, name)
 
+    def get_orientation_history_from_manuever(self,agent,time_data): #TODO This needs to be changed like crazy
+        orientation_data = []
+        
+        for state,time in zip(agent.state_data, time_data):
+            for man in agent.manuevers:
+
+                man(state,time)
+
+            orientation_data.append(agent.bus.orientation)
+
+        return orientation_data
+
     def process_agent(self, agent, scenario, datatypes, add_noise = False, propagate=True):
         load_spice() # This is required so that this function works in parallel mode, otherwise spice will not be loaded in the worker process.
         if propagate:
             agent.propagate()  # Update agent state
 
         data_agent = []
-        
-        for i, state in enumerate(agent.state_data):
+        flxxxx = []
+        orientation_data = self.get_orientation_history_from_manuever(agent,[i * agent.dt.total_seconds() for i, _ in enumerate(agent.state_data)])
+        for i, (state, orientation) in enumerate(zip(agent.state_data,orientation_data)):
+            
             for station in scenario.stations:
+                
                 az, el = station.calculate_azimuth_and_elevation(state=state)
                 az *= RAD2DEG
                 el *= RAD2DEG
@@ -60,9 +75,11 @@ class PhotoForge(Forge):
                 cnt = 0
 
                 flux_received, apparent_magnitude, is_visible = station.calculate_light_flux(state=state,agent=agent)
+                flxxxx.append(flux_received)
 
                 state.metadata['flux_w_m2'] = flux_received # Preserve any existing metadata in the state object, if present.
                 state.metadata['apparent_magnitude'] = apparent_magnitude # Store the apparent magnitude in the state metadata for reference.
+                state.metadata['orientation'] = orientation
 
 
                 if add_noise:

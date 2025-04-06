@@ -48,6 +48,11 @@ manuevers:
         days: 5
       execution_duration:
         days: 2
+  - &manuever4 !FreeRotate
+      execution_time: 
+        days: 3
+      execution_duration:
+        days: 7        
 
 buses:
   - &bus1 !Bus
@@ -80,7 +85,7 @@ agents:
     dynamics: ['kepler']
     scenario: *scenario
     bus: *bus1 
-    manuevers: [*manuever1]
+    manuevers: [*manuever4]
 
 
 #################################Start Genes#############################
@@ -101,7 +106,7 @@ gene_state: &gene_state !Gene
               arg: 0.0
               raan: 0.0
               nu: 220.0
-  samples: 5
+  samples: 1
   agent_base: *sat1 
 
 gene_mass: &gene_mass !Gene
@@ -171,7 +176,7 @@ forge:
 
 
   add_noise: False
-  plots: ['orbital_elements','orbit','ground_track','light_curve']
+  plots: ['orbital_elements','orbit','light_curve']
   output_directory: 'examples/results/PhotoForgeExample'
   output_types: ['h5','csv']
 

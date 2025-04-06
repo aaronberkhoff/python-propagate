@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import numpy as np
 import scipy.integrate as sci_int
 
-
 from python_propagate.scenario import Scenario
 
 from python_propagate.dynamics import Dynamic
@@ -109,9 +108,12 @@ class Agent:
         self.time_data = []
         self.scenario = scenario
         self.dynamics = []
-        self.manuevers = manuevers
+        self.manuevers =[]
         self.bus = bus  # Allow passing a bus object to the agent, default is None
         self.add_dynamics(dynamics=dynamics)
+        self.add_manuevers(manuevers)
+
+        pass
 
     def add_dynamics(self, dynamics: list):
         """Adds dynamics to the agent.
@@ -161,6 +163,15 @@ class Agent:
                 raise NotImplementedError(
                     f"Dynamic <{dynamic}> is not an option or is spelled wrong"
                 )
+            
+    def add_manuevers(self,manuevers):
+
+        if manuevers:
+            for man in manuevers:
+                man.agent = self
+                self.manuevers.append(man)
+
+
 
     def set_scenario(self, scenario: Scenario):
         """Sets the scenario for the agent.

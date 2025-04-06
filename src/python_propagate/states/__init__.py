@@ -80,7 +80,7 @@ class State:
         Returns the time derivative of the state vector.
     """
 
-    def __init__(self, frame = "inertial",**kwargs):
+    def __init__(self, frame = "inertial",metadata = {},**kwargs):
         """
         Constructs all the necessary attributes for the State object.
 
@@ -107,7 +107,7 @@ class State:
         """
         self.stm = None
         self.frame = frame
-        self.metadata = {}
+        self.metadata = metadata
 
         for key, value in kwargs.items():
             setattr(self, key, value)

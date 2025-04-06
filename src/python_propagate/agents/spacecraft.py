@@ -122,7 +122,9 @@ class Bus:
         
         self.name = name
         self.orientation = orientation
+        self._base_orientation = orientation
         self.extents = extents  # The extents of the bus in the x, y, z dimensions
+        
 
         # Load face properties from the JSON file (use cached version if available)
         if properties_file not in Bus._cached_face_properties:
@@ -146,7 +148,11 @@ class Bus:
             A string representation of the Bus object.
         """
         return f"Bus(name={self.name}, orientation={self.orientation}, extents={self.extents})"
-
+    
+    @property
+    def base_orientation(self):
+        return self._base_orientation
+    
     def visualize_shape(self):
         """
         Visualizes the shape of the spacecraft bus using trimesh.
@@ -160,11 +166,17 @@ class Bus:
         """
         Sets the orientation of the bus based on the state of the spacecraft.
         """
+        if 'orientation' in state.metadata:
+            self.orientation = state.metadata['orientation']
+            
         if self.orientation == 'nadir':
             rotation_matrix = self._nadir_transform(state)
             self.shape.apply_transform(rotation_matrix)
+        elif self.orientation == 'free':
+            pass #keep the current bus orientation (free to rotate) 
         else:
             raise NotImplementedError(f"Orientation '{self.orientation}' is not implemented for the spacecraft bus.")
+        
 
     def _nadir_transform(self, state: 'State') -> np.ndarray:
         """
