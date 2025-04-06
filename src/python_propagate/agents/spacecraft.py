@@ -116,9 +116,13 @@ class Spacecraft(Agent):
 class Bus:
     _cached_face_properties = {}
 
-    def __init__(self, agent: 'Agent', name=None, shape='box', extents=[1, 1, 1], orientation='nadir', properties_file='data/bus/default_properties.json'):
+    def __init__(self, name=None, shape='box', extents=[1, 1, 1], orientation='nadir', properties_file='data/bus/default_properties.json'):
+
+        extents = np.array(extents, dtype=float) / 1000  # Convert extents to kilometers for consistency with typical spacecraft dimensions in astrodynamics.
+        
         self.name = name
         self.orientation = orientation
+        self.extents = extents  # The extents of the bus in the x, y, z dimensions
 
         # Load face properties from the JSON file (use cached version if available)
         if properties_file not in Bus._cached_face_properties:
@@ -128,9 +132,20 @@ class Bus:
 
         if shape == 'box':
             self.shape = trimesh.creation.box(extents=extents, face_attributes=self.face_properties)
-            self.shape.face_properties = self._order_face_properties_box()
+            self.face_properties = self._order_face_properties_box()
         else:
             raise NotImplementedError(f"Shape '{shape}' is not implemented for the spacecraft bus.")
+        
+    def __repr__(self):
+        """
+        Returns a string representation of the Bus object.
+
+        Returns
+        -------
+        str
+            A string representation of the Bus object.
+        """
+        return f"Bus(name={self.name}, orientation={self.orientation}, extents={self.extents})"
 
     def visualize_shape(self):
         """

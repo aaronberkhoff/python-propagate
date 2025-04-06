@@ -27,9 +27,9 @@ def test_body_srp_accel(config) -> None:
 
     spacecraft = config['agents'][3]
 
-    side = np.sqrt(spacecraft.area)  
+    side = np.sqrt(spacecraft.area)  * 1000
 
-    bus = Bus(name="bus",agent=spacecraft,extents=[side,side,side])  # Create a bus instance for the spacecraft
+    bus = Bus(name="bus",extents=[side,side,side])  # Create a bus instance for the spacecraft
 
     spacecraft.bus = bus  # Assign the bus to the spacecraft instance
 
@@ -55,9 +55,9 @@ def test_srp_with_visual(config):
     spacecraft1 = config['agents'][3]
     spacecraft0 = config['agents'][4]
     
-    side = np.sqrt(spacecraft1.area)  
+    side = np.sqrt(spacecraft1.area)  * 1000
 
-    bus = Bus(name="bus",agent=spacecraft1,extents=[side,side,side])  # Create a bus instance for the spacecraft
+    bus = Bus(name="bus",extents=[side,side,side])  # Create a bus instance for the spacecraft
 
     spacecraft1.bus = bus  # Assign the bus to the spacecraft instance
 

@@ -68,8 +68,8 @@ class SRP(Dynamic):
         # Retrieve the face properties for the exposed faces.
         # Note: self.agent.bus.shape.face_properties is a dict indexed by triangle index.
         # We convert the values to a NumPy array and then select the exposed indices.
-        all_cs = np.array([value['Cs'] for key, value in self.agent.bus.shape.face_properties.items()])
-        all_cd = np.array([value['Cd'] for key, value in self.agent.bus.shape.face_properties.items()])
+        all_cs = np.array([value['Cs'] for key, value in self.agent.bus.face_properties.items()])
+        all_cd = np.array([value['Cd'] for key, value in self.agent.bus.face_properties.items()])
         cs_data = all_cs[exposed]
         cd_data = all_cd[exposed]
 
@@ -101,7 +101,7 @@ class SRP(Dynamic):
         acceleration = total_force_srp / self.agent.mass
 
         # apply the shadow value scaling (if shadow_value is meant to scale the force)
-        acceleration *= shadow_value
+        acceleration *= shadow_value * 1000
 
         # Return the new state with the computed acceleration
         return State(acceleration=acceleration)

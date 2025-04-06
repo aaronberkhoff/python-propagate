@@ -1,6 +1,12 @@
 central_body: &earth !Earth
   flattening_bool: False
 
+celestial_bodies:
+ - &moon !Moon
+   name: 'Moon'
+ - &sun  !Sun
+   name: 'Sun'
+
 
 stations: 
     - &arecibo !Station
@@ -11,13 +17,14 @@ stations:
 
 scenario: &scenario !Scenario
   central_body: *earth
-  start_time: "2025-01-15T12:30:00" 
+  start_time: "2025-01-15T12:30:00.0" 
   duration: 
     days: 10
   dt: 
     seconds: 30
   name: 'Base'
   stations: [*arecibo]
+  celestial_bodies: [*moon, *sun] # Include celestial bodies for photometric calculations
 
 manuevers: 
   - &manuever1 !ThrustManuever
@@ -42,10 +49,17 @@ manuevers:
       execution_duration:
         days: 2
 
+buses:
+  - &bus1 !Bus
+    name: "GEO_Sat1_bus"
+    extents: [2.0, 2.0, 2.0] # Dimensions of the bus in meters (width, height, depth) (3 for a box)
+    orientation: 'nadir' # Only supports Nadir 
+    properties_file: "data/bus/default_properties.json" #File that defines the reflectivity and emissivity properties of the bus. This file can be found in the data directory of the package.    
+
 agents: 
   - &sat1 !Spacecraft
     name: "GEO_Sat1_nominal"
-    start_time: "2025-01-15T12:30:00"
+    start_time: "2025-01-15T12:30:00.0"
     # state: !State
     #           position: [-2012.990, -381.065, 6315.376]
     #           velocity: [5.439783, -5.965319, 1.33398]
@@ -62,10 +76,12 @@ agents:
       days: 10
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
-    area: 2.0 #m^2
+    area: 4.0 #m^2
     dynamics: ['kepler']
     scenario: *scenario
-    # manuevers: [*manuever3]
+    bus: *bus1 
+    manuevers: [*manuever1]
+
 
 #################################Start Genes#############################
 gene_state: &gene_state !Gene
@@ -124,7 +140,7 @@ genes: !Genes &genes
 
 forge:
   !PhotoForge
-  name: "AstroForge_station5days-2days"
+  name: "PhotoForge"
   # name: "AstroForge_StationLoss5days-2days"
   scenario: *scenario
   genes: *genes
@@ -156,8 +172,8 @@ forge:
 
   add_noise: False
   plots: ['orbital_elements','orbit','ground_track','light_curve']
-  output_directory: 'examples/results/AstroForgeExample'
-  output_types: ['h5']
+  output_directory: 'examples/results/PhotoForgeExample'
+  output_types: ['h5','csv']
 
 
 

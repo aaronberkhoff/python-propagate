@@ -28,7 +28,7 @@ def test_station_flux(config) -> None:
     
     side = np.sqrt(spacecraft.area)  
 
-    bus = Bus(name="bus",agent=spacecraft,extents=[side,side,side])  # Create a bus instance for the spacecraft
+    bus = Bus(name="bus",extents=[side,side,side])  # Create a bus instance for the spacecraft
 
     spacecraft.bus = bus  # Assign the bus to the spacecraft instance
 
@@ -73,7 +73,7 @@ def test_flux_with_visual(config):
     
     side = np.sqrt(spacecraft1.area)  
 
-    bus = Bus(name="bus",agent=spacecraft1,extents=[side,side,side])  # Create a bus instance for the spacecraft
+    bus = Bus(name="bus" ,extents=[side,side,side])  # Create a bus instance for the spacecraft
 
     spacecraft1.bus = bus  # Assign the bus to the spacecraft instance
 

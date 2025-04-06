@@ -110,6 +110,7 @@ class Agent:
         self.scenario = scenario
         self.dynamics = []
         self.manuevers = manuevers
+        self.bus = bus  # Allow passing a bus object to the agent, default is None
         self.add_dynamics(dynamics=dynamics)
 
     def add_dynamics(self, dynamics: list):

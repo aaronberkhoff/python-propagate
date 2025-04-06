@@ -25,6 +25,13 @@ scenario: &scenario !Scenario
   name: 'Base'
   stations: [*arecibo]
 
+buses:
+  - &bus1 !Bus
+    name: "GEO_Sat1_bus"
+    extents: [2.0, 2.0, 2.0] # Dimensions of the bus in meters (width, height, depth) (3 for a box)
+    orientation: 'nadir' # Only supports Nadir 
+    properties_file: "data/bus/default_properties.json" #File that defines the reflectivity and emissivity properties of the bus. This file can be found in the data directory of the package.    
+
 agents: 
   - &sat1 !Spacecraft
     name: "GEO"
@@ -37,8 +44,9 @@ agents:
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
-    dynamics: ['kepler','J2','3body']
+    dynamics: ['kepler','J2','3body','J3','complex_srp'] # You can specify the dynamics you want to use for the TLE Forge. 'kepler' is required for TLE generation.
     scenario: *scenario
+    bus: *bus1 # Link the bus to the spacecraft, this is optional but recommended for photometric calculations.
 
 
 forge:
@@ -49,8 +57,8 @@ forge:
   norad_ids: 
     # - 41592
     - 37602
-    - 42432
-    - 49055
+    # - 42432
+    # - 49055
     # - 42740
     # - 40733
     # - 40272
@@ -74,12 +82,15 @@ forge:
      - 'LON_DEG'
      - 'ALT_KM'
 
+     - 'FLUX_W_M2' 
+     - 'FLUX_APPARENT_MAG' 
+
   
   add_noise: False
-  plots: ['orbital_elements','orbit','ground_track']
+  plots: ['orbital_elements','orbit','ground_track',light_curve] # Specify the plots you want to generate for the TLE Forge. Options include 'orbital_elements', 'orbit', 'ground_track', 'light_curve', etc.
   output_directory: 'examples/results'
   output_types: ['h5','csv']
-
+  forge: 'PhotoForge' # This is required to specify the type of forge being used, in this case TLEForge.
 
 
     

@@ -14,7 +14,7 @@ import numpy as np
 
 from python_propagate.platforms import Platform
 
-from python_propagate.utilities.constants import AU, C1, PHI 
+from python_propagate.utilities.constants import AU, PHI 
 from python_propagate.utilities.calculations import calc_shadow   
 
 from python_propagate.agents import Agent
@@ -176,8 +176,10 @@ class Station(Platform):
         
         Returns
         -------
-        float
-            The light flux received at the station in W/m^2.
+        tuple
+            - flux_received (float): The light flux in W/m^2 at the station from the target agent.
+            - apparent_magnitude (float): The apparent magnitude of the target as seen from the station.
+            - is_visible (bool): True if the target is visible from the station, False otherwise.
         """
 
         object_dict = {obj.name.lower(): obj for obj in agent.scenario.celestial_bodies}
@@ -192,11 +194,11 @@ class Station(Platform):
 
         if shadow_bool:
             # If in shadow, return zero flux
-            return 0.0, 0.0
+            return 0.0, np.nan, False
         
         #check if day time
         self.state.time = state.time # ensure the time is set for the state of the station, this is required for the sun state to be correct
-        shadow_bool, shadow_value = calc_shadow(
+        shadow_bool, _ = calc_shadow(
             state_agent=self.state,
             state_sun=state_sun,
             reference_body_radius=agent.scenario.central_body.radius
@@ -204,7 +206,7 @@ class Station(Platform):
 
         if not shadow_bool:
             # If not in shadow, return zero flux
-            return 0.0, 0.0
+            return 0.0, np.nan, False
 
 
 
@@ -229,8 +231,8 @@ class Station(Platform):
         # Retrieve the face properties for the exposed faces.
         # Note: self.agent.bus.shape.face_properties is a dict indexed by triangle index.
         # We convert the values to a NumPy array and then select the exposed indices.
-        all_cs = np.array([value['Cs'] for key, value in agent.bus.shape.face_properties.items()])
-        all_cd = np.array([value['Cd'] for key, value in agent.bus.shape.face_properties.items()])
+        all_cs = np.array([value['Cs'] for key, value in  agent.bus.face_properties.items()])
+        all_cd = np.array([value['Cd'] for key, value in  agent.bus.face_properties.items()])
         cs_data = all_cs[exposed]
         cd_data = all_cd[exposed]
 
@@ -249,7 +251,7 @@ class Station(Platform):
 
         flux_from_satellite = PHI / distance_au * (
             btheta  + (1 - mus) * (cos_theta**2)
-        ) * areas_exposed
+        ) * areas_exposed * shadow_value
 
         # === 1. Define the direction from the agent (satellite) to the ground station ===
         agent_to_station = self.state.position - state.position  # Vector from satellite to ground station
@@ -266,9 +268,12 @@ class Station(Platform):
 
         # Select only the visible faces' areas and flux
         areas_visible = areas_exposed[visible]
-        flux_visible = flux_from_satellite[visible]
 
+        if areas_visible.size == 0:
+            # If no faces are visible, return zero flux and indicate not visible
+            return 0.0, np.nan, False
         
+        flux_visible = flux_from_satellite[visible]
         # === 3. Assuming Lambertian reflection, flux emitted toward the observer scales with cos_phi ===
         # Sum the contributions from all visible faces
         # Lambertian: divide by pi to account for isotropic scattering
@@ -278,7 +283,8 @@ class Station(Platform):
 
         v_band_magnitude = 3.6e-9 # Approximate V-band magnitude for the Sun in W/m^2, used for apparent magnitude calculation
         apparent_magnitude = -2.5 * np.log10(flux_received / v_band_magnitude)
+        is_visible = True
         # === 4. Return total flux in W/m^2 at ground station ===
-        return flux_received, apparent_magnitude
+        return flux_received, apparent_magnitude, is_visible
 
         

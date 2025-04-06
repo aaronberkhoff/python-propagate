@@ -52,8 +52,8 @@ agents:
     start_time: "2025-01-15T12:30:00.0"
     state: !OrbitalElements
               sma: 42164
-              ecc: 0.1
-              inc: 30.0 
+              ecc: 0.00001
+              inc: 0.1 
               arg: 1.0
               raan: 1.0
               nu: 180.0
@@ -64,7 +64,7 @@ agents:
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
-    dynamics: ['kepler',complex_srp]
+    dynamics: ['kepler']
     scenario: *scenario
     # manuevers: [*manuever1]
 

@@ -82,7 +82,7 @@ def plot_orbital_elements(agents, scenario, output_directory, name="orbital_elem
         # Save the figure to the designated output directory
         output_path = output_directory / f"{name}_orbital_elements.png"
         plt.savefig(output_path, dpi=150)
-        plt.close(fig)
+        # plt.close(fig)
         print(f"Orbital elements plot saved as {output_path}")
 
     return fig, axes

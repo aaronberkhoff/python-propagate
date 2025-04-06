@@ -107,6 +107,7 @@ class State:
         """
         self.stm = None
         self.frame = frame
+        self.metadata = {}
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -123,7 +124,7 @@ class State:
             self_val = getattr(self, key, None)
             other_val = getattr(other, key, None)
 
-            if isinstance(self_val,str):
+            if isinstance(self_val,str) or isinstance(self_val,dict):
                 continue
             else:
                 if self_val is None and other_val is None:
@@ -148,7 +149,7 @@ class State:
             self_val = getattr(self, key, None)
             other_val = getattr(other, key, None)
 
-            if isinstance(self_val,str):
+            if isinstance(self_val,str) or isinstance(self_val,dict):
                 continue
             else:
                 if self_val is None and other_val is None:
@@ -173,7 +174,7 @@ class State:
                 self_val = getattr(self, key, None)
                 other_val = getattr(other, key, None)
 
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other_val is None:
@@ -189,7 +190,7 @@ class State:
 
             for key in vars(self).keys():
                 self_val = getattr(self, key, None)
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other is None:
@@ -222,7 +223,7 @@ class State:
                 self_val = getattr(self, key, None)
                 other_val = getattr(other, key, None)
 
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other_val is None:
@@ -241,7 +242,7 @@ class State:
 
             for key in vars(self).keys():
                 self_val = getattr(self, key, None)
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other is None:
