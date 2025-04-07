@@ -171,8 +171,11 @@ Results will be stored in `examples/results/AstroForgeExample/` and may include:
 ---
 
 # Todos
-1. Photometric Forge
 2. Add TLE option to agent state
-3. Make process_agent in forge unique to each forge
 4. Gravity field model
+5. Need to add a minimum apparent magnitude that a station can measure a satellite flux
+6. Added sensors as object
+7. Workflows and testing
+
+
 

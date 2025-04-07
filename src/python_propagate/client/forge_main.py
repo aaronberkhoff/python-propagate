@@ -23,7 +23,7 @@ from python_propagate.utilities.load_spice import load_spice
 @click.option(
     "--parallel",
     type=int,
-    help="YAML infile for the scenario to generate data",
+    help="Number of parallel processes to use for the forge run. Default is 0 (no parallelism).",
     required=False,
 )
 def main(infile: str, parallel = 0):
@@ -42,7 +42,7 @@ def main(infile: str, parallel = 0):
 
     load_spice()
     forge.run(parallel=parallel)
-    plt.show()
+    # plt.show()
 
     pass
 

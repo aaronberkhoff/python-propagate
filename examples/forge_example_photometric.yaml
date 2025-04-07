@@ -1,6 +1,12 @@
 central_body: &earth !Earth
   flattening_bool: False
 
+celestial_bodies:
+ - &moon !Moon
+   name: 'Moon'
+ - &sun  !Sun
+   name: 'Sun'
+
 
 stations: 
     - &arecibo !Station
@@ -18,6 +24,7 @@ scenario: &scenario !Scenario
     seconds: 30
   name: 'Base'
   stations: [*arecibo]
+  celestial_bodies: [*moon, *sun] # Include celestial bodies for photometric calculations
 
 manuevers: 
   - &manuever1 !ThrustManuever
@@ -45,7 +52,7 @@ manuevers:
       execution_time: 
         days: 3
       execution_duration:
-        days: 7
+        days: 7        
 
 buses:
   - &bus1 !Bus
@@ -74,11 +81,12 @@ agents:
       days: 10
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
-    area: 2.0 #m^2
+    area: 4.0 #m^2
     dynamics: ['kepler']
     scenario: *scenario
-    manuevers: [*manuever4]
-    bus: *bus1
+    bus: *bus1 
+    manuevers: [*manuever4, *manuever1]
+
 
 #################################Start Genes#############################
 gene_state: &gene_state !Gene
@@ -136,21 +144,25 @@ genes: !Genes &genes
   # genes: [*gene_magnitude]
 
 forge:
-  !AstroForge
-  name: "AstroForge_station5days-2days"
+  !PhotoForge
+  name: "PhotoForge-nominal3days-freetumble3-7days-manuever5days"
   # name: "AstroForge_StationLoss5days-2days"
   scenario: *scenario
   genes: *genes
   data_types:
      - 'RA_DEG'
      - 'DEC_DEG'
+
      - 'RANGE_KM' 
      - 'RANGE_RATE_KMS' 
+
      - 'AZ_DEG' 
      - 'EL_DEG'
+
      - 'X_INERTIAL_KM' 
      - 'Y_INERTIAL_KM' 
      - 'Z_INERTIAL_KM'
+
      - 'VX_INERTIAL_KMS' 
      - 'VY_INERTIAL_KMS' 
      - 'VZ_INERTIAL_KMS'
@@ -159,30 +171,14 @@ forge:
      - 'LON_DEG'
      - 'ALT_KM'
 
-     - "SMA_KM" 
-     - "ECC_KM" 
-     - "INC_DEG" 
-     - "ARG_DEG" 
-     - "RAAN_DEG"
-     - "NU_DEG" 
+     - 'FLUX_W_M2' 
+     - 'FLUX_APPARENT_MAG' 
 
-     - "MEAN_SMA_KM" 
-     - "MEAN_ECC_KM" 
-     - "MEAN_INC_DEG" 
-     - "MEAN_ARG_DEG" 
-     - "MEAN_RAAN_DEG"
-     - "MEAN_NU_DEG" 
 
-     - "PROP_SMA_KM"
-     - "PROP_ECC_KM"
-     - "PROP_INC_DEG"
-     - "PROP_ARG_DEG"
-     - "PROP_RAAN_DEG" 
-     - "PROP_NU_DEG" 
   add_noise: False
-  plots: ['orbital_elements','orbit','ground_track']
-  output_directory: 'examples/results/AstroForgeExample'
-  output_types: ['h5']
+  plots: ['orbital_elements','orbit','light_curve']
+  output_directory: 'examples/results/PhotoForgeExample'
+  output_types: ['h5','csv']
 
 
 

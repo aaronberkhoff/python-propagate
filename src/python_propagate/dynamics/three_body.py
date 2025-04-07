@@ -36,17 +36,17 @@ class ThreeBody(Dynamic):
         mu = celestial_body.mu
 
         # Get ephemeris time
-        current_time = state.time
-        et = spice.str2et(current_time.strftime('%Y-%m-%dT%H:%M:%S'))
+        # current_time = state.time
+        # et = spice.str2et(current_time.strftime('%Y-%m-%dT%H:%M:%S'))
 
         # Get the position and velocity of the third body relative to inertial body
-        third_body_state, _ = spice.spkezr(celestial_body.name.upper(), et, 'J2000', 'NONE', self.scenario.central_body.name.upper())
+        third_body_state = celestial_body.get_state(state.time)
 
         # Extract the position (first 3 elements of the state vector)
-        inertial_to_third_body = third_body_state[:3]  # 3rd body position in km (X, Y, Z)
+        inertial_to_third_body = third_body_state.position  # 3rd body position in km (X, Y, Z)
 
         # Agent position relative to inertial body
-        inertial_to_agent = state.position_eci # Agent position in km (X, Y, Z)
+        inertial_to_agent = state.position # Agent position in km (X, Y, Z)
 
         # Agent position relative to third body
         agent_to_third_body = inertial_to_third_body - inertial_to_agent
@@ -54,16 +54,14 @@ class ThreeBody(Dynamic):
         # Third body acceleration
         accel_third_body = mu * (agent_to_third_body/(np.linalg.norm(agent_to_third_body)**3) - inertial_to_third_body/(np.linalg.norm(inertial_to_third_body)**3))
 
-        return State(acceleration=accel_third_body, time=current_time)
+        return State(acceleration=accel_third_body, time=state.time)
 
 
-
-
-       
 
     def three_body_all(self, state: State, time: float = None):
         """
-        The function of the Keplerian dynamic.
+        Calculate the acceleration due to all celestial bodies in the scenario using the three-body problem approach.
+        This function computes the acceleration by summing the contributions from all celestial bodies in the scenario.
 
         Parameters
         ----------

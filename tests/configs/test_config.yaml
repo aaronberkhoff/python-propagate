@@ -1,14 +1,33 @@
 central_body: &earth !Earth
-  flattening_bool: False
+  flattening_bool: True
+
+celestial_bodies:
+ - &moon !Moon
+   name: 'Moon'
+ - &sun  !Sun
+   name: 'Sun'
+
+
+stations: 
+    - &arecibo !Station
+      name: 'Arecibo'
+      lat_long_alt: [18.344, -66.752, 0.0]
+      minimum_elevation_angle: 15.0
+      identity: 0
 
 scenario: &scenario !Scenario
   central_body: *earth
-  start_time: "2025-01-15T12:30:00.0" 
+  start_time: "2025-01-15T12:30:00.0"
+  celestial_bodies: [*moon, *sun]
   duration: 
-    days: 10
+    days: 3
   dt: 
     seconds: 30
   name: 'Base'
+  stations: 
+    # Stations can be used for ground tracking, etc.
+    - *arecibo
+
 
 manuevers: 
   - &manuever1 !ThrustManuever
@@ -33,8 +52,8 @@ agents:
     start_time: "2025-01-15T12:30:00.0"
     state: !OrbitalElements
               sma: 42164
-              ecc: 0.1
-              inc: 30.0 
+              ecc: 0.00001
+              inc: 0.1 
               arg: 1.0
               raan: 1.0
               nu: 180.0
@@ -62,7 +81,7 @@ agents:
     dt: 
       seconds: 30
     duration: 
-      days: 3
+      days: 1
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
@@ -83,11 +102,53 @@ agents:
     dt: 
       seconds: 30
     duration: 
-      days: 3
+      days: 1
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
     dynamics: ['kepler','drag'] # Note: 'drag' is a simplified drag model, 'complex_drag' can be used for more complex models
+    scenario: *scenario
+    # manuevers: [*manuever1]
+
+  - &sat4 !Spacecraft
+    name: "LEO_srp_complex"
+    start_time: "2025-01-15T12:30:00.0"
+    state: !OrbitalElements
+              sma: 7700
+              ecc: 0.1
+              inc: 30.0 
+              arg: 1.0
+              raan: 1.0
+              nu: 180.0
+    dt: 
+      seconds: 30
+    duration: 
+      days: 1
+    coefficient_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 2.0 #m^2
+    dynamics: ['kepler','complex_srp'] # Note: 'drag' is a simplified drag model, 'complex_drag' can be used for more complex models
+    scenario: *scenario
+    # manuevers: [*manuever1]
+
+  - &sat5 !Spacecraft
+    name: "LEO_baseline"
+    start_time: "2025-01-15T12:30:00.0"
+    state: !OrbitalElements
+              sma: 7700
+              ecc: 0.1
+              inc: 30.0 
+              arg: 1.0
+              raan: 1.0
+              nu: 180.0
+    dt: 
+      seconds: 30
+    duration: 
+      days: 1
+    coefficient_of_drag: 2.0
+    mass: 150.0 #kg
+    area: 2.0 #m^2
+    dynamics: ['kepler']
     scenario: *scenario
     # manuevers: [*manuever1]
 
