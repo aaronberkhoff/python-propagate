@@ -85,7 +85,7 @@ agents:
     dynamics: ['kepler']
     scenario: *scenario
     bus: *bus1 
-    manuevers: [*manuever4]
+    manuevers: [*manuever4, *manuever1]
 
 
 #################################Start Genes#############################
@@ -145,7 +145,7 @@ genes: !Genes &genes
 
 forge:
   !PhotoForge
-  name: "PhotoForge"
+  name: "PhotoForge-nominal3days-freetumble3-7days-manuever5days"
   # name: "AstroForge_StationLoss5days-2days"
   scenario: *scenario
   genes: *genes
