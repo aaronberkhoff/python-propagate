@@ -20,6 +20,7 @@ class DataHandler:
         self.measurement_times = []
         self.residuals = []
         self.truths = truths
+        self.metadata = {}
 
     def add_state(self, state: FilterState, time: float):
 

@@ -281,7 +281,8 @@ class Station(Platform):
             (flux_visible * cos_phi) * areas_visible
         ) / (np.pi * r_station**2)
 
-        v_band_magnitude = 3.6e-9 # Approximate V-band magnitude for the Sun in W/m^2, used for apparent magnitude calculation
+        # v_band_magnitude = 3.6e-9 # Approximate V-band magnitude for the Sun in W/m^2, used for apparent magnitude calculation
+        v_band_magnitude =  8.46175e-9 # Krantz et al. -> Bessel et al. 1998
         apparent_magnitude = -2.5 * np.log10(flux_received / v_band_magnitude)
         is_visible = True
         # === 4. Return total flux in W/m^2 at ground station ===

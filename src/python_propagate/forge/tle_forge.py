@@ -92,7 +92,7 @@ class TLEForge(Forge):
                         agent.start_time = datetime.strptime(row[11], DATESTR)  
                         duration = datetime.strptime(rows[i+1][11], DATESTR) - agent.start_time  # Assuming row[1] is the epoch time in the database, adjust as needed
 
-                        if duration.total_seconds() == 0:
+                        if duration.total_seconds() <= 0:
                             pass
                         else:
                             agent.duration = duration  # Set the duration for the agent based on the TLE data
@@ -110,12 +110,81 @@ class TLEForge(Forge):
 
         return agents
     
+    def get_agents_from_database_parallel(self, database, norad_ids, scenario, max_workers=4):
+        """
+        Parallel version of _get_agents_from_database.
+        """
+        from concurrent.futures import ProcessPoolExecutor
+
+        args_list = [(database, deepcopy(self.agent_base), norad_id, scenario) for norad_id in norad_ids]
+
+        agents = []
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            for agent in executor.map(_process_norad_id, args_list):
+                agents.append(agent)
+
+        return agents
+    
     def process_agent(self, agent, scenario, datatypes, add_noise=False, propagate=False):
         return self.parent_class.process_agent(self,agent, scenario, datatypes, add_noise, propagate)
+    
+    def get_orientation_history_from_manuever(self,agent,time_data):
+
+        try:
+            return self.parent_class.get_orientation_history_from_manuever(self,agent,time_data)
+        except AttributeError:
+
+            raise AttributeError('Wrong forge type specified')
+
     
     def generate_data_parallel(self, cores):
 
         print("WARNING: Parallel is not supported for TLE forge right now. Reverting to serial mode.")
         return super().generate_data()
 
+def _process_norad_id(args):
+    database, agent_base, norad_id, scenario = args
 
+    conn = sqlite3.connect(database)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+
+    cursor.execute(f"SELECT * FROM {tables[0][0]} WHERE norad_cat_id = {norad_id}")
+    rows = cursor.fetchall()
+
+    agent = deepcopy(agent_base)
+
+    for i, row in enumerate(rows):
+        if scenario.duration > (datetime.strptime(row[11], DATESTR) - datetime.strptime(rows[0][11], DATESTR)):
+            sat = Satrec.twoline2rv(row[39], row[40])
+
+            jd, fr = sat.jdsatepoch, sat.jdsatepochF
+            _, radius, velo = sat.sgp4(jd, fr)
+
+            state = State(position=np.array(radius),
+                          velocity=np.array(velo),
+                          time=datetime.strptime(row[11], DATESTR))
+
+            agent.name = f"Agent_{norad_id}"
+            agent.state = state
+
+            if i == len(rows) - 1:
+                agent.start_time = datetime.strptime(rows[0][11], DATESTR)
+            else:
+                agent.start_time = datetime.strptime(row[11], DATESTR)
+                duration = datetime.strptime(rows[i + 1][11], DATESTR) - agent.start_time
+
+                if duration.total_seconds() > 0:
+                    agent.duration = duration
+                    agent.propagate()
+
+            _ = [state.time for state in agent.state_data]  # times list
+
+        else:
+            break
+
+    conn.close()
+    print(f"Extracted agent for NORAD ID {norad_id}: {agent.name} with {len(agent.state_data)} states.")
+    return agent

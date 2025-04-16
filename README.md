@@ -176,6 +176,7 @@ Results will be stored in `examples/results/AstroForgeExample/` and may include:
 5. Need to add a minimum apparent magnitude that a station can measure a satellite flux
 6. Added sensors as object
 7. Workflows and testing
+8. Change the orientaion of arrays in filters (make it so sigma points etc are n, nx) Make it easier to inetrate over
 
 
 

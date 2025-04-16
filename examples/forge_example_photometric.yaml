@@ -57,7 +57,7 @@ manuevers:
 buses:
   - &bus1 !Bus
     name: "GEO_Sat1_bus"
-    extents: [2.0, 2.0, 2.0] # Dimensions of the bus in meters (width, height, depth) (3 for a box)
+    extents: [10.0, 10.0, 10.0] # Dimensions of the bus in meters (width, height, depth) (3 for a box)
     orientation: 'nadir' # Only supports Nadir 
     properties_file: "data/bus/default_properties.json" #File that defines the reflectivity and emissivity properties of the bus. This file can be found in the data directory of the package.    
 
@@ -69,7 +69,7 @@ agents:
     #           position: [-2012.990, -381.065, 6315.376]
     #           velocity: [5.439783, -5.965319, 1.33398]
     state: !OrbitalElements
-              sma: 42164
+              sma: 6928.0
               ecc: 0.0
               inc: 0.0001 
               arg: 0.0
@@ -85,16 +85,16 @@ agents:
     dynamics: ['kepler']
     scenario: *scenario
     bus: *bus1 
-    manuevers: [*manuever4, *manuever1]
+    # manuevers: [*manuever4, *manuever1]
 
 
 #################################Start Genes#############################
 gene_state: &gene_state !Gene
   attribute: "state"
   state_min: !OrbitalElements
-              sma: 42164.0
+              sma: 6928.0
               ecc: 0.0
-              inc: 0.0001 
+              inc: 10.0 
               arg: 0.0
               raan: 0.0
               nu: 180.0
@@ -145,7 +145,7 @@ genes: !Genes &genes
 
 forge:
   !PhotoForge
-  name: "PhotoForge-nominal3days-freetumble3-7days-manuever5days"
+  name: "PhotoForge-LEO"
   # name: "AstroForge_StationLoss5days-2days"
   scenario: *scenario
   genes: *genes
@@ -176,7 +176,7 @@ forge:
 
 
   add_noise: False
-  plots: ['orbital_elements','orbit','light_curve']
+  plots: ['orbital_elements','orbit','light_curve','ground_track']
   output_directory: 'examples/results/PhotoForgeExample'
   output_types: ['h5','csv']
 

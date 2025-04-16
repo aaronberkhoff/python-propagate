@@ -54,13 +54,13 @@ class GaussianMixture:
                 process_noise_mean=process_noise_mean,
                 process_noise_covariance=process_noise_covariance,
             )
-            for mean, cov in zip(means.T, covariances.transpose(2, 0, 1))
+            for mean, cov in zip(means, covariances)
         ]
 
         self.filter = filter(
             spacecraft=self.agent,
-            covariance=covariances[:, :, 0],
-            mean=means[:, 0],
+            covariance=covariances[0,:,:],
+            mean=means[0,:],
             sensor=self.sensor,
             process_noise_mean=self.process_noise_mean,
             process_noise_covariance=self.process_noise_covariance,
@@ -115,7 +115,7 @@ class GaussianMixture:
         # self.data_handler.add_state(filter_state,time = 0)
 
         # first measurement update
-        filter_state = self.measurement_update(measurement=measurements[:1,:].T,time=times[0])
+        filter_state = self.measurement_update(measurement=measurements[0,:].T,time=times[0])
         # self.data_handler.add_state(copy(filter_state), time=times[0])
 
         # store state data
@@ -149,7 +149,7 @@ class GaussianMixture:
     # Figure out how to handle sigma points
 
     def measurement_update(self, measurement, time):
-
+        measurement = measurement.reshape(-1,1)
         for i, (state) in enumerate(self.states):
 
             sigma_points = SigmaPoints(state.mean, state.covariance)

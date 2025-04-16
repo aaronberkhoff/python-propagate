@@ -23,7 +23,7 @@ def plot_light_curve(
     """
     os.makedirs(output_directory, exist_ok=True)
 
-    norm = PHI / (AU**2  / 1000)
+    norm = PHI / (AU**2  / 1000**2)
     # Create a single figure OUTSIDE the loop
     fig, (ax_flux, ax_mag) = plt.subplots(2, 1, sharex=True, figsize=(10, 8))
 
