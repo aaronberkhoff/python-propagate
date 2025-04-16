@@ -241,20 +241,19 @@ class Planet:
 
         """
         return 2 * self._flattening - self._flattening**2
-    
-    def get_state(self,time, reference_frame='J2000', reference_body_name='earth'):
 
+    def get_state(self, time, reference_frame="J2000", reference_body_name="earth"):
         """
         Returns the position of the Sun in a format suitable for SPICE queries.
 
         """
 
-        et = spice.str2et(time.strftime('%Y-%m-%dT%H:%M:%S'))
+        et = spice.str2et(time.strftime("%Y-%m-%dT%H:%M:%S"))
 
-        rv, _ = spice.spkezr(self.name.upper(), et, reference_frame, 'NONE', reference_body_name.upper())
+        rv, _ = spice.spkezr(
+            self.name.upper(), et, reference_frame, "NONE", reference_body_name.upper()
+        )
 
         state = State(position=rv[:3], velocity=rv[3:6], time=time)
 
         return state
-
-

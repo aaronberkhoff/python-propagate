@@ -4,7 +4,7 @@ import numpy as np
 class Sensor:
 
     def __init__(self, noise_mean, noise_covariance, measurement_map=None):
-        self._noise_mean = np.asarray(noise_mean).reshape(-1,1)
+        self._noise_mean = np.asarray(noise_mean).reshape(-1, 1)
         self._noise_covariance = np.array(noise_covariance) * np.eye(
             len(noise_covariance)
         )

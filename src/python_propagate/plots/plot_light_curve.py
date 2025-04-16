@@ -11,26 +11,29 @@ from python_propagate.agents import Agent
 import os
 
 
-
 def plot_light_curve(
     agents: Iterable,  # or Iterable[Agent] if Agent is defined
     output_directory: str,
     name: str = "light_curves",
-    legend: bool = True
+    legend: bool = True,
 ):
     """
     Plot light curves for multiple agents on the same figure.
     """
     os.makedirs(output_directory, exist_ok=True)
 
-    norm = PHI / (AU**2  / 1000**2)
+    norm = PHI / (AU**2 / 1000**2)
     # Create a single figure OUTSIDE the loop
     fig, (ax_flux, ax_mag) = plt.subplots(2, 1, sharex=True, figsize=(10, 8))
 
     for idx, agent in enumerate(agents):
         times = np.array([state.time for state in agent.state_data])
-        flux = np.array([state.metadata['flux_w_m2'] for state in agent.state_data]) / norm
-        mags = np.array([state.metadata['apparent_magnitude'] for state in agent.state_data])
+        flux = (
+            np.array([state.metadata["flux_w_m2"] for state in agent.state_data]) / norm
+        )
+        mags = np.array(
+            [state.metadata["apparent_magnitude"] for state in agent.state_data]
+        )
 
         # Use different colors for each agent automatically
         color = f"C{idx % 10}"  # matplotlib default cycle has 10 colors
@@ -40,7 +43,7 @@ def plot_light_curve(
         ax_mag.plot(times, mags, label=f"{agent.name}", color=color)
 
     # Beautify flux axis
-    ax_flux.set_ylabel("Flux [Percent of Solar Flux]") 
+    ax_flux.set_ylabel("Flux [Percent of Solar Flux]")
     ax_flux.grid(True, ls=":")
     if legend:
         ax_flux.legend(loc="upper right")

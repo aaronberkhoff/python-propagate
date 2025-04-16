@@ -14,10 +14,11 @@ import numpy as np
 
 from python_propagate.platforms import Platform
 
-from python_propagate.utilities.constants import AU, PHI 
-from python_propagate.utilities.calculations import calc_shadow   
+from python_propagate.utilities.constants import AU, PHI
+from python_propagate.utilities.calculations import calc_shadow
 
 from python_propagate.agents import Agent
+
 
 class Station(Platform):
     """
@@ -164,7 +165,7 @@ class Station(Platform):
         ra = np.arctan2(state.position_eci[1], state.position_eci[2])
 
         return ra, dec
-    
+
     def calculate_light_flux(self, state, agent: Agent):
         """
         Calculate the light flux received at the station from the target agent.
@@ -173,7 +174,7 @@ class Station(Platform):
         ----------
         state : State
             The state of the target agent.
-        
+
         Returns
         -------
         tuple
@@ -183,32 +184,32 @@ class Station(Platform):
         """
 
         object_dict = {obj.name.lower(): obj for obj in agent.scenario.celestial_bodies}
-        state_sun =  object_dict.get("sun").get_state(state.time)
+        state_sun = object_dict.get("sun").get_state(state.time)
 
         # Check for shadowing: if in shadow, return zero acceleration.
         shadow_bool, shadow_value = calc_shadow(
             state_agent=state,
             state_sun=state_sun,
-            reference_body_radius=agent.scenario.central_body.radius
+            reference_body_radius=agent.scenario.central_body.radius,
         )
 
         if shadow_bool:
             # If in shadow, return zero flux
             return 0.0, np.nan, False
-        
-        #check if day time
-        self.state.time = state.time # ensure the time is set for the state of the station, this is required for the sun state to be correct
+
+        # check if day time
+        self.state.time = (
+            state.time
+        )  # ensure the time is set for the state of the station, this is required for the sun state to be correct
         shadow_bool, _ = calc_shadow(
             state_agent=self.state,
             state_sun=state_sun,
-            reference_body_radius=agent.scenario.central_body.radius
+            reference_body_radius=agent.scenario.central_body.radius,
         )
 
         if not shadow_bool:
             # If not in shadow, return zero flux
             return 0.0, np.nan, False
-
-
 
         agent.bus.set_orientation(state)
 
@@ -231,14 +232,18 @@ class Station(Platform):
         # Retrieve the face properties for the exposed faces.
         # Note: self.agent.bus.shape.face_properties is a dict indexed by triangle index.
         # We convert the values to a NumPy array and then select the exposed indices.
-        all_cs = np.array([value['Cs'] for key, value in  agent.bus.face_properties.items()])
-        all_cd = np.array([value['Cd'] for key, value in  agent.bus.face_properties.items()])
+        all_cs = np.array(
+            [value["Cs"] for key, value in agent.bus.face_properties.items()]
+        )
+        all_cd = np.array(
+            [value["Cd"] for key, value in agent.bus.face_properties.items()]
+        )
         cs_data = all_cs[exposed]
         cd_data = all_cd[exposed]
 
         # Compute reflectivity model coefficients
-        mus = 0.5 * cs_data         # Albedo coefficient for SRP
-        nu = (1.0 / 3.0) * cd_data    
+        mus = 0.5 * cs_data  # Albedo coefficient for SRP
+        nu = (1.0 / 3.0) * cd_data
         btheta = 2 * nu * cos_theta + 4 * mus * cos_theta**2
 
         # Compute the vector from the spacecraft to the sun and its magnitude
@@ -247,14 +252,20 @@ class Station(Platform):
         # agent_to_sun_unit = agent_to_sun / r_sun
 
         # Compute the distance in AU (note: r_sun is in meters)
-        distance_au = (r_sun / AU)**2
+        distance_au = (r_sun / AU) ** 2
 
-        flux_from_satellite = PHI / distance_au * (
-            btheta  + (1 - mus) * (cos_theta**2)
-        ) * areas_exposed * shadow_value
+        flux_from_satellite = (
+            PHI
+            / distance_au
+            * (btheta + (1 - mus) * (cos_theta**2))
+            * areas_exposed
+            * shadow_value
+        )
 
         # === 1. Define the direction from the agent (satellite) to the ground station ===
-        agent_to_station = self.state.position - state.position  # Vector from satellite to ground station
+        agent_to_station = (
+            self.state.position - state.position
+        )  # Vector from satellite to ground station
         r_station = np.linalg.norm(agent_to_station)
         agent_to_station_unit = agent_to_station / r_station
 
@@ -272,20 +283,18 @@ class Station(Platform):
         if areas_visible.size == 0:
             # If no faces are visible, return zero flux and indicate not visible
             return 0.0, np.nan, False
-        
+
         flux_visible = flux_from_satellite[visible]
         # === 3. Assuming Lambertian reflection, flux emitted toward the observer scales with cos_phi ===
         # Sum the contributions from all visible faces
         # Lambertian: divide by pi to account for isotropic scattering
-        flux_received = np.sum(
-            (flux_visible * cos_phi) * areas_visible
-        ) / (np.pi * r_station**2)
+        flux_received = np.sum((flux_visible * cos_phi) * areas_visible) / (
+            np.pi * r_station**2
+        )
 
         # v_band_magnitude = 3.6e-9 # Approximate V-band magnitude for the Sun in W/m^2, used for apparent magnitude calculation
-        v_band_magnitude =  8.46175e-9 # Krantz et al. -> Bessel et al. 1998
+        v_band_magnitude = 8.46175e-9  # Krantz et al. -> Bessel et al. 1998
         apparent_magnitude = -2.5 * np.log10(flux_received / v_band_magnitude)
         is_visible = True
         # === 4. Return total flux in W/m^2 at ground station ===
         return flux_received, apparent_magnitude, is_visible
-
-        

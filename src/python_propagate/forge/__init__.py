@@ -10,10 +10,19 @@ from python_propagate.plots.plot_orbital_elements import plot_orbital_elements
 from python_propagate.plots.plot_light_curve import plot_light_curve
 
 
-
 class Forge:
 
-    def __init__(self, scenario, genes,output_directory, data_types, output_types, add_noise = False, plots = None, name = 'Forge'):
+    def __init__(
+        self,
+        scenario,
+        genes,
+        output_directory,
+        data_types,
+        output_types,
+        add_noise=False,
+        plots=None,
+        name="Forge",
+    ):
 
         self.scenario = scenario
         self.database = None
@@ -28,63 +37,71 @@ class Forge:
 
         self.add_noise = add_noise
 
-        if isinstance(output_types,str):
-            self.output_types [output_types]
-        if isinstance(output_types,Iterable):
+        if isinstance(output_types, str):
+            self.output_types[output_types]
+        if isinstance(output_types, Iterable):
             self.output_types = output_types
-            
 
-    def process_agent(self, agent, scenario, datatypes, add_noise = False, propagate=True):
+    def process_agent(
+        self, agent, scenario, datatypes, add_noise=False, propagate=True
+    ):
 
-        raise NotImplementedError("The method 'process_agent' should be implemented in the subclass or outside this class.")
+        raise NotImplementedError(
+            "The method 'process_agent' should be implemented in the subclass or outside this class."
+        )
 
     def save_data_to_files(self, data_all):
-            """
-            Saves the simulation data to CSV, HDF5, and Excel, with unique datasets for each agent.
-            """
-            # Convert list of all agent data into a DataFrame
-            df_all = pd.DataFrame(data_all)
+        """
+        Saves the simulation data to CSV, HDF5, and Excel, with unique datasets for each agent.
+        """
+        # Convert list of all agent data into a DataFrame
+        df_all = pd.DataFrame(data_all)
 
-            # Define output file paths
-            if 'csv' in self.output_types:
-                output_path_csv = self.output_directory / f"{self.name}.csv"
-                df_all.to_csv(output_path_csv, index=False)
-                print(f"CSV File written:\n CSV: {output_path_csv}")
+        # Define output file paths
+        if "csv" in self.output_types:
+            output_path_csv = self.output_directory / f"{self.name}.csv"
+            df_all.to_csv(output_path_csv, index=False)
+            print(f"CSV File written:\n CSV: {output_path_csv}")
 
-            if 'h5' in self.output_types:
-                output_path_h5 = self.output_directory / f"{self.name}.h5"
-                with h5py.File(output_path_h5, "w") as h5file:
-                    for agent_name, df_agent in df_all.groupby("agent"):
-                        agent_group = h5file.create_group(agent_name)  # Create group for each agent
-                        
-                        for column in df_agent.columns:
-                            if column != "agent":  # Skip agent name since it's used as a key
-                                agent_group.create_dataset(column, data=df_agent[column].values)
+        if "h5" in self.output_types:
+            output_path_h5 = self.output_directory / f"{self.name}.h5"
+            with h5py.File(output_path_h5, "w") as h5file:
+                for agent_name, df_agent in df_all.groupby("agent"):
+                    agent_group = h5file.create_group(
+                        agent_name
+                    )  # Create group for each agent
 
-                print(f"HDF5 File written:\n h5: {output_path_h5}")
+                    for column in df_agent.columns:
+                        if (
+                            column != "agent"
+                        ):  # Skip agent name since it's used as a key
+                            agent_group.create_dataset(
+                                column, data=df_agent[column].values
+                            )
 
-            if 'xlsx' in self.output_types:
-                output_path_xlsx = self.output_directory / f"{self.name}.xlsx"
-                with pd.ExcelWriter(output_path_xlsx) as writer:
-                    for agent_name, df_agent in df_all.groupby("agent"):
-                        df_agent.to_excel(writer, sheet_name=agent_name, index=False)
-                print(f"XLSX File written:\n xlsx: {output_path_xlsx}")
-        
+            print(f"HDF5 File written:\n h5: {output_path_h5}")
 
-
+        if "xlsx" in self.output_types:
+            output_path_xlsx = self.output_directory / f"{self.name}.xlsx"
+            with pd.ExcelWriter(output_path_xlsx) as writer:
+                for agent_name, df_agent in df_all.groupby("agent"):
+                    df_agent.to_excel(writer, sheet_name=agent_name, index=False)
+            print(f"XLSX File written:\n xlsx: {output_path_xlsx}")
 
     def generate_data(self):
-        
+
         data_all = []  # List to store data for all agents
 
         for agent in self.genes.agents:
-            data_agent, agent = self.process_agent(agent,self.scenario,self.data_types,add_noise=self.add_noise)
+            data_agent, agent = self.process_agent(
+                agent, self.scenario, self.data_types, add_noise=self.add_noise
+            )
             data_all.extend(data_agent)
 
         self.save_data_to_files(data_all)
         return data_all
-        
-    def generate_data_parallel(self,cores):
+
+    def generate_data_parallel(self, cores):
 
         import concurrent.futures
 
@@ -99,7 +116,13 @@ class Forge:
             # Note: if you need to deepcopy agent_base or similar inside each task,
             # you can do that within process_agent.
             futures = [
-                executor.submit(self.process_agent, agent, self.scenario, self.data_types,add_noise=self.add_noise)
+                executor.submit(
+                    self.process_agent,
+                    agent,
+                    self.scenario,
+                    self.data_types,
+                    add_noise=self.add_noise,
+                )
                 for agent in self.genes.agents
             ]
             # As each future completes, extend the data_all list.
@@ -112,8 +135,7 @@ class Forge:
         self.save_data_to_files(data_all=data_all)
         self.genes.agents = updated_agents
 
-    
-    def run(self,parallel=0):
+    def run(self, parallel=0):
         """
         Runs the DataGenerator simulation, collecting observational data from agents and saving it to HDF5, Excel, and CSV formats.
         """
@@ -130,14 +152,34 @@ class Forge:
         # Now plot the orbit
         if self.plots:
             if "orbit" in self.plots:
-                plot_orbit(self.genes.agents,self.scenario,self.output_directory,name=self.name,legend=legend)
+                plot_orbit(
+                    self.genes.agents,
+                    self.scenario,
+                    self.output_directory,
+                    name=self.name,
+                    legend=legend,
+                )
             if "ground_track" in self.plots:
                 plot_ground_track(
-                    self.genes.agents, self.scenario.stations, self.output_directory, name=self.name,legend=legend
+                    self.genes.agents,
+                    self.scenario.stations,
+                    self.output_directory,
+                    name=self.name,
+                    legend=legend,
                 )
             if "orbital_elements" in self.plots:
-                plot_orbital_elements(self.genes.agents, self.scenario, self.output_directory, name=self.name,legend=legend)
+                plot_orbital_elements(
+                    self.genes.agents,
+                    self.scenario,
+                    self.output_directory,
+                    name=self.name,
+                    legend=legend,
+                )
 
             if "light_curve" in self.plots:
-                plot_light_curve(self.genes.agents, self.output_directory, name=self.name, legend=legend)
-    
+                plot_light_curve(
+                    self.genes.agents,
+                    self.output_directory,
+                    name=self.name,
+                    legend=legend,
+                )

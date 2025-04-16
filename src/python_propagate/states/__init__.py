@@ -80,7 +80,7 @@ class State:
         Returns the time derivative of the state vector.
     """
 
-    def __init__(self, frame = "inertial",metadata = {},**kwargs):
+    def __init__(self, frame="inertial", metadata={}, **kwargs):
         """
         Constructs all the necessary attributes for the State object.
 
@@ -116,15 +116,14 @@ class State:
         if not isinstance(other, State):
             return NotImplemented
 
-        new_state = type(self)(**vars(self)) # Copy attributes to new instance
+        new_state = type(self)(**vars(self))  # Copy attributes to new instance
 
-
-        for key in vars(self).keys() | vars(other).keys(): 
-             # Union of keys from both
+        for key in vars(self).keys() | vars(other).keys():
+            # Union of keys from both
             self_val = getattr(self, key, None)
             other_val = getattr(other, key, None)
 
-            if isinstance(self_val,str) or isinstance(self_val,dict):
+            if isinstance(self_val, str) or isinstance(self_val, dict):
                 continue
             else:
                 if self_val is None and other_val is None:
@@ -137,19 +136,19 @@ class State:
                     setattr(new_state, key, self_val + other_val)  # Normal addition
 
         return new_state
-    
+
     def __sub__(self, other):
         if not isinstance(other, State):
             return NotImplemented
 
-        new_state = type(self)(**vars(self)) # Copy attributes to new instance
+        new_state = type(self)(**vars(self))  # Copy attributes to new instance
 
-        for key in vars(self).keys() | vars(other).keys(): 
-             # Union of keys from both
+        for key in vars(self).keys() | vars(other).keys():
+            # Union of keys from both
             self_val = getattr(self, key, None)
             other_val = getattr(other, key, None)
 
-            if isinstance(self_val,str) or isinstance(self_val,dict):
+            if isinstance(self_val, str) or isinstance(self_val, dict):
                 continue
             else:
                 if self_val is None and other_val is None:
@@ -162,19 +161,19 @@ class State:
                     setattr(new_state, key, self_val - other_val)  # Normal addition
 
         return new_state
-    
+
     def __mul__(self, other):
 
         new_state = type(self)(**vars(self))  # Copy attributes to new instance
 
-        if isinstance(other,State):
+        if isinstance(other, State):
 
-            for key in vars(self).keys() | vars(other).keys(): 
+            for key in vars(self).keys() | vars(other).keys():
                 # Union of keys from both
                 self_val = getattr(self, key, None)
                 other_val = getattr(other, key, None)
 
-                if isinstance(self_val,str) or isinstance(self_val,dict):
+                if isinstance(self_val, str) or isinstance(self_val, dict):
                     continue
                 else:
                     if self_val is None and other_val is None:
@@ -186,11 +185,11 @@ class State:
                     else:
                         setattr(new_state, key, self_val * other_val)  # Normal addition
 
-        elif isinstance(other,int) or isinstance(other,float):
+        elif isinstance(other, int) or isinstance(other, float):
 
             for key in vars(self).keys():
                 self_val = getattr(self, key, None)
-                if isinstance(self_val,str) or isinstance(self_val,dict):
+                if isinstance(self_val, str) or isinstance(self_val, dict):
                     continue
                 else:
                     if self_val is None and other is None:
@@ -202,28 +201,25 @@ class State:
                     else:
                         setattr(new_state, key, self_val * other)  # Normal addition
 
-        else: 
+        else:
             return NotImplemented
 
-
-
         return new_state
-    
-    __rmul__ = __mul__
 
+    __rmul__ = __mul__
 
     def __truediv__(self, other):
 
         new_state = type(self)(**vars(self))  # Copy attributes to new instance
 
-        if isinstance(other,State):
+        if isinstance(other, State):
 
-            for key in vars(self).keys() | vars(other).keys(): 
+            for key in vars(self).keys() | vars(other).keys():
                 # Union of keys from both
                 self_val = getattr(self, key, None)
                 other_val = getattr(other, key, None)
 
-                if isinstance(self_val,str) or isinstance(self_val,dict):
+                if isinstance(self_val, str) or isinstance(self_val, dict):
                     continue
                 else:
                     if self_val is None and other_val is None:
@@ -233,16 +229,18 @@ class State:
                     elif other_val is None:
                         setattr(new_state, key, self_val)  # Take self if other is None
                     elif other_val == 0.0:
-                        print(f'Division by zero for attribute <{key}>. Defaulting to original value')
+                        print(
+                            f"Division by zero for attribute <{key}>. Defaulting to original value"
+                        )
                         setattr(new_state, key, self_val)  # Take self if other is None
                     else:
                         setattr(new_state, key, self_val / other_val)  # Normal addition
 
-        elif isinstance(other,int) or isinstance(other,float):
+        elif isinstance(other, int) or isinstance(other, float):
 
             for key in vars(self).keys():
                 self_val = getattr(self, key, None)
-                if isinstance(self_val,str) or isinstance(self_val,dict):
+                if isinstance(self_val, str) or isinstance(self_val, dict):
                     continue
                 else:
                     if self_val is None and other is None:
@@ -252,19 +250,17 @@ class State:
                     elif other is None:
                         setattr(new_state, key, self_val)  # Take self if other is None
                     elif other == 0.0:
-                        print(f'Division by zero for attribute <{key}>. Defaulting to original value')
+                        print(
+                            f"Division by zero for attribute <{key}>. Defaulting to original value"
+                        )
                         setattr(new_state, key, self_val)  # Take self if other is None
                     else:
                         setattr(new_state, key, self_val / other)  # Normal addition
 
-        else: 
+        else:
             return NotImplemented
 
-
-
         return new_state
-
-
 
     def __iadd__(self, other):
         result = self + other  # Use __add__ logic
@@ -445,8 +441,10 @@ class State:
             The Keplerian elements (sma, ecc, inc, raan, arg, nu).
         """
         sma, ecc, inc, raan, arg, nu = cart2classical(self.compile(), mu)
-        
-        return OrbitalElements(sma=sma, ecc=ecc, inc=inc, raan=raan, arg=arg, nu=nu, mu=mu)
+
+        return OrbitalElements(
+            sma=sma, ecc=ecc, inc=inc, raan=raan, arg=arg, nu=nu, mu=mu
+        )
 
     def to_cartesian(self, mu):
         """
@@ -517,6 +515,7 @@ class State:
 
         if state.stm_dot is not None:
             self.stm_dot = state.stm_dot
+
 
 class OrbitalElements(State):
 

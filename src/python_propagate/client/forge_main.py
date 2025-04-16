@@ -26,7 +26,7 @@ from python_propagate.utilities.load_spice import load_spice
     help="Number of parallel processes to use for the forge run. Default is 0 (no parallelism).",
     required=False,
 )
-def main(infile: str, parallel = 0):
+def main(infile: str, parallel=0):
     """
     Description:
         main client funtion
@@ -39,12 +39,12 @@ def main(infile: str, parallel = 0):
 
     forge = config["forge"]
 
-
     load_spice()
     forge.run(parallel=parallel)
     # plt.show()
 
     pass
+
 
 if __name__ == "__main__":
 

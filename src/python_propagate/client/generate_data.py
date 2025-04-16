@@ -35,7 +35,6 @@ def main(infile: str):
 
     # TODO: I do not like that I have to set the scenarion first then the dynamics in that order
 
-
     data_generator.run()
 
     pass

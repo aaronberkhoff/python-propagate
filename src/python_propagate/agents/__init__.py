@@ -60,8 +60,8 @@ class Agent:
         name="Agent",
         dynamics=[],
         scenario=None,
-        manuevers = [],
-        bus=None # Allow passing a bus object to the agent, default is None
+        manuevers=[],
+        bus=None,  # Allow passing a bus object to the agent, default is None
     ):
         """
         Initializes the Agent with the given parameters.
@@ -108,7 +108,7 @@ class Agent:
         self.time_data = []
         self.scenario = scenario
         self.dynamics = []
-        self.manuevers =[]
+        self.manuevers = []
         self.bus = bus  # Allow passing a bus object to the agent, default is None
         self.add_dynamics(dynamics=dynamics)
         self.add_manuevers(manuevers)
@@ -122,7 +122,7 @@ class Agent:
             A tuple of dynamics to be added to the agent.
 
         """
-        
+
         # TODO: Self referencing to self is not good practice
         for dynamic in dynamics:
 
@@ -142,36 +142,38 @@ class Agent:
                 self.dynamics.append(Drag(scenario=self.scenario, agent=self))
 
             elif dynamic == "complex_drag":
-                self.dynamics.append(Drag(scenario=self.scenario, agent=self, complex_drag=True))
+                self.dynamics.append(
+                    Drag(scenario=self.scenario, agent=self, complex_drag=True)
+                )
 
             elif dynamic == "stm":
                 self.dynamics.append(STM(scenario=self.scenario, agent=self))
-            
+
             elif dynamic == "3body":
                 self.dynamics.append(ThreeBody(scenario=self.scenario, agent=self))
 
             elif dynamic == "complex_srp":
-                self.dynamics.append(SRP(scenario=self.scenario, agent=self, complex_srp=True))
+                self.dynamics.append(
+                    SRP(scenario=self.scenario, agent=self, complex_srp=True)
+                )
 
             elif isinstance(dynamic, Dynamic):
                 self.dynamics.append(dynamic)
 
             elif issubclass(dynamic, Dynamic):
 
-                self.dynamics.append(dynamic) 
+                self.dynamics.append(dynamic)
             else:
                 raise NotImplementedError(
                     f"Dynamic <{dynamic}> is not an option or is spelled wrong"
                 )
-            
-    def add_manuevers(self,manuevers):
+
+    def add_manuevers(self, manuevers):
 
         if manuevers:
             for man in manuevers:
                 man.agent = self
                 self.manuevers.append(man)
-
-
 
     def set_scenario(self, scenario: Scenario):
         """Sets the scenario for the agent.
@@ -183,29 +185,30 @@ class Agent:
         self.scenario = scenario
         self.ensure_cart_state()
         return self
-        
-    def ensure_cart_state(self): 
+
+    def ensure_cart_state(self):
 
         if isinstance(self.state, OrbitalElements):
 
             state = classical2cart(
-            sma=self.state.sma,
-            ecc=self.state.ecc,
-            inc=self.state.inc * DEG2RAD,
-            arg=self.state.arg * DEG2RAD,
-            raan=self.state.raan * DEG2RAD,
-            nu=self.state.nu * DEG2RAD,
-            mu=self.scenario.central_body.mu,
+                sma=self.state.sma,
+                ecc=self.state.ecc,
+                inc=self.state.inc * DEG2RAD,
+                arg=self.state.arg * DEG2RAD,
+                raan=self.state.raan * DEG2RAD,
+                nu=self.state.nu * DEG2RAD,
+                mu=self.scenario.central_body.mu,
             )
 
             self.state = State(
-            position=state[0:3],
-            velocity=state[3:6],
-            frame="inertial",
-            time=self.start_time,
+                position=state[0:3],
+                velocity=state[3:6],
+                frame="inertial",
+                time=self.start_time,
             )
 
         return self
+
     def propagator(self, time, state):
         """
         Propagates the agent's state using numerical integration.
@@ -239,8 +242,7 @@ class Agent:
 
         self.state.position = state[:3]
         self.state.velocity = state[3:6]
-        self.state.acceleration = np.array([0.0,0.0,0.0])
-        
+        self.state.acceleration = np.array([0.0, 0.0, 0.0])
 
         for dynamic in self.dynamics:
             # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
@@ -306,10 +308,6 @@ class Agent:
             time = [0, duration]
             t_eval = None
 
-            
-
-
-
         # TODO Create own propagators instead of using scipy
 
         method = "RK45"
@@ -338,7 +336,7 @@ class Agent:
                 method=method,
                 rtol=tolerance,
                 t_eval=t_eval,
-                max_step = max_step
+                max_step=max_step,
             )
             self.state.position = ode_state.y[0:3, -1]
             self.state.velocity = ode_state.y[3:6, -1]

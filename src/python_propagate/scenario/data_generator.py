@@ -56,7 +56,7 @@ class DataGenerator(Scenario):
         plots=None,
         output_directory: str = "examples/results",
         name: str = "None",
-        output_type = "csv"
+        output_type="csv",
     ):
         """
         Initializes the DataGenerator instance.
@@ -82,15 +82,13 @@ class DataGenerator(Scenario):
         self._output_directory = Path(output_directory)
         self._output_directory.mkdir(parents=True, exist_ok=True)
 
-        if isinstance(output_type,str):
-            self._output_type [output_type]
-        if isinstance(output_type,Iterable):
+        if isinstance(output_type, str):
+            self._output_type[output_type]
+        if isinstance(output_type, Iterable):
             self._output_type = output_type
-        super().__init__(central_body, start_time, duration, dt, agents, stations, use_spice=True)
-
-
-        
-        
+        super().__init__(
+            central_body, start_time, duration, dt, agents, stations, use_spice=True
+        )
 
     @property
     def data_types(self):
@@ -111,7 +109,7 @@ class DataGenerator(Scenario):
     def name(self):
         """Returns the scenario name."""
         return self._name
-    
+
     @property
     def output_type(self):
         """Returns the scenario output_type."""
@@ -134,9 +132,3 @@ class DataGenerator(Scenario):
                 self.agents, self.stations, self.output_directory, name=self.name
             )
         plot_orbital_elements(self.agents, self, self.output_directory, name=self.name)
-
-    
-            
-
-   
-

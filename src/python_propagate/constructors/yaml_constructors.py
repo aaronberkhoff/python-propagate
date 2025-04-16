@@ -19,12 +19,19 @@ from python_propagate.scenario.data_generator import Scenario
 from python_propagate.agents.spacecraft import Spacecraft, Bus
 from python_propagate.states import State, OrbitalElements
 
-from python_propagate.dynamics.manuevers import ImpulseManuever, ThrustManuever, StationKeepLoss, FreeRotate
+from python_propagate.dynamics.manuevers import (
+    ImpulseManuever,
+    ThrustManuever,
+    StationKeepLoss,
+    FreeRotate,
+)
 from python_propagate.forge.photometric_forge import PhotoForge
 from python_propagate.forge.astrometric_forge import AstroForge
 from python_propagate.forge.tle_forge import TLEForge
 from python_propagate.forge.genes import Genes, Gene
+
 # from python_propagate.forge.photometric_forge import PhotoForge
+
 
 class ClassConstructor:
 
@@ -57,9 +64,15 @@ def load_yaml(yaml_file):
     yaml.add_constructor("!Moon", ClassConstructor(Moon).constructor)
     yaml.add_constructor("!Sun", ClassConstructor(Sun).constructor)
 
-    yaml.add_constructor("!ImpulseManuever", ClassConstructor(ImpulseManuever).constructor)
-    yaml.add_constructor("!ThrustManuever", ClassConstructor(ThrustManuever).constructor)
-    yaml.add_constructor("!StationKeepLoss", ClassConstructor(StationKeepLoss).constructor)
+    yaml.add_constructor(
+        "!ImpulseManuever", ClassConstructor(ImpulseManuever).constructor
+    )
+    yaml.add_constructor(
+        "!ThrustManuever", ClassConstructor(ThrustManuever).constructor
+    )
+    yaml.add_constructor(
+        "!StationKeepLoss", ClassConstructor(StationKeepLoss).constructor
+    )
     yaml.add_constructor("!FreeRotate", ClassConstructor(FreeRotate).constructor)
 
     yaml.add_constructor("!AstroForge", ClassConstructor(AstroForge).constructor)
@@ -68,7 +81,6 @@ def load_yaml(yaml_file):
 
     yaml.add_constructor("!Gene", ClassConstructor(Gene).constructor)
     yaml.add_constructor("!Genes", ClassConstructor(Genes).constructor)
-    
 
     with open(yaml_file, "r") as file:
         # raw = file.read()

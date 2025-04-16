@@ -1,5 +1,6 @@
 from python_propagate.environment.planets import Planet
 
+
 class Moon(Planet):
     """
     A class to represent the Earth.

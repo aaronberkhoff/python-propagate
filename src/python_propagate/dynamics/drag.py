@@ -5,11 +5,18 @@ from python_propagate.states import State
 
 
 class Drag(Dynamic):
-    def __init__(self, scenario: Scenario, agent=None, stm=None, function=None, complex_drag=False):
+    def __init__(
+        self,
+        scenario: Scenario,
+        agent=None,
+        stm=None,
+        function=None,
+        complex_drag=False,
+    ):
 
         if function is None:
             if complex_drag:
-                function =self.complex_drag
+                function = self.complex_drag
             else:
                 function = self.drag_function  # Assign the default function
 
@@ -46,7 +53,6 @@ class Drag(Dynamic):
 
         return State(acceleration=np.array([ax, ay, az]))
 
-
     def complex_drag(self, state: State, time: float):
         """
         Example of a more complex drag function that could be used.
@@ -68,18 +74,17 @@ class Drag(Dynamic):
 
         va = np.sqrt(vax**2 + vay**2 + vz**2)
 
-        v_hat = np.array([vax, vay, vz]) / va 
+        v_hat = np.array([vax, vay, vz]) / va
 
         dynamic_pressure = (
-            -0.5
-            * self.agent.coefficient_of_drag
-            * density
-            / self.agent.mass
+            -0.5 * self.agent.coefficient_of_drag * density / self.agent.mass
         )
-        #set the orientation of the bus
-        self.agent.bus.set_orientation(state)  # Ensure the bus orientation is set based on the current state
+        # set the orientation of the bus
+        self.agent.bus.set_orientation(
+            state
+        )  # Ensure the bus orientation is set based on the current state
 
-        normals = self.agent.bus.shape.face_normals 
+        normals = self.agent.bus.shape.face_normals
         areas = self.agent.bus.shape.area_faces
 
         # Dot product with flow direction
@@ -92,11 +97,14 @@ class Drag(Dynamic):
         area_proj = areas[exposed] * cos_theta[exposed]
 
         # Total drag force on the spacecraft
-        acceleration = dynamic_pressure * area_proj[:,None] * (np.array([vax, vay, vz]) * va) # Apply drag in the direction of the velocity vector
+        acceleration = (
+            dynamic_pressure * area_proj[:, None] * (np.array([vax, vay, vz]) * va)
+        )  # Apply drag in the direction of the velocity vector
 
         acceleration = np.sum(acceleration, axis=0)
 
         return State(
-            acceleration=np.sum(acceleration, axis=0)  # Sum over all exposed faces to get total acceleration
+            acceleration=np.sum(
+                acceleration, axis=0
+            )  # Sum over all exposed faces to get total acceleration
         )
-    

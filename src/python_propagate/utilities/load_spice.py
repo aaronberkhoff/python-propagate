@@ -21,7 +21,7 @@ def load_spice():
     spice.furnsh("data/naif0011.tls")
     spice.furnsh("data/earth_000101_250421_250124.bpc")
     # spice.furnsh('data/pck00010.tpc')
-    spice.furnsh('data/de430.bsp')
+    spice.furnsh("data/de430.bsp")
 
 
 def unload_spice():

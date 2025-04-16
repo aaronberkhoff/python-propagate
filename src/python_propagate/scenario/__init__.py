@@ -60,7 +60,7 @@ class Scenario:
         stations=[],
         use_spice=False,
         name="Scenario",
-        celestial_bodies: Iterable[Planet] = []
+        celestial_bodies: Iterable[Planet] = [],
     ):
         """
         Initializes the Scenario with the given parameters.
@@ -90,7 +90,6 @@ class Scenario:
         if isinstance(dt, dict):
             dt = timedelta(**dt)
 
-
         self._central_body = central_body
         self._celestial_bodies = celestial_bodies
         self._start_time = start_time
@@ -107,9 +106,6 @@ class Scenario:
         else:
             self.stations = stations
 
-
-
-
         if use_spice:
             load_spice()
 
@@ -124,7 +120,6 @@ class Scenario:
             The central body of the scenario.
         """
         return self._central_body
-
 
     @property
     def celestial_bodies(self):

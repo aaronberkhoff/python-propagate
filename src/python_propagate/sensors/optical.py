@@ -12,15 +12,9 @@ class Optical(Sensor):
             noise_mean, noise_covariance, measurement_map=self.ra_dec_measurement_map
         )
 
-
-    def ra_dec_measurement_map(self,state: State):
+    def ra_dec_measurement_map(self, state: State):
 
         right_ascension = np.arctan2(state.position[1], state.position[0])
         declination = np.arcsin(state.position[2] / np.linalg.norm(state.position))
 
-        return np.array([right_ascension, declination]).reshape(-1,1)
-    
-
-
-
-
+        return np.array([right_ascension, declination]).reshape(-1, 1)

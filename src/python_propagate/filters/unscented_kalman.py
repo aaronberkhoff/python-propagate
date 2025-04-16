@@ -86,7 +86,7 @@ class UnscentedKalman(Filter):
         sigma_points = SigmaPoints(self.state.mean, self.state.covariance)
 
         state_estimate, covariance_estimate, _, _ = self.measurement_update(
-            measurement=measurements[0][:,np.newaxis],
+            measurement=measurements[0][:, np.newaxis],
             sigma_points=sigma_points,
             state_bar=self.state.state_mean,
             covariance_bar=self.state.state_covariance,
@@ -109,7 +109,7 @@ class UnscentedKalman(Filter):
             )
 
             state_estimate, covariance_estimate, _, _ = self.measurement_update(
-                measurement=measurement[:,np.newaxis],
+                measurement=measurement[:, np.newaxis],
                 sigma_points=sigma_points,
                 state_bar=state_bar,
                 covariance_bar=covariance_bar,
