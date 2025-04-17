@@ -35,8 +35,8 @@ class PhotoForge(Forge):
     
     """
 
-    def __init__(self, scenario, genes, output_directory, data_types, output_types, add_noise=False, plots=None, name='PhotoForge'):
-        super().__init__(scenario, genes, output_directory, data_types, output_types, add_noise, plots, name)
+    def __init__(self, scenario, agents, output_directory, data_types, output_types, add_noise=False, plots=None, name='PhotoForge'):
+        super().__init__(scenario, agents, output_directory, data_types, output_types, add_noise, plots, name)
 
     def get_orientation_history_from_manuever(self,agent,time_data): #TODO This needs to be changed like crazy
         orientation_data = []

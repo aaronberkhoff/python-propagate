@@ -23,3 +23,4 @@ class Sensor:
 
     def measurement_map(self, state):
         raise NotImplementedError("Measurement must be provided or overridden.")
+
