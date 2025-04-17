@@ -90,7 +90,7 @@ forge:
   plots: ['orbital_elements','orbit','ground_track',light_curve] # Specify the plots you want to generate for the TLE Forge. Options include 'orbital_elements', 'orbit', 'ground_track', 'light_curve', etc.
   output_directory: 'examples/results'
   output_types: ['h5','csv']
-  forge: 'PhotoForge' # This is required to specify the type of forge being used, in this case TLEForge.
+  forge: 'PhotoForge' # This is required to specify the type of forge being used, in this case PhotoForge
 
 
     

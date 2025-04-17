@@ -21,5 +21,5 @@ class Sensor:
         return self._noise_covariance
 
 
-def default_measurement_map(self, state):
-    raise NotImplementedError("Dynamic function must be provided or overridden.")
+    def measurement_map(self, state):
+        raise NotImplementedError("Dynamic function must be provided or overridden.")
