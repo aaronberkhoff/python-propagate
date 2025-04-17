@@ -75,7 +75,7 @@ def get_subattribute(agent, public_attrs, attribute):
         try:
             # If items is iterable, loop through its elements.
             for obj in items:
-                if hasattr(obj, attribute):
+                if hasattr(obj, attribute): #TODO add capability to edit list of manuevers
                     return getattr(obj, attribute)
         except (AttributeError, TypeError):
             # If items isn't iterable, skip it.

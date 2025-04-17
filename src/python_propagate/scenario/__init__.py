@@ -90,6 +90,8 @@ class Scenario:
         if isinstance(dt, dict):
             dt = timedelta(**dt)
 
+        if celestial_bodies:
+            load_spice()
 
         self._central_body = central_body
         self._celestial_bodies = celestial_bodies

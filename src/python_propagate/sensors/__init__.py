@@ -3,14 +3,14 @@ import numpy as np
 
 class Sensor:
 
-    def __init__(self, noise_mean, noise_covariance, measurement_map=None):
-        self._noise_mean = np.array(noise_mean)[:, np.newaxis]
-        self._noise_covariance = np.array(noise_covariance) * np.eye(
+    def __init__(self, noise_mean, noise_covariance):
+        self._noise_mean = np.asarray(noise_mean)[:, np.newaxis]
+        self._noise_covariance = np.asarray(noise_covariance) * np.eye(
             len(noise_covariance)
         )
 
-        if measurement_map is not None:
-            self.measurement_map = measurement_map  # Assign the default function
+        # if measurement_map is not None:
+        #     self.measurement_map = measurement_map  # Assign the default function
 
     @property
     def noise_mean(self):
@@ -22,4 +22,5 @@ class Sensor:
 
 
     def measurement_map(self, state):
-        raise NotImplementedError("Dynamic function must be provided or overridden.")
+        raise NotImplementedError("Measurement must be provided or overridden.")
+
