@@ -10,4 +10,4 @@ Author:
     Aaron Berhoff <aaronberkhoff@outlook.com>
 """
 
-DATESTR = "%Y-%m-%dT%H:%M:%S"
+DATESTR = "%Y-%m-%dT%H:%M:%S.%f"  # Format for datetime strings compatible with SPICE

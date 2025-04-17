@@ -127,7 +127,7 @@ def plot_ground_track(
     output_path = output_directory / f"{name}_ground_track.png"
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
-    plt.close(fig)
+    # plt.close(fig)
     print(f"Ground track with visibility plot saved as {output_path}")
 
 

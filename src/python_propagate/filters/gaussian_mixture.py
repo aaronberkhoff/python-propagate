@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import multivariate_normal
+from copy import copy
 
 from python_propagate.filters import Filter
 from python_propagate.states.sigma_points import SigmaPoints
@@ -114,7 +115,8 @@ class GaussianMixture:
         # self.data_handler.add_state(filter_state,time = 0)
 
         # first measurement update
-        filter_state = self.measurement_update(measurement=measurements[0])
+        filter_state = self.measurement_update(measurement=measurements[:1,:].T,time=times[0])
+        # self.data_handler.add_state(copy(filter_state), time=times[0])
 
         # store state data
         self.data_handler.add_state(filter_state, time=0)
@@ -130,8 +132,9 @@ class GaussianMixture:
 
             # store state data
             # self.data_handler.add_state(filter_state,time=tk)
+            measurement = measurement[:, np.newaxis]
 
-            filter_state = self.measurement_update(measurement=measurement)
+            filter_state = self.measurement_update(measurement=measurement,time=tk)
 
             # store state data
             self.data_handler.add_state(filter_state, time=tk)
@@ -145,7 +148,7 @@ class GaussianMixture:
 
     # Figure out how to handle sigma points
 
-    def measurement_update(self, measurement):
+    def measurement_update(self, measurement, time):
 
         for i, (state) in enumerate(self.states):
 
@@ -161,7 +164,7 @@ class GaussianMixture:
             self.states[i].state_mean = state_estimate
             self.states[i].state_covariance = covariance_estimate
             q_measurement = multivariate_normal.pdf(
-                x=measurement, mean=measurement_mean.ravel(), cov=measurement_covariance
+                x=measurement.ravel(), mean=measurement_mean.ravel(), cov=measurement_covariance
             )
             self.weights[i] *= q_measurement
 
@@ -171,8 +174,9 @@ class GaussianMixture:
         self.data_handler.add_measurement(
             measurement_mean=measurement_mean,
             measurement_covariance=measurement_covariance,
+            time = time
         )
-        self.data_handler.add_residual(measurement[:, np.newaxis] - measurement_mean)
+        self.data_handler.add_residual(measurement - measurement_mean)
 
         return FilterState(
             state_mean=state_estimate,
@@ -235,7 +239,7 @@ class GaussianMixture:
 
                 distance = mahalanobis_distance(
                     max_state.state_mean, state.state_mean, max_state.state_covariance
-                )[0, 0]
+                )
                 if distance <= self.merge_threshold:
                     subset_l.append((state, weight))
                 else:

@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import numpy as np
 import scipy.integrate as sci_int
 
-
 from python_propagate.scenario import Scenario
 
 from python_propagate.dynamics import Dynamic
@@ -20,9 +19,11 @@ from python_propagate.dynamics.j2 import J2
 from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
+from python_propagate.dynamics.three_body import ThreeBody
+from python_propagate.dynamics.srp import SRP
 
-from python_propagate.states import State
-from python_propagate.states.orbital_elements import OrbitalElements
+from python_propagate.states import State, OrbitalElements
+
 
 from python_propagate.utilities.transforms import classical2cart
 from python_propagate.utilities.string_format import DATESTR
@@ -60,6 +61,7 @@ class Agent:
         dynamics=[],
         scenario=None,
         manuevers = [],
+        bus=None # Allow passing a bus object to the agent, default is None
     ):
         """
         Initializes the Agent with the given parameters.
@@ -106,8 +108,12 @@ class Agent:
         self.time_data = []
         self.scenario = scenario
         self.dynamics = []
-        self.manuevers = manuevers
+        self.manuevers =[]
+        self.bus = bus  # Allow passing a bus object to the agent, default is None
         self.add_dynamics(dynamics=dynamics)
+        self.add_manuevers(manuevers)
+
+        pass
 
     def add_dynamics(self, dynamics: list):
         """Adds dynamics to the agent.
@@ -117,7 +123,7 @@ class Agent:
 
         """
         
-        # TODO: Self referenceing to self is not good practice
+        # TODO: Self referencing to self is not good practice
         for dynamic in dynamics:
 
             if isinstance(dynamic, type) and issubclass(dynamic, Dynamic):
@@ -135,8 +141,17 @@ class Agent:
             elif dynamic == "drag":
                 self.dynamics.append(Drag(scenario=self.scenario, agent=self))
 
+            elif dynamic == "complex_drag":
+                self.dynamics.append(Drag(scenario=self.scenario, agent=self, complex_drag=True))
+
             elif dynamic == "stm":
                 self.dynamics.append(STM(scenario=self.scenario, agent=self))
+            
+            elif dynamic == "3body":
+                self.dynamics.append(ThreeBody(scenario=self.scenario, agent=self))
+
+            elif dynamic == "complex_srp":
+                self.dynamics.append(SRP(scenario=self.scenario, agent=self, complex_srp=True))
 
             elif isinstance(dynamic, Dynamic):
                 self.dynamics.append(dynamic)
@@ -148,6 +163,15 @@ class Agent:
                 raise NotImplementedError(
                     f"Dynamic <{dynamic}> is not an option or is spelled wrong"
                 )
+            
+    def add_manuevers(self,manuevers):
+
+        if manuevers:
+            for man in manuevers:
+                man.agent = self
+                self.manuevers.append(man)
+
+
 
     def set_scenario(self, scenario: Scenario):
         """Sets the scenario for the agent.
@@ -274,10 +298,17 @@ class Agent:
         self.dynamics.extend(self.manuevers)
         if duration is None:
             time = [0, self.duration.total_seconds()]
-            t_eval = np.arange(time[0], time[1] + self.dt.seconds, self.dt.seconds)
+            t_eval = np.arange(time[0], time[1], self.dt.seconds)
+            if t_eval[-1] < self.duration.total_seconds():
+                # Ensure the last point is included in t_eval if it doesn't end exactly on the duration
+                t_eval = np.append(t_eval, self.duration.total_seconds())
         else:
             time = [0, duration]
             t_eval = None
+
+            
+
+
 
         # TODO Create own propagators instead of using scipy
 

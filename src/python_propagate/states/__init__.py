@@ -80,7 +80,7 @@ class State:
         Returns the time derivative of the state vector.
     """
 
-    def __init__(self, frame = "inertial",**kwargs):
+    def __init__(self, frame = "inertial",metadata = {},**kwargs):
         """
         Constructs all the necessary attributes for the State object.
 
@@ -107,6 +107,7 @@ class State:
         """
         self.stm = None
         self.frame = frame
+        self.metadata = metadata
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -123,7 +124,7 @@ class State:
             self_val = getattr(self, key, None)
             other_val = getattr(other, key, None)
 
-            if isinstance(self_val,str):
+            if isinstance(self_val,str) or isinstance(self_val,dict):
                 continue
             else:
                 if self_val is None and other_val is None:
@@ -148,7 +149,7 @@ class State:
             self_val = getattr(self, key, None)
             other_val = getattr(other, key, None)
 
-            if isinstance(self_val,str):
+            if isinstance(self_val,str) or isinstance(self_val,dict):
                 continue
             else:
                 if self_val is None and other_val is None:
@@ -173,7 +174,7 @@ class State:
                 self_val = getattr(self, key, None)
                 other_val = getattr(other, key, None)
 
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other_val is None:
@@ -189,7 +190,7 @@ class State:
 
             for key in vars(self).keys():
                 self_val = getattr(self, key, None)
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other is None:
@@ -222,7 +223,7 @@ class State:
                 self_val = getattr(self, key, None)
                 other_val = getattr(other, key, None)
 
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other_val is None:
@@ -241,7 +242,7 @@ class State:
 
             for key in vars(self).keys():
                 self_val = getattr(self, key, None)
-                if isinstance(self_val,str):
+                if isinstance(self_val,str) or isinstance(self_val,dict):
                     continue
                 else:
                     if self_val is None and other is None:
@@ -317,7 +318,7 @@ class State:
             position = self.position
         elif self.frame == "ECEF":
             et = spice.str2et(self.time.strftime("%Y-%m-%dT%H:%M:%S"))
-            rotation_matrix = spice.pxform("ECEF", "ECI", et)
+            rotation_matrix = spice.pxform(ECEF, ECI, et)
             position = rotation_matrix @ self.position
         else:
             raise ValueError(
@@ -444,7 +445,8 @@ class State:
             The Keplerian elements (sma, ecc, inc, raan, arg, nu).
         """
         sma, ecc, inc, raan, arg, nu = cart2classical(self.compile(), mu)
-        return sma, ecc, inc, raan, arg, nu
+        
+        return OrbitalElements(sma=sma, ecc=ecc, inc=inc, raan=raan, arg=arg, nu=nu, mu=mu)
 
     def to_cartesian(self, mu):
         """
@@ -515,3 +517,19 @@ class State:
 
         if state.stm_dot is not None:
             self.stm_dot = state.stm_dot
+
+class OrbitalElements(State):
+
+    def __init__(self, frame="inertial", **kwargs):
+        super().__init__(frame, **kwargs)
+
+    def __repr__(self):
+        """
+        Returns a string representation of the State object.
+
+        Returns
+        -------
+        str
+            A string representation of the State object.
+        """
+        return f"OrbitalElements({vars(self)})"

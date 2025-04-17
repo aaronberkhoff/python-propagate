@@ -23,12 +23,16 @@ from python_propagate.utilities.load_spice import load_spice
 @click.option(
     "--parallel",
     type=int,
-    help="YAML infile for the scenario to generate data",
+    help="Number of parallel processes to use for the forge run. Default is 0 (no parallelism).",
     required=False,
 )
-# @click.option('--plot_ground', type=bool, help= "Plot the ground track of the scenario", default = False, required = False)
-# @click.option('--plot_orbit', type=bool, help= "Plot the isometric view of the scenario", default = False, required = False)
-def main(infile: str, parallel = 0):
+@click.option(
+    "--case",
+    multiple = True,
+    help="The cases to run",
+    default = ('all',)
+)
+def main(infile: str, case: str,parallel = 0):
     """
     Description:
         main client funtion
@@ -39,17 +43,19 @@ def main(infile: str, parallel = 0):
 
     config = load_yaml(yaml_file=infile)
 
-    forge = config["forge"]
+    forges = config["cases_to_run"]
+    cases_to_run = [forge for forge in forges if forge.name in case or 'all' in case]
+
+    if not cases_to_run:
+        raise ValueError(f'Cases {case} not found in yaml input file')
 
 
     load_spice()
-    forge.run(parallel=parallel)
-    plt.show()
+    for forge in cases_to_run:
+        click.echo(f'Running case <{forge.name}> with {parallel} cores')
+        forge.run(parallel=parallel)
 
     pass
-
-    # TODO: handle orbital elements
-
 
 if __name__ == "__main__":
 

@@ -1,4 +1,4 @@
-from copy import copy, deepcopy
+from copy import deepcopy
 import numpy as np
 from python_propagate.agents import Agent
 from typing import Iterable
@@ -44,7 +44,7 @@ def set_subattribute(agent, public_attrs, attribute, value, name_index = None):
             continue
 
     if not set_bool:
-        raise AttributeError(
+        print(
             f'<{attribute}> is not a settable attribute of {agent.name}'
         )
 
@@ -65,28 +65,29 @@ def get_subattribute(agent, public_attrs, attribute):
     Raises:
         AttributeError: If the subattribute is not found in any of the public attributes.
     """
-
+    results = None  # Initialize the return value to None, in case no attribute is found.
     for att in public_attrs:
         try:
             items = getattr(agent, att)  # Get the attribute from the agent.
         except (AttributeError, TypeError):
-            continue
+            continue  # If the attribute cannot be accessed, skip to the next one.
 
         try:
             # If items is iterable, loop through its elements.
             for obj in items:
                 if hasattr(obj, attribute):
-                    results = getattr(obj, attribute)
+                    return getattr(obj, attribute)
         except (AttributeError, TypeError):
             # If items isn't iterable, skip it.
             continue
 
     if results is None:
         raise AttributeError(
-            f"'{attribute}' not found as a subattribute in any of the agent's public attributes"
+            f"'{attribute}' not found as a sub-attribute in any of the agent's public attributes\n" +
+            f"Agent {agent.name} might not have the attribute '{attribute}' set in any of its public attributes."
         )
 
-    return results
+    # return results
 
 
 class Gene:
@@ -137,7 +138,7 @@ def combine(genes: Iterable):
     chromosome_lists = [gene.chromosomes for gene in genes]
     public_attrs = [attr for attr in dir(genes[0].agent_base) if not attr.startswith("_")]
 
-    test = [chrom.manuevers[0].direction_ric for chrom in genes[0].chromosomes]
+    # test = [chrom.manuevers[0].direction_ric for chrom in genes[0].chromosomes]
     # Iterate over every combination of chromosomes
     for chromosome_combination in itertools.product(*chromosome_lists):
         base_agent = deepcopy(chromosome_combination[0])  # Start with the first chromosome

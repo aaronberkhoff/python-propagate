@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from python_propagate.plots import remove_duplicate_legend
+from pathlib import Path
 
 def plot_orbit(agents,scenario,output_directory,name,legend = True):
         """
@@ -184,6 +185,12 @@ def plot_orbit(agents,scenario,output_directory,name,legend = True):
         plt.tight_layout()
 
         # Save the figure to the designated output directory
+        if not isinstance(output_directory, Path):
+            output_directory = Path(output_directory)
+        if not output_directory.exists():
+            print(f"Creating output directory: {output_directory}")
+            output_directory.mkdir(parents=True, exist_ok=True)
+            
         saveas = output_directory / f"{name}_orbit_plot.png"
         print(f"Files saved:\n {saveas}: ")
         plt.savefig(saveas, dpi=100)
