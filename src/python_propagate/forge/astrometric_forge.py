@@ -24,8 +24,8 @@ from python_propagate.utilities.transforms import mean2true
 
 class AstroForge(Forge):
 
-    def __init__(self, scenario,genes, output_directory, data_types, output_types,add_noise = False, plots=None, name='Forge'):
-        super().__init__(scenario,genes, output_directory, data_types, output_types, add_noise,plots, name)
+    def __init__(self, scenario,agents, output_directory, data_types, output_types,add_noise = False, plots=None, name='Forge'):
+        super().__init__(scenario,agents, output_directory, data_types, output_types, add_noise,plots, name)
 
     def process_agent(self, agent, scenario, datatypes, add_noise = False, propagate=True):
         load_spice()
