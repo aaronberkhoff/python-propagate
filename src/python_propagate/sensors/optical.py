@@ -1,4 +1,7 @@
+
 import numpy as np
+from copy import deepcopy
+
 
 from python_propagate.sensors import Sensor
 from python_propagate.states import State
@@ -24,22 +27,23 @@ class Optical(Sensor):
 
 class Image:
 
-    def __init__(self,resolution = 1024, background = 'dark', scale = 'grey', timestamp = None, stars = 1000):
+    def __init__(self,resolution = 1024, background = 'dark', scale = 'grey', timestamp = None, n_stars = 1000):
 
         self.resolution = resolution
         self.background = background
         self.scale = scale
         self.timestamp = timestamp
-        self.stars = stars
+        self.n_stars = n_stars
         self.centroid = (resolution // 2,) * 2
-        self.data = np.zeros((resolution,resolution,3))
-        self._render_background(background=background)
+        self.base_image = np.zeros((resolution,resolution,3))
+        self.agent_image = np.zeros((resolution,resolution,3))
+        self.background_image = np.zeros((resolution,resolution,3))
 
-
+        self._render_background()
 
         pass
 
-    def _render_background(self, background, blur_length=10, blur_direction=(0, 1)):
+    def _render_background(self, blur_length=10, blur_direction=(0, 1)):
         """
         Renders background stars with optional motion blur.
 
@@ -48,11 +52,11 @@ class Image:
             blur_length (int): Length of motion blur in pixels.
             blur_direction (tuple): Direction of blur (dx, dy).
         """
-        if background == 'dark':
+        if self.background == 'dark':
             pass  # default is dark
 
-        elif background == 'stars':
-            num_stars = self.stars
+        elif self.background == 'stars':
+            num_stars = self.n_stars
 
             star_x = np.random.randint(0, self.resolution, num_stars)
             star_y = np.random.randint(0, self.resolution, num_stars)
@@ -73,16 +77,12 @@ class Image:
 
                     # Check if inside the image bounds
                     if 0 <= xi < self.resolution and 0 <= yi < self.resolution:
-                        self.data[xi, yi,:] = brightness  # or you could fade brightness
+                        self.background_image[xi, yi,:] = brightness  # or you could fade brightness
                         if self.scale == 'rgb':
-                            self.data[xi, yi,:] *= self._generate_random_color()  # or you could fade brightness
+                            self.background_image[xi, yi,:] *= self._generate_random_color()  # or you could fade brightness
         
-        
-        
-
-
         else:
-            raise ValueError(f"{background} not supported")
+            raise ValueError(f"{self.background} not supported")
 
 
     def _generate_random_color(self):
@@ -96,11 +96,30 @@ class Image:
         b = np.random.uniform(0.1, 1.0)  # blue between 0.1 and 1.0
 
         return r, g, b
+    
+    @property
+    def rendered_image(self):
+
+        data = self.base_image
+        data[self.background_image > 0] = self.background_image[self.background_image > 0]
+        data[self.agent_image > 0] = self.agent_image[self.agent_image > 0]
+
+        return data
+    
+    def __add__(self,other):
+        if not isinstance(other, Image):
+            return NotImplemented
+        
+        self.agent_image[other.agent_image > 0] = other.agent_image[other.agent_image>0]
+
+        return self
+
+
 
 
 class Camera(Sensor):
 
-    def __init__(self, noise_mean, noise_covariance, resolution = 1024, reference_range = 30000, reference_area = 1, reference_brightness = 15): #reference range -> 1 pixel at specified range
+    def __init__(self, noise_mean = [0,0], noise_covariance = [0,0], resolution = 1024, reference_range = 30000, reference_area = 1, reference_brightness = 15): #reference range -> 1 pixel at specified range
 
         reference_area /= 1000
         self.resolution = resolution
@@ -125,7 +144,7 @@ class Camera(Sensor):
         fov_deg = station.minimum_elevation_angle
 
         # Image parameters
-        image_height, image_width = image.data.shape[:2]
+        image_height, image_width = image.base_image.shape[:2]
 
         # Get Azimuth and Elevation
         az_rad, el_rad, enu = station.calculate_azimuth_and_elevation(state=state, enu_frame=True)
@@ -172,7 +191,7 @@ class Camera(Sensor):
         ]
 
         # Blend or paste the agent image
-        image.data[
+        image.agent_image[
             new_row_start:new_row_end,
             new_col_start:new_col_end
         ] = agent_patch
@@ -190,28 +209,27 @@ class Camera(Sensor):
         """
         Draws vertical and horizontal crosshairs through the center of the image.
         """
-        image_height, image_width = image.data.shape[:2]
+        image_height, image_width = image.base_image.shape[:2]
         center_x = image_width // 2
         center_y = image_height // 2
 
         # Draw vertical line
         for y in range(image_height):
-            image.data[y, center_x,:] = (0.0,1.0,0.0)  
+            image.base_image[y, center_x,:] = (0.0,1.0,0.0)  
 
         # Draw horizontal line
         for x in range(image_width):
-            image.data[center_y, x, : ] = (0.0,1.0,0.0)  
-
-
-
-
-
+            image.base_image[center_y, x, : ] = (0.0,1.0,0.0)  
 
     
     def _generate_agent_image(self, state, agent: Agent, station: Station):
         _, apparent_mag, areas = station.calculate_light_areas_exposed(state, agent)
 
+        if not areas.size: #spacecraft is not visible to camera
+            return np.zeros((1,1,3))
+        
         pixel_sizes = areas / self.pixel_size
+
         nearest_square = round_to_nearest_square(np.sum(pixel_sizes))
 
         # Create a base image with RGB channels
@@ -251,14 +269,6 @@ class Camera(Sensor):
         # agent_color = np.array([255, 0, 0])
 
         return base_image
-
-
-            
-
-
-    def set_image_background(self):
-
-        pass 
 
         
 

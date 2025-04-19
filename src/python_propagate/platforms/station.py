@@ -323,7 +323,7 @@ class Station(Platform):
         )
 
         if not shadow_bool:
-            # If not in shadow, return zero flux
+            # If day time, return zero flux
             return 0.0, np.nan, np.array([])
 
 
