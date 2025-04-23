@@ -1,0 +1,91 @@
+central_body: &earth !Earth
+  flattening_bool: False
+
+celestial_bodies:
+ - &moon !Moon
+   name: 'Moon'
+ - &sun  !Sun
+   name: 'Sun'
+
+
+start_times:
+  - &dec15 "2025-01-15T12:30:00.0"
+  - &dec17 "2025-01-17T12:30:00.0"
+
+stations: 
+  - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: -90.0, identity: 0}
+
+scenarios: 
+  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
+
+
+manuevers: 
+    #Thrust Manuever options
+  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 5}, execution_duration: {minutes: 1}}
+  - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+    #Station keeping loss Manuever options
+  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3'], execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+    #Attitude changing manuevers
+  - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+
+#Define the agents in the simulation
+
+#Agent bus
+buses:
+  - &busbox  !Bus {name: "box",  extents: [2.0, 2.0, 2.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # box     
+  - &busrect !Bus {name: "rect", extents: [4.0, 2.0, 3.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # rectangular     
+
+#Define the agents initial conditions
+
+initial_conditions:
+  - &geo1  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 180.0} 
+
+
+
+#Define the individual agents in the simulation
+
+#Nominal Agents
+agents: &nominal 
+  - &GEO1 !Spacecraft { name: "GEO1", start_time: *dec15, state: *geo1, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &GEO2 !Spacecraft { name: "GEO1", start_time: *dec15, state: *geo1, dt: {hours: 1}, duration: {days: 30},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+
+
+# Define the genes if one desires to generate a range of spacecraft parameters
+
+#Testing the spawn of new geo agents:
+
+
+
+
+#Agents in forge can be define in a Genes block to generate a range of agents
+#However this is not necessary and the agents can be defined individually or in "packs"
+
+# The forges define the cases
+forges:
+  #This case is run with a list of different agents
+  - &case1 !AstroForge {name: "MLForge", scenario: *scenario1, agents: [*GEO1],
+    data_types: ['X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM','VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS'], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit'],
+    output_directory: 'tests/ml/results/geo_test1',
+    output_types: ['h5']}
+
+  - &case2 !AstroForge {name: "MLForge1hrdt", scenario: *scenario1, agents: [*GEO2],
+    data_types: ['X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM','VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS'], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit'],
+    output_directory: 'tests/ml/results/geo_test1',
+    output_types: ['h5','csv']}
+
+cases_to_run: [*case2]
+
+       
+
+  
