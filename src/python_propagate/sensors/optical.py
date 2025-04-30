@@ -198,9 +198,9 @@ class Camera(Sensor):
 
 
         #crosslines
-        if crosslines:
+        # if crosslines:
 
-            self._draw_crosshairs(image)
+        #     self._draw_crosshairs(image)
 
         return image
     

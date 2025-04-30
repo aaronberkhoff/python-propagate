@@ -22,7 +22,7 @@ import numpy as np
 def test_image_unit() -> None:
     config = load_yaml(yaml_file='examples/forge_eo_ir.yaml')
 
-    agents = config['nominal_agents'][0]
+    agents = config['anomalous_agents'][0]
     # agents = config['genes1'].agents
     station = config["stations"][0]
     camera = Camera(noise_mean=[0, 0], noise_covariance=[0, 0])
@@ -52,24 +52,7 @@ def test_image_unit() -> None:
                 )
 
     imageio.mimsave("tests/results/eoir_test.mp4", movie, fps= 5)
-    # fig, ax = plt.subplots()
-    
-    # im = ax.imshow(image_data[0].data, cmap='gray', animated=True)
 
-    # def _update(frame):
-    #     im.set_array(image_data[frame].data)  # Update the image with the current frame
-    #     return [im]
-
-    # # Create the animation
-    # ani = FuncAnimation(fig, _update, frames=len(image_data), interval=10, blit=True)
-
-    # # Save the animation as a video file
-    # # plt.show()
-    # ani.save('image_movie.html', writer='html', fps=1)
-
-    # plt.imshow(image.data, cmap='gray')
-
-    # plt.show()
 
     pass
 # Update function for the animation
