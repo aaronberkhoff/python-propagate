@@ -28,7 +28,7 @@ manuevers:
   - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 5}, execution_duration: {minutes: 1}}
 
     #Station keeping loss Manuever options
-  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3'], execution_time: {days: 5}, execution_duration: {minutes: 1}}
+  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {days: 5}, execution_duration: {minutes: 1}}
 
     #Attitude changing manuevers
   - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
