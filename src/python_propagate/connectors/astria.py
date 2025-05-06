@@ -6,6 +6,12 @@ from neo4j.exceptions import AuthError, ServiceUnavailable
 import yaml
 import getpass
 import numpy as np
+from typing import Iterable, Literal
+
+from python_propagate.utilities.load_spice import load_spice
+from python_propagate.states import State
+
+
 
 # URL = "http://astria.tacc.utexas.edu/AstriaGraph/"
 # URL = "http://astria.tacc.utexas.edu/AstriaGraph/cesium/Assets/IAU2006_XYS/IAU2006_XYS_0.json"
@@ -15,12 +21,18 @@ CREDENTIALS_FILE = "credentials.yaml"
 CYPHER_QUERY = "MATCH (n) RETURN count(n) as num"
 DATABASE = 'astria'
 
+
+
 class AstriaConnector:
 
     
     _cart_query = lambda time, norad_id : f"""MATCH (p:`SpaceObject`:`{time}`)-[:has_orbit]->(Orbit)
                                               WHERE p.NoradId = "{norad_id}"
                                               RETURN Orbit.Cart as Cart"""
+    
+    _full_query = lambda time, norad_id : f"""MATCH (p:`SpaceObject`:`{time}`)-[:has_orbit]->(Orbit)
+                                              WHERE p.NoradId = "{norad_id}"
+                                              RETURN Orbit as orbit"""
     
     _oe_query = lambda time, norad_id : f"""MATCH (p:`SpaceObject`:`{time}`)-[:has_orbit]->(Orbit)
                                               WHERE p.NoradId = "{norad_id}"
@@ -118,6 +130,27 @@ class AstriaConnector:
         result = self.run_query(AstriaConnector._oe_query, norad_id = norad_id, time = time)[0]
 
         return result
+    
+    
+    def get_full_state(self,norad_id,time) -> State:
+
+        load_spice()
+
+        if isinstance(norad_id,int):
+            norad_id = str(norad_id)
+
+        result = self.run_query(AstriaConnector._full_query, norad_id = norad_id, time = time)[0]
+
+        cartesian = np.array(result['orbit']['Cart']) / 1000
+        # oe = [result['orbit']['SMA'], result['orbit']['Ecc'], result['orbit']['Inc'], result['orbit']['ArgP'], result['orbit']['RAAN'], result['orbit']['MeanAnom']]
+        epoch = result['orbit']['Epoch'].to_native()
+        state = State(position = cartesian[:3] ,velocity = cartesian[3:], time = epoch)
+
+        return state
+
+
+
+
 
 
 
