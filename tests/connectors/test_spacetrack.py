@@ -33,7 +33,7 @@ def test_spacetrack_tle_history() -> None:
     start_time = datetime(2023, 1, 1)
     end_time = datetime(2023, 1, 10)
 
-    tle_history = connector.get_tle_history(25544, start_time, end_time)  # ISS NORAD ID
+    tle_history = connector.get_tle_history(37602, start_time, end_time)  # ISS NORAD ID
 
     for timestamp, tle in tle_history:
         print(f"{timestamp}: {tle}")
