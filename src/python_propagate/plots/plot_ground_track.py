@@ -55,6 +55,26 @@ def plot_ground_track(
             linestyle="none",
             transform=projection,
             label=f"{agent.name} Track",
+
+        )
+        ax.plot(
+            track_lons[0],
+            track_lats[0],
+            color="green",
+            marker="s",
+            linestyle="none",
+            transform=projection,
+            label=f"{agent.name} Start",
+        )
+
+        ax.plot(
+            track_lons[-1],
+            track_lats[-1],
+            color="red",
+            marker="^",
+            linestyle="none",
+            transform=projection,
+            label=f"{agent.name} Start",
         )
 
     # Now, for each station, find and plot the points where the agent is visible.
