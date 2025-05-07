@@ -27,7 +27,7 @@ This will prompt the user for credentials. Provide your username and credentials
 
 ### **2. Input Parameters**
 
-Once an connector is create one can input parameters to return results.
+Once a connector is create one can input parameters to return results.
 
 ```python
 state = astria.get_full_state(norad_id=norad_id,time=time)
@@ -141,7 +141,23 @@ altitude = np.linalg.norm(position_eci)
 
 ```
 
+### **4. Query a time range and multiple IDs**
 
+To query a range of times and with multiple objects use the following process:
+
+```python
+astria = AstriaConnector()
+
+norad_ids = [41866, 43226, 42818]
+
+start_time = "2019-10-22"
+end_time = "2019-11-22"
+
+csv_path = "tests/results/astria/test_csv.csv" #optional, default is None
+pandas_dataframe = astria.get_data(norad_ids=norad_ids,start_time=start_time,end_time=end_time,csv_path=csv_path)
+```
+
+This will produce a pandas dataframe containing the available data for each object.
 
 
 
