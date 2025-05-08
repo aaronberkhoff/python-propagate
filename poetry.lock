@@ -1730,6 +1730,26 @@ files = [
 arrays = ["numpy"]
 
 [[package]]
+name = "neo4j"
+version = "5.28.1"
+description = "Neo4j Bolt driver for Python"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "neo4j-5.28.1-py3-none-any.whl", hash = "sha256:6755ef9e5f4e14b403aef1138fb6315b120631a0075c138b5ddb2a06b87b09fd"},
+    {file = "neo4j-5.28.1.tar.gz", hash = "sha256:ae8e37a1d895099062c75bc359b2cce62099baac7be768d0eba7180c1298e214"},
+]
+
+[package.dependencies]
+pytz = "*"
+
+[package.extras]
+numpy = ["numpy (>=1.7.0,<3.0.0)"]
+pandas = ["numpy (>=1.7.0,<3.0.0)", "pandas (>=1.1.0,<3.0.0)"]
+pyarrow = ["pyarrow (>=1.0.0)"]
+
+[[package]]
 name = "nodeenv"
 version = "1.9.1"
 description = "Node.js virtual environment builder"
