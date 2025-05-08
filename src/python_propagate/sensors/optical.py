@@ -1,13 +1,6 @@
 
 import numpy as np
-from copy import deepcopy
-from typing import Iterable
-from itertools import product
 import random 
-import cv2
-from scipy.ndimage import gaussian_filter
-from scipy.ndimage import rotate
-
 
 from python_propagate.sensors import Sensor
 from python_propagate.states import State
