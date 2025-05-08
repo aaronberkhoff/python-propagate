@@ -2,6 +2,7 @@
 import numpy as np
 from copy import deepcopy
 from typing import Iterable
+from itertools import product
 import random 
 import cv2
 from scipy.ndimage import gaussian_filter
@@ -34,17 +35,17 @@ class Optical(Sensor):
 
 class Image:
 
-    def __init__(self,resolution = 1024, background = 'dark', scale = 'grey', timestamp = None, n_stars = 1000, high_res = 8000):
+    def __init__(self,resolution = (1024,1024), background = 'dark', scale = 'grey', timestamp = None, n_stars = 1000, high_res = 8000):
 
         self.resolution = resolution
         self.background = background
         self.scale = scale
         self.timestamp = timestamp
         self.n_stars = n_stars
-        self.centroid = (resolution // 2,) * 2
-        self.base_image = np.zeros((resolution,resolution,3),dtype=int)
-        self.agent_image = np.zeros((resolution,resolution,3),dtype=int)
-        self.background_image = np.zeros((resolution,resolution,3),dtype=int)
+        # self.centroid = (resolution // 2,) * 2
+        self.base_image = np.zeros(resolution + (3,),dtype=int)
+        self.agent_image = np.zeros(resolution + (3,),dtype=int)
+        self.background_image = np.zeros(resolution + (3,),dtype=int)
         self.high_res = high_res
 
         self._render_background()
@@ -66,8 +67,8 @@ class Image:
         elif self.background == 'stars':
             num_stars = self.n_stars
 
-            star_x = np.random.randint(0, self.resolution, num_stars)
-            star_y = np.random.randint(0, self.resolution, num_stars)
+            star_x = np.random.randint(0, self.resolution[0], num_stars)
+            star_y = np.random.randint(0, self.resolution[1], num_stars)
 
             # Generate random integer brightness values (e.g., between 50 and 255)
             star_brightness = np.random.randint(50, 256, num_stars)  
@@ -85,7 +86,7 @@ class Image:
                     yi = int(round(y + i * dy))
 
                     # Check if inside the image bounds
-                    if 0 <= xi < self.resolution and 0 <= yi < self.resolution:
+                    if 0 <= xi < self.resolution[0] and 0 <= yi < self.resolution[1]:
                         self.background_image[xi, yi,:] = brightness  # or you could fade brightness
                         if self.scale == 'rgb':
                             self.background_image[xi, yi,:] *= self._generate_star_color()  # or you could fade brightness
@@ -122,73 +123,57 @@ class Image:
     @property
     def rendered_image(self):
 
-        data = np.clip(self.base_image,0,255).astype(dtype=np.uint8)
-        data[self.background_image > 0] = self.background_image[self.background_image > 0]
-        data[self.agent_image > 0] = self.agent_image[self.agent_image > 0]
-
-        return data
+        if self.agent_image is not None and np.any(self.agent_image != -99):
+            data = np.clip(self.base_image,0,255).astype(dtype=np.int16)
+            data[self.background_image > 0] = self.background_image[self.background_image > 0]
+            data[self.agent_image > 0] = self.agent_image[self.agent_image > 0]
+            return data
+        else:
+            return np.full(self.resolution + (3,), -99, dtype=np.int16)
     
-    def __add__(self,other):
+    def __add__(self, other):
         if isinstance(other, Image):
-            self.agent_image[other.agent_image > 0] = other.agent_image[other.agent_image>0]
-            return self
+            np.copyto(self.agent_image, other.agent_image, where=(other.agent_image > 0))       
         elif other == 0:
             return self
-        else:
-            return NotImplemented
+        return NotImplemented
         
     def __radd__(self, other):
         return self.__add__(other)  # ensures 0 + obj works
         
-        
-
-        
-
-
-
 
 class Camera(Sensor):
 
-    # def __init__(self, noise_mean = [0,0], noise_covariance = [0,0], resolution = 1024, reference_range = 30000, reference_area = 1, reference_brightness = 15, shutter_speed = 1 / 250): #reference range -> 1 pixel at specified range
     def __init__(self, 
                  noise_mean = [0,0],
                  noise_covariance = [0,0],
-                 resolution = 1024*2,
-                 shutter_speed = 1 / 250, 
-                 reference_mag = 22,
+                 resolution = (1024,1024), 
+                 reference_mag = 20,
                  fov = 60,
-                 high_res = 1e7,
-                 pointing_angles = (0,90)):
+                 pointing_angles = (0,0),
+                 background = 'stars'):
         
         """
-        Parameters:
-        ----------
-        noise_mean : list
-            Mean of the noise in the image.
-        noise_covariance : list
-            Covariance of the noise in the image.
-        resolution : int
-            Resolution of the image.
-        shutter_speed : float
-            Shutter speed of the camera in Hz.
         """
 
-        # reference_area /= 1000
-        self.resolution = resolution
+        self.resolution = tuple(resolution)
         fov = fov * DEG2RAD
-        self.high_res = int(high_res)
-        # self.reference_range = reference_range
-        # self.reference_area = reference_area # convert to km
-        # self.pixel_size = np.sqrt(reference_area) / reference_range
         v_band_magnitude = 3.6e-9 # Approximate V-band magnitude for the Sun in W/m^2, used for apparent magnitude calculation
         self.reference_flux = v_band_magnitude * 10 ** (-reference_mag / 2.5)
-        self.shutter_speed = shutter_speed
         self.fov = fov
-        self.angular_resolution = fov / resolution
-        # self.angular_resolution = resolution / fov  
-        # self.resolution_scale = high_res // resolution
-        self.az_pointing = pointing_angles[0] * DEG2RAD
-        self.el_pointing = pointing_angles[1] * DEG2RAD
+        self.angular_resolution =  resolution[0] / fov
+        daz_rad, del_rad = pointing_angles[0] * DEG2RAD, pointing_angles[1] * DEG2RAD
+
+        az_pointing_transform = np.array([[np.cos(daz_rad),-np.sin(daz_rad),0],
+                                          [np.sin(daz_rad),np.cos(daz_rad),0],
+                                          [0,0,1]])
+        
+        el_pointing_transform = np.array([[1,0,0],
+                                          [0, np.cos(del_rad), -np.sin(del_rad)],
+                                          [0, np.sin(del_rad), np.cos(del_rad)]])
+        
+        self.pointing_rotation = az_pointing_transform @ el_pointing_transform
+        self.background = background
         
 
         super().__init__(noise_mean, noise_covariance)
@@ -199,7 +184,7 @@ class Camera(Sensor):
 
     def generate_image(self, state: State, agent: Agent, station: Station, crosslines = False):
         # Create the background
-        image = Image(resolution=self.resolution, timestamp=None, background='stars', scale='rgb')
+        image = Image(resolution=self.resolution, timestamp=None, background=self.background, scale='rgb')
 
         # Generate the agent's image (spacecraft)
         self._generate_agent_image(image, state, agent, station)
@@ -235,210 +220,123 @@ class Camera(Sensor):
         rho, rhodot = station.calculate_range_and_range_rate_from_target(state=state, vectorized=True)
         az_rad, el_rad,enu,enu_transform = station.calculate_azimuth_and_elevation(state=state, enu_frame=True)
 
-        # enu[0] = -enu[0] # reverse the eastward direction
-
-        enu_rhodot = enu_transform @ rhodot
-        enu_rho = enu_transform @ rho
-        enu_rho[1] *= -1
-        enu_rho[0] *= -1
-
-        enu_rhodot[1] *= -1
-        enu_rhodot[0] *= -1
+        rhodot_enu = enu_transform @ rhodot
+        rho_enu = enu_transform @ rho
+ 
         # enu = np.array([1, 0, 1])  # East and Up
         if not areas.size or el_rad < (station.minimum_elevation_angle * DEG2RAD):  # spacecraft not visible
-            return None
+            image.agent_image = np.full(self.resolution + (3,), -99, dtype=np.int16)
+            return False
 
         # Calculate pixel size and the location on the image
         apparent_pixel_sizes = np.sqrt(areas / (np.linalg.norm(rho)**2))  # in radians
-        pixel_sizes = (apparent_pixel_sizes / self.angular_resolution)
-        # pixel_sizes_low_res = pixel_sizes / self.resolution_scale
+        pixel_sizes = (apparent_pixel_sizes * self.angular_resolution)
 
-        x = (enu_rho[0] / enu_rho[2]) * self.resolution
-        y = (enu_rho[1] / enu_rho[2]) * self.resolution
 
-        x_pixel = int(self.resolution/2 + x)
-        y_pixel = int(self.resolution/2 + y)
+        x_pixel, y_pixel = self._az_el_to_image_coords(rho_enu=rho_enu)
+
+        if not self._check_pixel_within_bounds(x_pixel=x_pixel,y_pixel=y_pixel):
+            print('WARNING: Object is outside fov')
+            image.agent_image = np.full(self.resolution + (3,), -99, dtype=np.int16)
+            return False
 
         # Calculate the total flux, considering the shutter speed
-        total_flux = flux / self.shutter_speed
+        total_flux = flux * agent.dt.total_seconds()
         brightness = total_flux / self.reference_flux * 255
 
-        #Averging
-        # Correct size: total full pixels + one for each fractional part
-        total_pixels = int(np.sum(np.floor(pixel_sizes))) + np.count_nonzero(pixel_sizes % 1 > 0)
-        brightness_map = np.zeros(total_pixels)
-        # brightness_area = np.zeros(int(np.ceil(np.sum(pixel_sizes))))
+        total_brightness = np.clip(np.sum(brightness * pixel_sizes),0,255)
+        total_pixels = np.ceil(np.sum(pixel_sizes))
+        # total_pixels = 100
 
     
-        # Define sigmas: major axis (motion) and minor axis (orthogonal)
-        # sigma_major = np.linalg.norm(pixel_blur_length) / 2.355  # FWHM to sigma
-        # sigma_minor = 0.5  # small value to keep blur narrow across motion
+        pixel_blur_vector = self._blur_vector(rho_enu=rho_enu,rhodot_enu=rhodot_enu,dt = agent.dt.total_seconds())
 
-        index = 0
-        for i, area in enumerate(pixel_sizes):
-            num_pixels = int(np.floor(area))  # Number of whole pixels
-            remaining_fraction = area - num_pixels  # Fractional part of pixels
-
-            # Assign the full brightness for the whole pixels
-            for _ in range(num_pixels):
-                brightness_map[index] = brightness[i]
-                index += 1
-
-            # For the fractional part, we can assign the remaining brightness to a single pixel
-            if remaining_fraction > 0:
-                brightness_map[index] = brightness[i] * remaining_fraction
-                index += 1
-
-        # num_pixels
-        # Iterate over the faces of the spacecraft
-        low_res_area = np.sum(pixel_sizes) 
-        low_res_pixels = np.ceil(low_res_area)
-
-        low_res_bright = np.clip(low_res_area * np.sum(brightness_map),0,255)
-        
-        
-        # Assuming each face has a center (x_face, y_face)
-        # You need the specific x and y offsets for each face from the spacecraft center (x_pixel, y_pixel)
-        
-        # For simplicity, we're assuming the faces are square, but you can adjust for non-square shapes (e.g., elliptical or rectangular).
-        
-        buffer = 3 # two pixel buffer
-        # length = int(np.ceil(np.linalg.norm(pixel_blur_length))) + buffer
-        
-        # angle_deg = np.degrees(angle_rad)  # Optional: ensure 0–360 range
-
-        #Compute the blur
-        pixel_blur_vector = (enu_rhodot / np.linalg.norm(enu_rho) * self.shutter_speed) / self.angular_resolution
-        # pixel_blur_vector = (enu_rhodot / enu_rho[2]  * self.shutter_speed) / self.angular_resolution
-        # blur_lengths, pixel_blur_vector = compute_blur_length(rhodot=rhodot,rho=rho,exposure_time=self.shutter_speed,angular_resolution=self.angular_resolution)
-        # pixel_blur_vector = (enu_rhodot) / np.linalg.norm(enu_rhodot) * agent.dt.total_seconds() * self.angular_resolution
-        # pixel_blur_vector = (enu_rhodot  * 10000.0 / enu_rho[2] )  * self.angular_resolution
-        # pixel_blur_vector = [100,0,0]
-
-        # apply_motion_blur(image,(x_pixel,y_pixel),low_res_pixels,pixel_blur_vector,low_res_bright)
-        apply_motion_streak(image,(x_pixel,y_pixel),low_res_pixels,pixel_blur_vector,low_res_bright)
+        # apply_motion_streak(image,(x_pixel,y_pixel),total_pixels,pixel_blur_vector,total_brightness)
+        self.apply_motion_blur(image.agent_image,(x_pixel,y_pixel),total_pixels,pixel_blur_vector,total_brightness)
                                                     
-        # image.agent_image[y_pixel - half_size:y_pixel + half_size, x_pixel - half_size:x_pixel + half_size] = [low_res_bright,low_res_bright,low_res_bright]
-
-
-
-
-        # image.agent_image = apply_directional_blur(image.agent_image, angle_deg, sigma_major, sigma_minor)
-        # low_res_image = cv2.resize(base_image, (self.resolution, self.resolution), interpolation=cv2.INTER_LINEAR)
-        # image.agent_image = gaussian_filter(image.agent_image, sigma=1.0).astype(dtype=np.uint8)
-
         return True
 
+    def _az_el_to_image_coords(self,rho_enu):
 
 
-def apply_motion_blur(image, center, pixel_area, pixel_blur_vector, brightness):
-    import numpy as np
+        width, height = self.resolution
 
-    x_center, y_center = center
-    dx, dy, _ = pixel_blur_vector
+        rho_enu = self.pointing_rotation @ rho_enu
 
-    # Compute blur length from motion vector
-    blur_length = int(np.ceil(np.sqrt(dx**2 + dy**2)))
-    blur_length = max(blur_length, 1)
+        # ENU to camera rotation (you can modify this as needed)
+        R = np.array([
+            [-1,  0,  0],
+            [0,  -1, 0],
+            [0,  0,  1]
+        ])
 
-    # Estimate width from pixel area
-    # half_width = int(np.ceil(np.sqrt(pixel_area / blur_length)))
-    # width = 2 * half_width + 1
+        cam_dir = R @ rho_enu
 
-    # Create patch grid (centered)
-    # x = np.arange(-blur_length, blur_length + 1)
-    # y = np.arange(-half_width, half_width + 1)
-    # X, Y = np.meshgrid(x, y)
+        
+        cx, cy = width / 2, height / 2
 
-    # Rotate to align with motion direction
-    angle_rad = np.arctan2(dy, dx)
-    # Define blur length and perpendicular thickness (in pixels)
-    streak_half_length = int(np.ceil(np.sqrt(dx**2 + dy**2)))
-    streak_half_width = int(np.ceil(np.sqrt(pixel_area / (2 * streak_half_length + 1))))
-
-    # Create meshgrid around the center (adjust size based on motion and thickness)
-    size_y = streak_half_width * 2 + 1
-    size_x = streak_half_length * 2 + 1
-    Y, X = np.meshgrid(np.arange(-size_y // 2, size_y // 2 + 1),
-                    np.arange(-size_x // 2, size_x // 2 + 1))
-
-    # Rotate coordinates into motion-aligned frame
-    X_rot = X * np.cos(angle_rad) + Y * np.sin(angle_rad)
-    Y_rot = -X * np.sin(angle_rad) + Y * np.cos(angle_rad)
-
-    # Create binary mask: full brightness inside streak width
-    mask = np.abs(Y_rot) <= streak_half_width
-
-    # Fill brightness values where mask is True
-    patch = np.zeros((*mask.shape, 3), dtype=np.uint8)
-    brightness_val = np.array(brightness if isinstance(brightness, (list, tuple, np.ndarray)) else [brightness]*3)
-
-    patch[mask] = brightness_val
-
-    # Compute destination bounds in image
-    x_start = x_center - streak_half_length
-    y_start = y_center - streak_half_width
-    x_end = x_start + patch.shape[1]
-    y_end = y_start + patch.shape[0]
-
-    # Clip bounds to image size
-    h, w = image.agent_image.shape[:2]
-    x_start_clip, x_end_clip = max(0, x_start), min(w, x_end)
-    y_start_clip, y_end_clip = max(0, y_start), min(h, y_end)
-
-    # Patch bounds
-    patch_x1 = x_start_clip - x_start
-    patch_x2 = patch_x1 + (x_end_clip - x_start_clip)
-    patch_y1 = y_start_clip - y_start
-    patch_y2 = patch_y1 + (y_end_clip - y_start_clip)
-
-    # Apply to image
-    image.agent_image[y_start_clip:y_end_clip, x_start_clip:x_end_clip] = \
-        patch[patch_y1:patch_y2, patch_x1:patch_x2]
+        x_pixel = self.angular_resolution * (cam_dir[0] / cam_dir[2]) + cx
+        y_pixel = self.angular_resolution * (cam_dir[1] / cam_dir[2]) + cy
 
 
+        return int(x_pixel), int(y_pixel)
+    
+    def _blur_vector(self,rho_enu,rhodot_enu,dt):
 
-def apply_motion_streak(image, center, pixel_area, pixel_blur_vector, brightness):
-    """
-    Draws a sharp, constant-brightness streak in the direction of motion.
+        rho_enu = self.pointing_rotation @ rho_enu
+        rhodot_enu = self.pointing_rotation @ rhodot_enu
 
-    Parameters:
-        image            : np.ndarray (H, W, 3)
-        center           : tuple (x, y)
-        pixel_area       : float
-        pixel_blur_vector: np.ndarray (dx, dy, dz) - motion direction
-        brightness       : float or [R, G, B]
-    """
-    x_center, y_center = center
-    dx, dy, _ = pixel_blur_vector
-    length = int(np.ceil(np.sqrt(dx**2 + dy**2)))
+        drho = rhodot_enu * dt
+        
+        # ENU to camera rotation (you can modify this as needed)
+        R = np.array([
+            [-1,  0,  0],
+            [0,  -1, 0],
+            [0,  0,  1]
+        ])
 
-    if length == 0:
-        length = 1  # Avoid zero-length line
+        drho = R @ drho
+        cam_dir = R @ rho_enu
 
-    # Normalize direction
-    dx /= length
-    dy /= length
 
-    # Define streak width based on pixel area
-    width = int(np.sqrt(pixel_area / length))
-    if width < 1:
-        width = 1
+        dx_pixel = int((self.angular_resolution * (drho[0] / cam_dir[2]))) #TODO make sure this approximation is good rx/rz
+        dy_pixel = int((self.angular_resolution * (drho[1] / cam_dir[2]))) 
+        dz_pixel = int((self.angular_resolution * (drho[2] / cam_dir[2])))
+        
+        pixel_blur_vector = np.array([dx_pixel,dy_pixel,dz_pixel])
 
-    for i in range(length):
-        x = int(x_center + i * dx)
-        y = int(y_center + i * dy)
+        return pixel_blur_vector 
+    
+    
+    def _check_pixel_within_bounds(self,x_pixel,y_pixel):
 
-        # Draw a square around the line point for "thickness"
-        for wx in range(-width // 2, width // 2 + 1):
-            for wy in range(-width // 2, width // 2 + 1):
-                xi = x + wx
-                yi = y + wy
-                if 0 <= xi < image.agent_image.shape[1] and 0 <= yi < image.agent_image.shape[0]:
-                    image.agent_image[yi, xi] = brightness
+            if x_pixel > self.resolution[0] or y_pixel > self.resolution[1] or x_pixel < 0 or y_pixel < 0:
+                return False
+            else: 
+                return True
 
-    return True
+    def apply_motion_blur(self,image,center,pixel_area,pixel_blur_vector, brightness):
 
+        x_center, y_center = center
+        dx, dy, dz = pixel_blur_vector
+
+        half_area = int(np.sqrt(pixel_area))
+        length = int(np.sqrt(dx**2 + dy**2))
+        
+        dx /= length
+        dy /= length
+        for i in range(length):
+
+            x = int(dx * i) + x_center
+            y = int(dy * i) + y_center   
+
+            if self._check_pixel_within_bounds(x,y):
+                image[y - half_area: y + half_area, x - half_area:x + half_area] = [brightness,brightness,brightness]
+            else:
+                pass
+                
+
+    
 
 
 def draw_circle(image, center, radius, color):
@@ -458,38 +356,4 @@ def draw_circle(image, center, radius, color):
     mask = (x_center - x)**2 + (y_center - y)**2 <= radius**2
     image[mask] = color
 
-def compute_blur_length(rhodot, rho, exposure_time, angular_resolution):
-    """
-    Computes motion blur length in pixels from relative velocity (rhodot).
 
-    Parameters:
-        rhodot : (N, 3) np.ndarray - Relative velocity vectors (in m/s)
-        rho    : (N, 3) np.ndarray - Line-of-sight vectors (in m)
-        exposure_time : float - Camera exposure time (in seconds)
-        angular_resolution : float - Angular resolution (in radians per pixel)
-
-    Returns:
-        blur_lengths : (N,) np.ndarray - Blur lengths in pixels for each object
-        pixel_vectors: (N, 2) np.ndarray - Motion vector in pixel space (dx, dy)
-    """
-    # Normalize line-of-sight vectors to get unit direction
-    rhodot = rhodot[:,np.newaxis]
-    rho = rho[:,np.newaxis]
-    rho_unit = rho / np.linalg.norm(rho, axis=1, keepdims=True)
-
-    # Project rhodot onto plane orthogonal to rho (perpendicular motion)
-    radial_component = np.sum(rhodot * rho_unit, axis=1, keepdims=True) * rho_unit
-    perp_velocity = rhodot - radial_component  # Tangential motion causes streaks
-
-    # Angular rate (radians/sec) = perpendicular velocity / distance
-    rho_norm = np.linalg.norm(rho, axis=1, keepdims=True)
-    angular_rate = perp_velocity / rho_norm  # radians/sec in x, y, z (approx)
-
-    # Total angular displacement over exposure time (in radians)
-    angular_disp = angular_rate * exposure_time
-
-    # Convert angular displacement to pixel displacement
-    pixel_vectors = angular_disp / angular_resolution  # Drop z (depth)
-    blur_lengths = np.linalg.norm(pixel_vectors, axis=1)
-
-    return blur_lengths, pixel_vectors

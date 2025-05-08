@@ -38,7 +38,7 @@ class Station(Platform):
     def __init__(
         self,
         lat_long_alt: tuple,
-        sensor: str = "none",
+        sensor: None,
         name: str = "none",
         minimum_elevation_angle: float = 0.0,
         identity: int = 0,
@@ -65,11 +65,12 @@ class Station(Platform):
             The minimum elevation angle of the station (default is 0.0).
         """
         super().__init__(lat_long_alt)
-        self._sensor = sensor
+
         self._name = name
         self._minimum_elevation_angle = minimum_elevation_angle
         self._identity = identity
         self._color = color
+        self.sensor = sensor
 
     def __repr__(self):
         """
@@ -85,11 +86,6 @@ class Station(Platform):
             f"name={self.name!r}, altitude={self.altitude}, minimum_elevation_angle={self.minimum_elevation_angle}, "
             f"identity={self._identity}, color={self.color})"
         )
-
-    @property
-    def sensor(self):
-        """Gets the sensor of the station."""
-        return self._sensor
 
     @property
     def name(self):
@@ -322,13 +318,13 @@ class Station(Platform):
         
         #check if day time
         self.state.time = state.time # ensure the time is set for the state of the station, this is required for the sun state to be correct
-        shadow_bool, _ = calc_shadow(
+        daytime_bool, _ = calc_shadow(
             state_agent=self.state,
             state_sun=state_sun,
             reference_body_radius=agent.scenario.central_body.radius
         )
 
-        if not shadow_bool:
+        if not daytime_bool:
             # If day time, return zero flux
             print("DAYTIME\n")
             return 0.0, np.nan, np.array([])

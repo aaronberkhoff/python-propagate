@@ -10,12 +10,7 @@ from python_propagate.constructors.yaml_constructors import load_yaml
 from python_propagate.utilities.load_spice import load_spice
 
 from python_propagate.sensors.optical import Camera, Image
-from matplotlib.animation import FuncAnimation
 from python_propagate.plots.plot_ground_track import plot_ground_track
-
-import itertools
-
-import imageio
 
 import numpy as np
 import cv2
@@ -27,19 +22,19 @@ def test_image_unit() -> None:
 
     # agents = config['anomalous_agents']
     # agents = config['anomalous_agents']
-    agents = config['leo_agents']
+    agents = config['nominal_agents']
+    
     # agents = config['genes1'].agents
-    station = config["stations"][0]
+    station = config["stations"][1]
     # fov = 90 - station.minimum_elevation_angle
-    fov = .01
-    camera = Camera(noise_mean=[0, 0], noise_covariance=[0, 0],fov=fov,shutter_speed=1/20)
-    # camera = Camera(noise_mean=[0, 0], noise_covariance=[0, 0],fov=fov, pointing_angles=(90,15))
+    fov = 90
+    camera = Camera(noise_mean=[0, 0],
+                    noise_covariance=[0, 0],
+                    fov=fov,
+                    resolution=(2048,2048),
+                    pointing_angles=(0,0))
 
     # Propagate all agents
-    
-    
-
-    # You could return or save the images here if needed
 
     image_data = [[] for _ in range(len(agents))]
 
@@ -67,12 +62,12 @@ def test_image_unit() -> None:
     name = 'image_test'
 
     # for 
-    height, width = (combined_images[0].resolution, combined_images[0].resolution)
+    height, width = (combined_images[0].resolution[0], combined_images[0].resolution[1])
     # height, width = (1024,1024)
-    fps = 30
-    output_path = "tests/results/images/eoir_test.mp4"
+    fps = 5
+    output_path = "tests/results/images/case4/meo_nominal.mp4"
 
-    movie = np.array([image.rendered_image for image in combined_images])
+    movie = np.array([image.rendered_image for image in combined_images if image.rendered_image is not None])
 
     plot_ground_track(
                     agents, [station],output_directory, name=name,legend=True
@@ -87,7 +82,7 @@ def test_image_unit() -> None:
         video_writer.write(frame)
 
     video_writer.release()
-    # imageio.mimsave("tests/results/images/eoir_test.mp4", movie, fps=  1)
+    
 
 
     pass
