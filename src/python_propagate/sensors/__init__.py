@@ -9,9 +9,6 @@ class Sensor:
             len(noise_covariance)
         )
 
-        # if measurement_map is not None:
-        #     self.measurement_map = measurement_map  # Assign the default function
-
     @property
     def noise_mean(self):
         return self._noise_mean

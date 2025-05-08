@@ -1,9 +1,13 @@
+
 import numpy as np
+import random 
 
 from python_propagate.sensors import Sensor
 from python_propagate.states import State
 from python_propagate.agents import Agent
 from python_propagate.platforms.station import Station
+
+from python_propagate.utilities.units import ARC2DEG, RAD2DEG, DEG2RAD, RAD2ARC, ARC2RAD
 
 
 class Optical(Sensor):
@@ -24,40 +28,43 @@ class Optical(Sensor):
 
 class Image:
 
-    def __init__(self,resolution = 1024, background = 'dark', scale = 'grey', timestamp = None, stars = 1000):
+    def __init__(self,resolution = (1024,1024), background = 'dark', scale = 'grey', timestamp = None, n_stars = 1000, high_res = 8000):
 
         self.resolution = resolution
         self.background = background
         self.scale = scale
         self.timestamp = timestamp
-        self.stars = stars
-        self.centroid = (resolution // 2,) * 2
-        self.data = np.zeros((resolution,resolution,3))
-        self._render_background(background=background)
+        self.n_stars = n_stars
+        # self.centroid = (resolution // 2,) * 2
+        self.base_image = np.zeros(resolution + (3,),dtype=int)
+        self.agent_image = np.zeros(resolution + (3,),dtype=int)
+        self.background_image = np.zeros(resolution + (3,),dtype=int)
+        self.high_res = high_res
 
-
+        self._render_background()
 
         pass
 
-    def _render_background(self, background, blur_length=10, blur_direction=(0, 1)):
+    def _render_background(self, blur_length=10, blur_direction=(0, 1)):
         """
         Renders background stars with optional motion blur.
 
         Args:
             background (str): Type of background ("dark" or "stars").
-            blur_length (int): Length of motion blur in pixels.
+            blur_length (int): Length of motion blur in centers.
             blur_direction (tuple): Direction of blur (dx, dy).
         """
-        if background == 'dark':
+        if self.background == 'dark':
             pass  # default is dark
 
-        elif background == 'stars':
-            num_stars = self.stars
+        elif self.background == 'stars':
+            num_stars = self.n_stars
 
-            star_x = np.random.randint(0, self.resolution, num_stars)
-            star_y = np.random.randint(0, self.resolution, num_stars)
+            star_x = np.random.randint(0, self.resolution[0], num_stars)
+            star_y = np.random.randint(0, self.resolution[1], num_stars)
 
-            star_brightness = np.random.random(num_stars) 
+            # Generate random integer brightness values (e.g., between 50 and 255)
+            star_brightness = np.random.randint(50, 256, num_stars)  
             # Normalize the blur direction vector
             dx, dy = blur_direction
             magnitude = np.hypot(dx, dy)
@@ -72,42 +79,95 @@ class Image:
                     yi = int(round(y + i * dy))
 
                     # Check if inside the image bounds
-                    if 0 <= xi < self.resolution and 0 <= yi < self.resolution:
-                        self.data[xi, yi,:] = brightness  # or you could fade brightness
+                    if 0 <= xi < self.resolution[0] and 0 <= yi < self.resolution[1]:
+                        self.background_image[xi, yi,:] = brightness  # or you could fade brightness
                         if self.scale == 'rgb':
-                            self.data[xi, yi,:] *= self._generate_random_color()  # or you could fade brightness
+                            self.background_image[xi, yi,:] *= self._generate_star_color()  # or you could fade brightness
         
-        
-        
-
-
         else:
-            raise ValueError(f"{background} not supported")
+            raise ValueError(f"{self.background} not supported")
 
 
-    def _generate_random_color(self):
+
+
+    def _generate_star_color(self):
         """
-        Generates a random RGB color in the visible spectrum.
+        Generates a realistic star color (blue, white, yellow, or red).
         Returns:
-            A tuple of (r, g, b) with values between 0 and 1.
+            A tuple of (r, g, b) with integer values between 0 and 255.
         """
-        r = np.random.uniform(0.1, 1.0)  # red between 0.1 and 1.0
-        g = np.random.uniform(0.1, 1.0)  # green between 0.1 and 1.0
-        b = np.random.uniform(0.1, 1.0)  # blue between 0.1 and 1.0
+        color_temps = {
+            'blue': (0.7, 0.8, 1.0),
+            'white': (1.0, 1.0, 1.0),
+            'yellow': (1.0, 1.0, 0.6),
+            'orange': (1.0, 0.6, 0.3),
+            'red': (1.0, 0.3, 0.3),
+        }
 
-        return r, g, b
+        # Use random.choice instead of np.random.choice
+        base_color = np.array(random.choice(list(color_temps.values())))
+        jitter = np.random.normal(0, 0.05, 3)
+        noisy_color = np.clip(base_color + jitter, 0, 1)
 
+        int_color = (noisy_color * 255).astype(int)
+        return tuple(int_color)
+
+    
+    @property
+    def rendered_image(self):
+
+        if self.agent_image is not None and np.any(self.agent_image != -99):
+            data = np.clip(self.base_image,0,255).astype(dtype=np.int16)
+            data[self.background_image > 0] = self.background_image[self.background_image > 0]
+            data[self.agent_image > 0] = self.agent_image[self.agent_image > 0]
+            return data
+        else:
+            return np.full(self.resolution + (3,), -99, dtype=np.int16)
+    
+    def __add__(self, other):
+        if isinstance(other, Image):
+            np.copyto(self.agent_image, other.agent_image, where=(other.agent_image > 0))       
+        elif other == 0:
+            return self
+        return NotImplemented
+        
+    def __radd__(self, other):
+        return self.__add__(other)  # ensures 0 + obj works
+        
 
 class Camera(Sensor):
 
-    def __init__(self, noise_mean, noise_covariance, resolution = 1024, reference_range = 30000, reference_area = 1, reference_brightness = 15): #reference range -> 1 pixel at specified range
+    def __init__(self, 
+                 noise_mean = [0,0],
+                 noise_covariance = [0,0],
+                 resolution = (1024,1024), 
+                 reference_mag = 20,
+                 fov = 60,
+                 pointing_angles = (0,0),
+                 background = 'stars'):
+        
+        """
+        """
 
-        reference_area /= 1000
-        self.resolution = resolution
-        self.reference_range = reference_range
-        self.reference_area = reference_area # convert to km
-        self.pixel_size = np.sqrt(reference_area) / reference_range
-        self.reference_brightness = reference_brightness
+        self.resolution = tuple(resolution)
+        fov = fov * DEG2RAD
+        v_band_magnitude = 3.6e-9 # Approximate V-band magnitude for the Sun in W/m^2, used for apparent magnitude calculation
+        self.reference_flux = v_band_magnitude * 10 ** (-reference_mag / 2.5)
+        self.fov = fov
+        self.angular_resolution =  resolution[0] / fov
+        daz_rad, del_rad = pointing_angles[0] * DEG2RAD, pointing_angles[1] * DEG2RAD
+
+        az_pointing_transform = np.array([[np.cos(daz_rad),-np.sin(daz_rad),0],
+                                          [np.sin(daz_rad),np.cos(daz_rad),0],
+                                          [0,0,1]])
+        
+        el_pointing_transform = np.array([[1,0,0],
+                                          [0, np.cos(del_rad), -np.sin(del_rad)],
+                                          [0, np.sin(del_rad), np.cos(del_rad)]])
+        
+        self.pointing_rotation = az_pointing_transform @ el_pointing_transform
+        self.background = background
+        
 
         super().__init__(noise_mean, noise_covariance)
 
@@ -117,72 +177,12 @@ class Camera(Sensor):
 
     def generate_image(self, state: State, agent: Agent, station: Station, crosslines = False):
         # Create the background
-        image = Image(resolution=self.resolution, timestamp=None, background='stars', scale='rgb')
+        image = Image(resolution=self.resolution, timestamp=None, background=self.background, scale='rgb')
 
         # Generate the agent's image (spacecraft)
-        agent_image = self._generate_agent_image(state, agent, station)
+        self._generate_agent_image(image, state, agent, station)
 
-        fov_deg = station.minimum_elevation_angle
-
-        # Image parameters
-        image_height, image_width = image.data.shape[:2]
-
-        # Get Azimuth and Elevation
-        az_rad, el_rad, enu = station.calculate_azimuth_and_elevation(state=state, enu_frame=True)
-
-        # Filter out targets below the horizon
-        if np.degrees(el_rad) < station.minimum_elevation_angle:
-            return image
-
-        # Normalize azimuth and elevation
-        # az_deg = np.degrees(az) % 360
-        # el_deg = np.degrees(el)
-
-        # ---- NEW: Map Az/El to (x, y) pixel coordinates ----
-        # Convert degrees to radians
-        # az_rad = np.radians(az_deg)
-
-        # Normalize radius: 0 at zenith (90 deg), 1 at horizon (0 deg)
-        r = ((np.pi / 2 - el_rad) / np.pi / 2) / np.radians(fov_deg) 
-
-        # (x, y) in unit circle
-        x = r * np.sin(az_rad)
-        y = r * np.cos(az_rad)
-
-        # Map (x, y) to pixel coordinates
-        pixel_x = int((x + 1) * (image_width / 2))
-        pixel_y = int((1 - y) * (image_height / 2))
-
-        # ---- Done mapping Az/El to pixels ----
-
-        # Agent image size
-        agent_height, agent_width, agent_color = agent_image.shape[:3]
-
-        # Compute bounds for placing the agent image
-        new_row_start = max(0, pixel_y - agent_height // 2)
-        new_row_end = min(image_height, pixel_y + agent_height // 2 + (agent_height % 2))
-
-        new_col_start = max(0, pixel_x - agent_width // 2)
-        new_col_end = min(image_width, pixel_x + agent_width // 2 + (agent_width % 2))
-
-        # Resize agent image if it doesn't fit fully
-        agent_patch = agent_image[
-            :new_row_end - new_row_start,
-            :new_col_end - new_col_start, :
-        ]
-
-        # Blend or paste the agent image
-        image.data[
-            new_row_start:new_row_end,
-            new_col_start:new_col_end
-        ] = agent_patch
-
-
-        #crosslines
-        if crosslines:
-
-            self._draw_crosshairs(image)
-
+        
         return image
     
 
@@ -190,85 +190,163 @@ class Camera(Sensor):
         """
         Draws vertical and horizontal crosshairs through the center of the image.
         """
-        image_height, image_width = image.data.shape[:2]
+        image_height, image_width = image.base_image.shape[:2]
         center_x = image_width // 2
         center_y = image_height // 2
 
         # Draw vertical line
         for y in range(image_height):
-            image.data[y, center_x,:] = (0.0,1.0,0.0)  
+            image.base_image[y, center_x,:] = (0.0,1.0,0.0)  
 
         # Draw horizontal line
         for x in range(image_width):
-            image.data[center_y, x, : ] = (0.0,1.0,0.0)  
-
-
-
-
-
+            image.base_image[center_y, x, : ] = (0.0,1.0,0.0)  
 
     
-    def _generate_agent_image(self, state, agent: Agent, station: Station):
-        _, apparent_mag, areas = station.calculate_light_areas_exposed(state, agent)
+    def _generate_agent_image(self, image, state, agent: Agent, station: Station):
+        # Create base image (initially all zeros or dark)
+        # base_image = np.zeros((self.high_res, self.high_res, 3), dtype=np.uint8)
+        # base_image = np.zeros((self.resolution, self.resolution, 3), dtype=np.uint8)
 
-        pixel_sizes = areas / self.pixel_size
-        nearest_square = round_to_nearest_square(np.sum(pixel_sizes))
+        # Calculate flux, apparent magnitude, areas, etc.
+        flux, apparent_mag, areas = station.calculate_light_areas_exposed(state, agent)
+        rho, rhodot = station.calculate_range_and_range_rate_from_target(state=state, vectorized=True)
+        az_rad, el_rad,enu,enu_transform = station.calculate_azimuth_and_elevation(state=state, enu_frame=True)
 
-        # Create a base image with RGB channels
-        base_image = np.ones((int(np.sqrt(nearest_square)), int(np.sqrt(nearest_square)), 3))  # RGB
+        rhodot_enu = enu_transform @ rhodot
+        rho_enu = enu_transform @ rho
+ 
+        # enu = np.array([1, 0, 1])  # East and Up
+        if not areas.size or el_rad < (station.minimum_elevation_angle * DEG2RAD):  # spacecraft not visible
+            image.agent_image = np.full(self.resolution + (3,), -99, dtype=np.int16)
+            return False
 
-        pixel_weights = np.floor(np.sum(pixel_sizes)) / nearest_square
-        base_image *= pixel_weights
-
-        n_int = [int(np.floor(pixel)) for pixel in pixel_sizes]
-        frac = pixel_sizes - n_int
-        weights = [[1.0] * n for n in n_int]
-
-        # Distribute fractional pixel values
-        for i, w in enumerate(weights):
-            if frac[i] > 0:
-                w.append(frac[i])
-
-        # Calculate the average apparent magnitude
-        adjusted_mag = np.average([np.average(np.array(w) * mag) for w, mag in zip(weights, apparent_mag)])
-
-        # Adjust base image brightness based on the apparent magnitude and reference brightness
-        brightness_factor = min(1, self.reference_brightness / adjusted_mag)
-
-        # Create the RGB color based on the adjusted magnitude
-        # Assuming the apparent magnitude directly affects brightness, we'll use it to scale RGB channels
-        # You can modify this to have more complex color mapping if needed.
-        # For now, we'll just use grayscale RGB based on the magnitude.
-        agent_color = np.array([brightness_factor] * 3)  # Grayscale color, you could customize it
-        # print(brightness_factor)
-        # agent_color = np.array([brightness_factor, 0, 0])
-
-        # Apply the color scaling to the base image
-        base_image *= agent_color  # Apply the grayscale color across all RGB channels
-
-        # If you want to handle color other than grayscale, you could modify the agent_color for each channel
-        # E.g., for red tint:
-        # agent_color = np.array([255, 0, 0])
-
-        return base_image
+        # Calculate pixel size and the location on the image
+        apparent_pixel_sizes = np.sqrt(areas / (np.linalg.norm(rho)**2))  # in radians
+        pixel_sizes = (apparent_pixel_sizes * self.angular_resolution)
 
 
-            
+        x_pixel, y_pixel = self._az_el_to_image_coords(rho_enu=rho_enu)
+
+        if not self._check_pixel_within_bounds(x_pixel=x_pixel,y_pixel=y_pixel):
+            print('WARNING: Object is outside fov')
+            image.agent_image = np.full(self.resolution + (3,), -99, dtype=np.int16)
+            return False
+
+        # Calculate the total flux, considering the shutter speed
+        total_flux = flux * agent.dt.total_seconds()
+        brightness = total_flux / self.reference_flux * 255
+
+        total_brightness = np.clip(np.sum(brightness * pixel_sizes),0,255)
+        total_pixels = np.ceil(np.sum(pixel_sizes))
+        # total_pixels = 100
+
+    
+        pixel_blur_vector = self._blur_vector(rho_enu=rho_enu,rhodot_enu=rhodot_enu,dt = agent.dt.total_seconds())
+
+        # apply_motion_streak(image,(x_pixel,y_pixel),total_pixels,pixel_blur_vector,total_brightness)
+        self.apply_motion_blur(image.agent_image,(x_pixel,y_pixel),total_pixels,pixel_blur_vector,total_brightness)
+                                                    
+        return True
+
+    def _az_el_to_image_coords(self,rho_enu):
 
 
-    def set_image_background(self):
+        width, height = self.resolution
 
-        pass 
+        rho_enu = self.pointing_rotation @ rho_enu
+
+        # ENU to camera rotation (you can modify this as needed)
+        R = np.array([
+            [-1,  0,  0],
+            [0,  -1, 0],
+            [0,  0,  1]
+        ])
+
+        cam_dir = R @ rho_enu
 
         
+        cx, cy = width / 2, height / 2
+
+        x_pixel = self.angular_resolution * (cam_dir[0] / cam_dir[2]) + cx
+        y_pixel = self.angular_resolution * (cam_dir[1] / cam_dir[2]) + cy
 
 
-def round_to_nearest_square(x):
-    # Find the square root
-    root = np.sqrt(x)
-    # Round the root to the nearest integer
-    nearest_int = int(np.round(root))
-    # Square it back
-    return nearest_int ** 2
+        return int(x_pixel), int(y_pixel)
+    
+    def _blur_vector(self,rho_enu,rhodot_enu,dt):
+
+        rho_enu = self.pointing_rotation @ rho_enu
+        rhodot_enu = self.pointing_rotation @ rhodot_enu
+
+        drho = rhodot_enu * dt
+        
+        # ENU to camera rotation (you can modify this as needed)
+        R = np.array([
+            [-1,  0,  0],
+            [0,  -1, 0],
+            [0,  0,  1]
+        ])
+
+        drho = R @ drho
+        cam_dir = R @ rho_enu
+
+
+        dx_pixel = int((self.angular_resolution * (drho[0] / cam_dir[2]))) #TODO make sure this approximation is good rx/rz
+        dy_pixel = int((self.angular_resolution * (drho[1] / cam_dir[2]))) 
+        dz_pixel = int((self.angular_resolution * (drho[2] / cam_dir[2])))
+        
+        pixel_blur_vector = np.array([dx_pixel,dy_pixel,dz_pixel])
+
+        return pixel_blur_vector 
+    
+    
+    def _check_pixel_within_bounds(self,x_pixel,y_pixel):
+
+            if x_pixel > self.resolution[0] or y_pixel > self.resolution[1] or x_pixel < 0 or y_pixel < 0:
+                return False
+            else: 
+                return True
+
+    def apply_motion_blur(self,image,center,pixel_area,pixel_blur_vector, brightness):
+
+        x_center, y_center = center
+        dx, dy, dz = pixel_blur_vector
+
+        half_area = int(np.sqrt(pixel_area))
+        length = int(np.sqrt(dx**2 + dy**2))
+        
+        dx /= length
+        dy /= length
+        for i in range(length):
+
+            x = int(dx * i) + x_center
+            y = int(dy * i) + y_center   
+
+            if self._check_pixel_within_bounds(x,y):
+                image[y - half_area: y + half_area, x - half_area:x + half_area] = [brightness,brightness,brightness]
+            else:
+                pass
+                
+
+    
+
+
+def draw_circle(image, center, radius, color):
+    """
+    Draw a filled circle onto a NumPy image array.
+
+    Parameters:
+        image : np.ndarray (H, W, 3) - The image to draw on.
+        center : tuple (x, y) - The center of the circle.
+        radius : int - Radius in pixels.
+        color : list or tuple - RGB color triplet.
+    """
+    y_center, x_center = center
+    H, W = image.shape[:2]
+
+    y, x = np.ogrid[:H, :W]
+    mask = (x_center - x)**2 + (y_center - y)**2 <= radius**2
+    image[mask] = color
 
 

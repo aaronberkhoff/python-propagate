@@ -38,7 +38,7 @@ class Station(Platform):
     def __init__(
         self,
         lat_long_alt: tuple,
-        sensor: str = "none",
+        sensor: None,
         name: str = "none",
         minimum_elevation_angle: float = 0.0,
         identity: int = 0,
@@ -65,11 +65,12 @@ class Station(Platform):
             The minimum elevation angle of the station (default is 0.0).
         """
         super().__init__(lat_long_alt)
-        self._sensor = sensor
+
         self._name = name
         self._minimum_elevation_angle = minimum_elevation_angle
         self._identity = identity
         self._color = color
+        self.sensor = sensor
 
     def __repr__(self):
         """
@@ -85,11 +86,6 @@ class Station(Platform):
             f"name={self.name!r}, altitude={self.altitude}, minimum_elevation_angle={self.minimum_elevation_angle}, "
             f"identity={self._identity}, color={self.color})"
         )
-
-    @property
-    def sensor(self):
-        """Gets the sensor of the station."""
-        return self._sensor
 
     @property
     def name(self):
@@ -111,11 +107,11 @@ class Station(Platform):
         """Gets the minimum elevation angle of the station."""
         return self._minimum_elevation_angle
 
-    def calculate_range_and_range_rate_from_target(self, state):
+    def calculate_range_and_range_rate_from_target(self, state, vectorized=False):
         """Calculates the range and range rate from the station to the target agent."""
-        diff_x = self.state.position_ecef[0] - state.position_ecef[0]
-        diff_y = self.state.position_ecef[1] - state.position_ecef[1]
-        diff_z = self.state.position_ecef[2] - state.position_ecef[2]
+        diff_x = -(self.state.position_ecef[0] - state.position_ecef[0])
+        diff_y = -(self.state.position_ecef[1] - state.position_ecef[1])
+        diff_z = -(self.state.position_ecef[2] - state.position_ecef[2])
 
         rho = np.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
 
@@ -125,7 +121,12 @@ class Station(Platform):
 
         rho_dot = (diff_x * diff_vx + diff_y * diff_vy + diff_z * diff_vz) / rho
 
-        return rho, rho_dot
+        if vectorized:
+            rho = np.array((diff_x,diff_y,diff_z))
+            rho_dot = np.array((diff_vx,diff_vy,diff_vz))
+            return rho, rho_dot
+        else:
+            return rho, rho_dot
 
     def calculate_azimuth_and_elevation(self, state, enu_frame = False):
         """Calculates the azimuth and elevation angles from the station to the target"""
@@ -157,7 +158,7 @@ class Station(Platform):
         elevation = np.arcsin(u / np.sqrt(e**2 + n**2 + u**2))
 
         if enu_frame:
-            return azimuth, elevation, enu
+            return azimuth, elevation, enu, enu_matrix
 
         return azimuth, elevation
 
@@ -312,18 +313,20 @@ class Station(Platform):
 
         if shadow_bool:
             # If in shadow, return zero flux
+            print("SHADOW\n")
             return 0.0, np.nan, np.array([])
         
         #check if day time
         self.state.time = state.time # ensure the time is set for the state of the station, this is required for the sun state to be correct
-        shadow_bool, _ = calc_shadow(
+        daytime_bool, _ = calc_shadow(
             state_agent=self.state,
             state_sun=state_sun,
             reference_body_radius=agent.scenario.central_body.radius
         )
 
-        if not shadow_bool:
-            # If not in shadow, return zero flux
+        if not daytime_bool:
+            # If day time, return zero flux
+            print("DAYTIME\n")
             return 0.0, np.nan, np.array([])
 
 
@@ -390,6 +393,7 @@ class Station(Platform):
 
         if areas_visible.size == 0:
             # If no faces are visible, return zero flux and indicate not visible
+            print("NO FACES VISIBLE\n")
             return 0.0, np.nan, np.array([])
         
         flux_visible = flux_from_satellite[visible]

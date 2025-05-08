@@ -78,8 +78,13 @@ class Forge:
                         agent_group = h5file.create_group(agent_name)  # Create group for each agent
                         
                         for column in df_agent.columns:
-                            if column != "agent":  # Skip agent name since it's used as a key
-                                agent_group.create_dataset(column, data=df_agent[column].values)
+                            if column != "agent":
+                                try:   # Skip agent name since it's used as a key
+                                    agent_group.create_dataset(column, data=df_agent[column].values)
+                                except (AttributeError,TypeError): 
+                                    stacked_array = np.stack(df_agent[column].values)
+                                    agent_group.create_dataset(column, data=stacked_array)
+
 
                 print(f"HDF5 File written:\n h5: {output_path_h5}")
 

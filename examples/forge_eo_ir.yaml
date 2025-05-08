@@ -1,0 +1,85 @@
+central_body: &earth !Earth
+  flattening_bool: False
+
+celestial_bodies:
+ - &moon !Moon
+   name: 'Moon'
+ - &sun  !Sun
+   name: 'Sun'
+
+
+start_times:
+  - &mar15 "2025-03-15T00:00:00.0"
+
+
+sensors: 
+ - &camera1 !Camera {noise_mean: [0,0], noise_covariance: [0,0], resolution: [1024,1024],reference_mag: 20, fov: 20, pointing_angles: [0,-27], background: 'dark'}
+
+stations: 
+  - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: 15.0, identity: 0, sensor: *camera1}
+
+scenarios: 
+  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
+
+manuevers: 
+    #Thrust Manuever options
+  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {minutes: 1}, execution_duration: {minutes: 2}}
+  - &manuever2 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {minutes: 1}, execution_duration: {minutes: 2}}
+
+    #Station keeping loss Manuever options
+  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3'], execution_time: {days: 5}, execution_duration: {minutes: 6}}
+
+    #Attitude changing manuevers
+  - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+
+#Define the agents in the simulation
+
+#Agent bus
+buses:
+  - &busbox  !Bus {name: "box",  extents: [10.0, 10.0, 10.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # box     
+  - &busrect !Bus {name: "rect", extents: [4.0, 2.0, 3.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # rectangular     
+
+#Define the agents initial conditions
+
+initial_conditions:
+  - &meo1  !OrbitalElements {sma: 20000, ecc: 0.0, inc: 0.0, arg: 0.0, raan: 0.0, nu: 100.0} 
+  - &meo2  !OrbitalElements {sma: 20000, ecc: 0.0, inc: 90.0, arg: 0.0, raan: 0.0, nu: 165.0} 
+  
+nominal_agents: &meo_nom
+
+  - &meo_nom1 !Spacecraft { name: "MEO1", start_time: *mar15, state: *meo1, dt: {minutes: 1}, duration: {days: 4},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+anomalous_agents: &meo_anom
+  # Added manuever1 to the spacecraft
+  - &meo_anom1 !Spacecraft { name: "MEO1", start_time: *mar15, state: *meo1, dt: {minutes: 1}, duration: {days: 4},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+
+forges:
+  #This case is run with a list of different agents
+  - &case1 !EOIRForge {name: "EOIRForge_nom", scenario: *scenario1, agents: [*meo_nom1],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM','FLUX_W_M2','FLUX_APPARENT_MAG',
+                  PIXELS], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit','light_curve','movie','ground_track','pix'],
+    output_directory: 'examples/results/EOIRForgeExample',
+    output_types: ['h5','csv']}
+
+  - &case2 !EOIRForge {name: "EOIRForge_anom", scenario: *scenario1, agents: [*meo_anom1],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM','FLUX_W_M2','FLUX_APPARENT_MAG',
+                  PIXELS], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit','light_curve','movie','ground_track','pix'],
+    output_directory: 'examples/results/EOIRForgeExample',
+    output_types: ['h5','csv']}
+
+# cases_to_run: [*case1]
+cases_to_run: [*case1,*case2]
+
+       
+
+  

@@ -10,56 +10,80 @@ from python_propagate.constructors.yaml_constructors import load_yaml
 from python_propagate.utilities.load_spice import load_spice
 
 from python_propagate.sensors.optical import Camera, Image
-from matplotlib.animation import FuncAnimation
 from python_propagate.plots.plot_ground_track import plot_ground_track
+
+import numpy as np
+import cv2
 
 
 
 def test_image_unit() -> None:
+    config = load_yaml(yaml_file='examples/forge_eo_ir.yaml')
 
-
-    config = load_yaml(yaml_file='tests/configs/test_image.yaml')
-
-    spacecraft = config["agents"][0]
+    # agents = config['anomalous_agents']
+    # agents = config['anomalous_agents']
+    agents = config['nominal_agents']
     
-    spacecraft.propagate()
+    # agents = config['genes1'].agents
+    station = config["stations"][1]
+    # fov = 90 - station.minimum_elevation_angle
+    fov = 90
+    camera = Camera(noise_mean=[0, 0],
+                    noise_covariance=[0, 0],
+                    fov=fov,
+                    resolution=(2048,2048),
+                    pointing_angles=(0,0))
 
-    station = config["stations"][0]
+    # Propagate all agents
 
-    camera = Camera(noise_mean=[0,0],noise_covariance=[0,0])
-    image_data = []
+    image_data = [[] for _ in range(len(agents))]
 
-    for state in spacecraft.state_data:
+    # for state in agents.state_data:
+    # for agent in agents:
+    for i,agent in enumerate(agents):
+        agent.propagate()
 
-        image = camera.measurement_map(state,spacecraft, station)
+        cnt = 0
+        for state in agent.state_data:
+            cnt += 1
+            print(f'Image {cnt}')
+            image_data[i].append(camera.measurement_map(state,agents[0],station))
 
-        image_data.append(image)
+    combined_images = []
 
+    for image in list(zip(*image_data)):
+        
+        combined_images.append(sum(image))
+
+
+    
+    
     output_directory = 'tests/results/images'
     name = 'image_test'
 
+    # for 
+    height, width = (combined_images[0].resolution[0], combined_images[0].resolution[1])
+    # height, width = (1024,1024)
+    fps = 5
+    output_path = "tests/results/images/case4/meo_nominal.mp4"
+
+    movie = np.array([image.rendered_image for image in combined_images if image.rendered_image is not None])
+
     plot_ground_track(
-                    [spacecraft], [station],output_directory, name=name,legend=True
+                    agents, [station],output_directory, name=name,legend=True
                 )
 
-    fig, ax = plt.subplots()
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+
+    video_writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    for frame in movie:
+    # Ensure the frame is in uint8 BGR format and size matches
+        video_writer.write(frame)
+
+    video_writer.release()
     
-    im = ax.imshow(image_data[0].data, cmap='gray', animated=True)
 
-    def _update(frame):
-        im.set_array(image_data[frame].data)  # Update the image with the current frame
-        return [im]
-
-    # Create the animation
-    ani = FuncAnimation(fig, _update, frames=len(image_data), interval=10, blit=True)
-
-    # Save the animation as a video file
-    # plt.show()
-    ani.save('image_movie.html', writer='html', fps=1)
-
-    plt.imshow(image.data, cmap='gray')
-
-    plt.show()
 
     pass
 # Update function for the animation
