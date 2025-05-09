@@ -19,7 +19,7 @@ stations:
   - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: 15.0, identity: 0, sensor: *camera1}
 
 scenarios: 
-  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
+  - &scenario1 !Scenario {central_body: *earth, start_time: *mar15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
 
 manuevers: 
     #Thrust Manuever options
