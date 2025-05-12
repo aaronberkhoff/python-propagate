@@ -35,7 +35,6 @@ class Image:
         self.scale = scale
         self.timestamp = timestamp
         self.n_stars = n_stars
-        # self.centroid = (resolution // 2,) * 2
         self.base_image = np.zeros(resolution + (3,),dtype=int)
         self.agent_image = np.zeros(resolution + (3,),dtype=int)
         self.background_image = np.zeros(resolution + (3,),dtype=int)
