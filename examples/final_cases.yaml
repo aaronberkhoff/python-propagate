@@ -12,10 +12,13 @@ start_times:
   - &dec15 "2025-01-15T12:30:00.0"
   - &dec17 "2025-01-17T12:30:00.0"
 
+sensors: 
+  - &camera1 !Camera {noise_mean: [0,0], noise_covariance: [0,0], resolution: [1024,1024],reference_mag: 20, fov: 20, pointing_angles: [0,-27], background: 'dark'}
+
 stations: 
-  - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: 15.0, identity: 0}
-  - &kwaj !Station {name: 'Kwajalein', lat_long_alt: [8.717, 167.733, 0.0], minimum_elevation_angle: 15.0, identity: 1}
-  - &diego !Station {name: 'Diego Garcia', lat_long_alt: [-7.31333, 72.41111, 0.0], minimum_elevation_angle: 15.0, identity: 2}
+  - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: 15.0, identity: 0, sensor: *camera1}
+  - &kwaj !Station {name: 'Kwajalein', lat_long_alt: [8.717, 167.733, 0.0], minimum_elevation_angle: 15.0, identity: 1, sensor: *camera1}
+  - &diego !Station {name: 'Diego Garcia', lat_long_alt: [-7.31333, 72.41111, 0.0], minimum_elevation_angle: 15.0, identity: 2, sensor: *camera1}
 
 scenarios: 
   - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
