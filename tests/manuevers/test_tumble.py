@@ -41,12 +41,6 @@ def test_free_rotate_unit(config) -> None:
 
     np.testing.assert_equal(np.zeros(3),result.acceleration)
 
-    
-
-
-
-
-   
 
     pass
 

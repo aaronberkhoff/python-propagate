@@ -79,8 +79,8 @@ class Drag(Dynamic):
         #set the orientation of the bus
         self.agent.bus.set_orientation(state)  # Ensure the bus orientation is set based on the current state
 
-        normals = self.agent.bus.shape.face_normals 
-        areas = self.agent.bus.shape.area_faces
+        normals = self.agent.bus.shape.facets_normal 
+        areas = self.agent.bus.shape.facets_area
 
         # Dot product with flow direction
         cos_theta = np.dot(normals, -v_hat)
