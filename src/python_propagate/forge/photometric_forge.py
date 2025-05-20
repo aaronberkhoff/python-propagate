@@ -111,7 +111,7 @@ class PhotoForge(Forge):
                     data_entry = {
                         "agent": agent.name,
                         "index": i,
-                        "epoch_time": state.time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "epoch_time": state.time.strftime(DATESTR),
                         "time_sec": i * agent.dt.total_seconds(),
                         "station": station.name,
                         "station_id": station.identity,

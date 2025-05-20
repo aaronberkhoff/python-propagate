@@ -4,6 +4,7 @@ from copy import deepcopy
 
 
 from python_propagate.utilities.units import RAD2DEG, ARC2DEG, DEG2RAD
+from python_propagate.utilities.string_format import DATESTR
 from python_propagate.forge import Forge
 from python_propagate.utilities.load_spice import load_spice
 
@@ -112,7 +113,7 @@ class EOIRForge(Forge):
                     data_entry = {
                         "agent": agent.name,
                         "index": i,
-                        "epoch_time": state.time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "epoch_time": state.time.strftime(DATESTR),
                         "time_sec": i * agent.dt.total_seconds(),
                         "station": station.name,
                         "station_id": station.identity,

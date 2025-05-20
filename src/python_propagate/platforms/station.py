@@ -109,6 +109,7 @@ class Station(Platform):
 
     def calculate_range_and_range_rate_from_target(self, state, vectorized=False):
         """Calculates the range and range rate from the station to the target agent."""
+        self.state.time = state.time
         diff_x = -(self.state.position_ecef[0] - state.position_ecef[0])
         diff_y = -(self.state.position_ecef[1] - state.position_ecef[1])
         diff_z = -(self.state.position_ecef[2] - state.position_ecef[2])
@@ -130,6 +131,7 @@ class Station(Platform):
 
     def calculate_azimuth_and_elevation(self, state, enu_frame = False):
         """Calculates the azimuth and elevation angles from the station to the target"""
+        self.state.time = state.time
         diff_x = -(self.state.position_ecef[0] - state.position_ecef[0])
         diff_y = -(self.state.position_ecef[1] - state.position_ecef[1])
         diff_z = -(self.state.position_ecef[2] - state.position_ecef[2])
@@ -164,13 +166,14 @@ class Station(Platform):
 
     def calculate_ra_and_dec(self, state):
         """Calculates the right ascension and declination angles from the station to the target"""
+        self.state.time = state.time
         dec = np.arcsin(state.position_eci[2] / np.linalg.norm(state.position_eci))
         ra = np.arctan2(state.position_eci[1], state.position_eci[0])
 
         return ra, dec
     
     def calculate_ra_and_dec_from_station(self,state):
-
+        self.state.time = state.time
         dec = np.arcsin((state.position_eci[2] - self.state.position_eci[2]) / np.linalg.norm((state.position_eci - self.state.position_eci)))
         ra = np.arctan2(state.position_eci[1] - self.state.position_eci[1], state.position_eci[0] - self.state.position_eci[0])
 
@@ -192,7 +195,7 @@ class Station(Platform):
             - apparent_magnitude (float): The apparent magnitude of the target as seen from the station.
             - is_visible (bool): True if the target is visible from the station, False otherwise.
         """
-
+        self.state.time = state.time
         object_dict = {obj.name.lower(): obj for obj in agent.scenario.celestial_bodies}
         state_sun =  object_dict.get("sun").get_state(state.time)
 
@@ -300,7 +303,7 @@ class Station(Platform):
     
     def calculate_light_areas_exposed(self, state, agent: Agent):
 
-
+        self.state.time = state.time
         object_dict = {obj.name.lower(): obj for obj in agent.scenario.celestial_bodies}
         state_sun =  object_dict.get("sun").get_state(state.time)
 
