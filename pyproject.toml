@@ -45,6 +45,11 @@ pylint = "^3.3.4"
 black = "^25.1.0"
 mypy = "^1.14.1"
 
+
+[tool.poetry.group.ml.dependencies]
+torch = "^2.7.0"
+scikit-learn = "^1.6.1"
+
 [tool.black]
 include = "src/|tests/"  # Only format these folders
 exclude = "migrations/|venv/|__pycache__/*"
