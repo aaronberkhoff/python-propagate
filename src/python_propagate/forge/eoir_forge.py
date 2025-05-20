@@ -1,26 +1,23 @@
 import pandas as pd
 import numpy as np
-import h5py
-from collections import namedtuple
-import sqlite3
-from datetime import datetime, timedelta
 from copy import deepcopy
 
-from sgp4.api import Satrec
 
 from python_propagate.utilities.units import RAD2DEG, ARC2DEG, DEG2RAD
+from python_propagate.utilities.string_format import DATESTR
 from python_propagate.forge import Forge
 from python_propagate.utilities.load_spice import load_spice
-from python_propagate.states.proper_orbital_elements import ProperElements
-
-from python_propagate.agents import Agent
-from python_propagate.utilities.string_format import DATESTR
-from python_propagate.states import OrbitalElements, State  
-
-from python_propagate.utilities.transforms import mean2true
 
 
-class PhotoForge(Forge):
+
+from python_propagate.plots.plot_ground_track import plot_ground_track
+from python_propagate.plots.plot_orbit import plot_orbit
+from python_propagate.plots.plot_orbital_elements import plot_orbital_elements
+from python_propagate.plots.plot_light_curve import plot_light_curve
+from python_propagate.plots.movie import generate_movie, generate_pix
+
+
+class EOIRForge(Forge):
     """
     A class to represent a photometric forge for generating orbits from photometric data.
 
@@ -75,12 +72,17 @@ class PhotoForge(Forge):
                 cnt = 0
 
                 flux_received, apparent_magnitude, is_visible = station.calculate_light_flux(state=state,agent=agent)
+                image = station.sensor.measurement_map(state,agent,station)
 
                 state.metadata['flux_w_m2'] = flux_received # Preserve any existing metadata in the state object, if present.
                 state.metadata['apparent_magnitude'] = apparent_magnitude # Store the apparent magnitude in the state metadata for reference.
                 state.metadata['orientation'] = orientation
+                state.metadata['image'] = image.rendered_image
 
                 state_data.append(deepcopy(state)) #TODO: SOmething is wrong here. I should Not have to do a deep copy
+
+                
+                
                 
                 if add_noise:
 
@@ -136,7 +138,7 @@ class PhotoForge(Forge):
 
                         "FLUX_W_M2": flux_received,
                         "FLUX_APPARENT_MAG": apparent_magnitude, # Placeholder for apparent magnitude, can be calculated from flux if needed.
-
+                        "PIXELS": image.rendered_image if image.rendered_image is not None else np.ones(image.resolution + (3,)) * -99
 
                     }
 
@@ -151,3 +153,40 @@ class PhotoForge(Forge):
                     cnt += 1
         agent.state_data = state_data
         return data_agent, agent
+    
+
+    def run(self,parallel=0):
+        """
+        Runs the DataGenerator simulation, collecting observational data from agents and saving it to HDF5, Excel, and CSV formats.
+        """
+
+        if parallel:
+            self.generate_data_parallel(cores=parallel)
+        else:
+            self.generate_data()
+
+        if len(self.agents) > 7:
+            legend = False
+        else:
+            legend = True
+        # Now plot the orbit
+        if self.plots:
+            if "orbit" in self.plots:
+                plot_orbit(self.agents,self.scenario,self.output_directory,name=self.name,legend=legend)
+            if "ground_track" in self.plots:
+                plot_ground_track(
+                    self.agents, self.scenario.stations, self.output_directory, name=self.name,legend=legend
+                )
+            if "orbital_elements" in self.plots:
+                plot_orbital_elements(self.agents, self.scenario, self.output_directory, name=self.name,legend=legend)
+
+            if "light_curve" in self.plots:
+                plot_light_curve(self.agents, self.output_directory, name=self.name, legend=legend)
+
+            if "movie" in self.plots:
+                generate_movie(self.agents[0],output_directory=self.output_directory,name=self.name)
+
+            if "pix" in self.plots:
+                generate_pix(self.agents[0],output_directory=self.output_directory,name=self.name)
+
+

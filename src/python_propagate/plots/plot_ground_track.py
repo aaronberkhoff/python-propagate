@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from python_propagate.utilities.units import RAD2DEG
 
+from pathlib import Path
+
 
 def plot_ground_track(
     agents, stations, output_directory, name="ground_track_visibility",legend = True
@@ -53,6 +55,26 @@ def plot_ground_track(
             linestyle="none",
             transform=projection,
             label=f"{agent.name} Track",
+
+        )
+        ax.plot(
+            track_lons[0],
+            track_lats[0],
+            color="green",
+            marker="s",
+            linestyle="none",
+            transform=projection,
+            label=f"{agent.name} Start",
+        )
+
+        ax.plot(
+            track_lons[-1],
+            track_lats[-1],
+            color="red",
+            marker="^",
+            linestyle="none",
+            transform=projection,
+            label=f"{agent.name} Start",
         )
 
     # Now, for each station, find and plot the points where the agent is visible.
@@ -124,6 +146,11 @@ def plot_ground_track(
     plt.title("Ground Track with Station Visibility")
 
     # Save the plot to file
+    if not isinstance(output_directory, Path):
+        output_directory = Path(output_directory)
+    if not output_directory.exists():
+        print(f"Creating output directory: {output_directory}")
+        output_directory.mkdir(parents=True, exist_ok=True)
     output_path = output_directory / f"{name}_ground_track.png"
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)

@@ -24,8 +24,8 @@ from python_propagate.utilities.transforms import mean2true
 
 class AstroForge(Forge):
 
-    def __init__(self, scenario,genes, output_directory, data_types, output_types,add_noise = False, plots=None, name='Forge'):
-        super().__init__(scenario,genes, output_directory, data_types, output_types, add_noise,plots, name)
+    def __init__(self, scenario,agents, output_directory, data_types, output_types,add_noise = False, plots=None, name='Forge'):
+        super().__init__(scenario,agents, output_directory, data_types, output_types, add_noise,plots, name)
 
     def process_agent(self, agent, scenario, datatypes, add_noise = False, propagate=True):
         load_spice()
@@ -34,14 +34,10 @@ class AstroForge(Forge):
 
         elements = [state.to_keplerian(agent.scenario.central_body.mu) for state in agent.state_data]
 
-        proper_elements = ProperElements(orbital_element_data=elements, dt = agent.dt, duration=agent.duration)
-
-        mean_oe = np.array(proper_elements.mean_orbital_elements_data).T
-        proper_oe = np.array(proper_elements.proper_orbital_elements_data).T
 
         data_agent = []
         
-        for i, (state,oe,moe,poe) in enumerate(zip(agent.state_data,elements,mean_oe,proper_oe)):
+        for i, (state,oe) in enumerate(zip(agent.state_data,elements)):
             for station in scenario.stations:
                 az, el = station.calculate_azimuth_and_elevation(state=state)
                 az *= RAD2DEG
@@ -102,7 +98,7 @@ class AstroForge(Forge):
                     data_entry = {
                         "agent": agent.name,
                         "index": i,
-                        "epoch_time": state.time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "epoch_time": state.time.strftime(DATESTR),
                         "time_sec": i * agent.dt.total_seconds(),
                         "station": station.name,
                         "station_id": station.identity,
@@ -131,20 +127,6 @@ class AstroForge(Forge):
                         "ARG_DEG"  : (oe.arg  * RAD2DEG + arg_noise) % 360,
                         "RAAN_DEG" : (oe.raan  * RAD2DEG + raan_noise) % 360,
                         "NU_DEG"   : (oe.nu  * RAD2DEG + nu_noise) % 360,
-
-                        "MEAN_SMA_KM"   : moe[0] + sma_noise,
-                        "MEAN_ECC_KM"   : moe[1] + ecc_noise,
-                        "MEAN_INC_DEG"  : (moe[2] * RAD2DEG + inc_noise) % 180,
-                        "MEAN_ARG_DEG"  : (moe[3]  * RAD2DEG + arg_noise) % 360,
-                        "MEAN_RAAN_DEG" : (moe[4]   * RAD2DEG + raan_noise) % 360,
-                        "MEAN_NU_DEG"   : (moe[5] * RAD2DEG + nu_noise) % 360,
-
-                        "PROP_SMA_KM"   : poe[0] + sma_noise,
-                        "PROP_ECC_KM"   : poe[1] + ecc_noise,
-                        "PROP_INC_DEG"  : (poe[2] * RAD2DEG + inc_noise) % 180,
-                        "PROP_ARG_DEG"  : (poe[3]  * RAD2DEG + arg_noise) % 360,
-                        "PROP_RAAN_DEG" : (poe[4]   * RAD2DEG + raan_noise) % 360,
-                        "PROP_NU_DEG"   : (poe[5] * RAD2DEG + nu_noise) % 360,
                     }
 
                     filtered_data_entry = {key: value for key, value in data_entry.items() if key in datatypes or key in {"agent", "index", "time_sec","epoch_time", "station", "station_id"}}

@@ -1,0 +1,211 @@
+central_body: &earth !Earth
+  flattening_bool: False
+
+celestial_bodies:
+ - &moon !Moon
+   name: 'Moon'
+ - &sun  !Sun
+   name: 'Sun'
+
+
+start_times:
+  - &dec15 "2025-01-15T12:30:00.0"
+  - &dec17 "2025-01-17T12:30:00.0"
+
+stations: 
+  - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: 15.0, identity: 0}
+  - &kwaj !Station {name: 'Kwajalein', lat_long_alt: [8.717, 167.733, 0.0], minimum_elevation_angle: 15.0, identity: 1}
+  - &diego !Station {name: 'Diego Garcia', lat_long_alt: [-7.31333, 72.41111, 0.0], minimum_elevation_angle: 15.0, identity: 2}
+
+scenarios: 
+  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
+  - &scenario2 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*kwaj]}
+  - &scenario3 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*diego]}
+
+manuevers: 
+    #Thrust Manuever options
+  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 5}, execution_duration: {minutes: 1}}
+  - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+    #Station keeping loss Manuever options
+  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+    #Attitude changing manuevers
+  - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+
+#Define the agents in the simulation
+
+#Agent bus
+buses:
+  - &busbox  !Bus {name: "box",  extents: [2.0, 2.0, 2.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # box     
+  - &busrect !Bus {name: "rect", extents: [4.0, 2.0, 3.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # rectangular     
+
+#Define the agents initial conditions
+
+initial_conditions:
+  - &geo1  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 180.0} 
+  - &geo2  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 200.0} 
+  - &geo3  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 220.0} 
+  - &geo4  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 240.0} 
+  - &geo5  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 260.0} 
+  - &geo6  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 280.0} 
+  - &geo7  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 300.0} 
+  - &geo8  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 320.0} 
+  - &geo9  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 340.0} 
+  - &geo10 !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 360.0} 
+
+  - &sp_min !OrbitalElements {sma: 42000, ecc: 0.0001, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 180.0} 
+  - &sp_max !OrbitalElements {sma: 42200, ecc: 0.0002, inc: 0.001,  arg: 0.0, raan: 0.0,  nu: 190.0} 
+
+
+#Define the individual agents in the simulation
+
+#Nominal Agents
+nominal_agents: &nominal 
+  - &nom1 !Spacecraft { name: "GEO_Sat1_nominal", start_time: *dec15, state: *geo1, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom2 !Spacecraft { name: "GEO_Sat2_nominal", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom3 !Spacecraft { name: "GEO_Sat3_nominal", start_time: *dec15, state: *geo3, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom4 !Spacecraft { name: "GEO_Sat4_nominal", start_time: *dec15, state: *geo4, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom5 !Spacecraft { name: "GEO_Sat5_nominal", start_time: *dec15, state: *geo5, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom6 !Spacecraft { name: "GEO_Sat6_nominal", start_time: *dec15, state: *geo6, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom7 !Spacecraft { name: "GEO_Sat7_nominal", start_time: *dec15, state: *geo7, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom8 !Spacecraft { name: "GEO_Sat8_nominal", start_time: *dec15, state: *geo8, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom9 !Spacecraft { name: "GEO_Sat9_nominal", start_time: *dec15, state: *geo9, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &nom10 !Spacecraft { name: "GEO_Sat10_nominal", start_time: *dec15, state: *geo10, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+anomalous_agents: &anomaly
+    # Added manuever1 to the spacecraft
+  - &anom1 !Spacecraft { name: "GEO_Sat1_anomaly", start_time: *dec15, state: *geo1, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom2 !Spacecraft { name: "GEO_Sat2_anomaly", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom3 !Spacecraft { name: "GEO_Sat3_anomaly", start_time: *dec15, state: *geo3, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom4 !Spacecraft { name: "GEO_Sat4_anomaly", start_time: *dec15, state: *geo4, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom5 !Spacecraft { name: "GEO_Sat5_anomaly", start_time: *dec15, state: *geo5, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom6 !Spacecraft { name: "GEO_Sat6_anomaly", start_time: *dec15, state: *geo6, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom7 !Spacecraft { name: "GEO_Sat7_anomaly", start_time: *dec15, state: *geo7, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom8 !Spacecraft { name: "GEO_Sat8_anomaly", start_time: *dec15, state: *geo8, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom9 !Spacecraft { name: "GEO_Sat9_anomaly", start_time: *dec15, state: *geo9, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+  - &anom10 !Spacecraft { name: "GEO_Sat10_anomaly", start_time: *dec15, state: *geo10, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+
+spawn: &spawn
+
+  - &spawn0 !Spacecraft { name: "Base_spawn", start_time: *dec15, state: *sp_min, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &spawn1 !Spacecraft { name: "Spawned", start_time: *dec17, state: *sp_min, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+
+
+# Define the genes if one desires to generate a range of spacecraft parameters
+
+##Genes that edit the state of the spacecraft
+gene_state: &gene_state_nom  !Gene {attribute: "state", state_min: *geo1, state_max: *geo10, samples: 10, agent_base: *nom1} 
+gene_state: &gene_state_anom !Gene {attribute: "state", state_min: *geo1, state_max: *geo10, samples: 10, agent_base: *anom1} 
+
+gene_state: &gene_state_spawn  !Gene {attribute: "state", state_min: *sp_min, state_max: *sp_max, samples: 10, agent_base: *spawn1} 
+
+##Genes that edit the manuever of the spacecraft
+gene_mass:  &gene_mass  !Gene {attribute: 'mass', mass_min: 50, mass_max: 150,samples: 5,agent_base: *nom1}
+gene_cd:    &gene_cd    !Gene {attribute: 'coefficient_of_drag', coefficient_of_drag_min: 1.0, coefficient_of_drag_max: 3.0, samples: 11, agent_base: *nom1} 
+gene_magnitude: &gene_magnitude !Gene {attribute: 'magnitude', magnitude_min: -0.001, magnitude_max: 0.001, samples: 5, agent_base: *nom1} 
+gene_direction_ric: &gene_direction_ric !Gene {attribute: 'direction_ric',direction_ric_min: [0.0,1.0,-1.0], direction_ric_max: [0.0,1.0, 1.0], samples: 5, agent_base: *nom1} 
+
+#Combine all the genes
+genes: &genes_nominal !Genes {genes: [*gene_state_nom]}
+genes: &genes_anomaly  !Genes {genes: [*gene_state_anom]}
+
+genes: &genes_spawn  !Genes {genes: [*gene_state_spawn]}
+
+#Testing the spawn of new geo agents:
+
+
+
+
+#Agents in forge can be define in a Genes block to generate a range of agents
+#However this is not necessary and the agents can be defined individually or in "packs"
+
+# The forges define the cases
+forges:
+  #This case is run with a list of different agents
+  - &case1 !PhotoForge {name: "PhotoForge", scenario: *scenario1, agents: [*anomaly,*nominal],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM','FLUX_W_M2','FLUX_APPARENT_MAG'], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit','light_curve'],
+    output_directory: 'examples/builders/results/PhotoForgeExample',
+    output_types: ['h5','csv']}
+
+  #This case is run with individual agents
+  - &case2 !AstroForge {name: "AstroForge", scenario: *scenario1, agents: [*anom1,*nom2],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM'],
+    add_noise: False,
+    plots: ['orbital_elements','orbit'],
+    output_directory: 'examples/builders/results/AstroForgeExample',
+    output_types: ['h5','csv']}
+
+  #This case is run using genes to define a range of initial conditions
+  - &case3 !PhotoForge {name: "AstroForgeGenes", scenario: *scenario1, agents: [*genes_anomaly,*genes_nominal],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM'], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit'],
+    output_directory: 'examples/builders/results/AstroForgeExample',
+    output_types: ['h5','csv']}
+
+  #This case is run using agents defined in a gene block and a single agent at different times
+  - &case4 !AstroForge {name: "Test_spawn", scenario: *scenario1, agents: [*spawn0,*genes_spawn],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM'], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit','ground_track'],
+    output_directory: 'examples/builders/results/AstroForgeExample',
+    output_types: ['h5','csv']}
+
+
+# cases_to_run: [*case1, *case2]
+cases_to_run: [*case3]
+
+       
+
+  

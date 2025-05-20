@@ -9,11 +9,15 @@ from python_propagate.plots.plot_orbit import plot_orbit
 from python_propagate.plots.plot_orbital_elements import plot_orbital_elements
 from python_propagate.plots.plot_light_curve import plot_light_curve
 
+from python_propagate.forge.genes import Genes
+from python_propagate.agents import Agent
+
+
 
 
 class Forge:
 
-    def __init__(self, scenario, genes,output_directory, data_types, output_types, add_noise = False, plots = None, name = 'Forge'):
+    def __init__(self, scenario, agents,output_directory, data_types, output_types, add_noise = False, plots = None, name = 'Forge'):
 
         self.scenario = scenario
         self.database = None
@@ -21,7 +25,23 @@ class Forge:
         self.data_types = data_types
         self.output_types = output_types
         self.plots = plots
-        self.genes = genes
+
+        if isinstance(agents,Genes): #handles agents defined as genes
+            self.agents = [agent for agent in agents.agents]
+        # elif isinstance(agents,Iterable[Genes]): #handles iterable of genes
+        #     self.agents = [item.agents for sublist in agents for item in sublist]
+        elif isinstance(agents,list): # handles a case where some agents are defines as list and/or genes
+            self.agents = []
+            for sublist in agents:
+                if isinstance(sublist,Genes):
+                    self.agents.extend([agent for agent in sublist.agents])
+                elif isinstance(sublist,list):
+                    self.agents.extend(sublist)
+                elif isinstance(sublist,Agent):
+                    self.agents.append(sublist)
+        else:
+            raise ValueError('unexpected behavior')
+            
 
         self.output_directory = Path(output_directory)
         self.output_directory.mkdir(parents=True, exist_ok=True)
@@ -58,8 +78,13 @@ class Forge:
                         agent_group = h5file.create_group(agent_name)  # Create group for each agent
                         
                         for column in df_agent.columns:
-                            if column != "agent":  # Skip agent name since it's used as a key
-                                agent_group.create_dataset(column, data=df_agent[column].values)
+                            if column != "agent":
+                                try:   # Skip agent name since it's used as a key
+                                    agent_group.create_dataset(column, data=df_agent[column].values)
+                                except (AttributeError,TypeError): 
+                                    stacked_array = np.stack(df_agent[column].values)
+                                    agent_group.create_dataset(column, data=stacked_array)
+
 
                 print(f"HDF5 File written:\n h5: {output_path_h5}")
 
@@ -77,7 +102,7 @@ class Forge:
         
         data_all = []  # List to store data for all agents
 
-        for agent in self.genes.agents:
+        for agent in self.agents:
             data_agent, agent = self.process_agent(agent,self.scenario,self.data_types,add_noise=self.add_noise)
             data_all.extend(data_agent)
 
@@ -100,7 +125,7 @@ class Forge:
             # you can do that within process_agent.
             futures = [
                 executor.submit(self.process_agent, agent, self.scenario, self.data_types,add_noise=self.add_noise)
-                for agent in self.genes.agents
+                for agent in self.agents
             ]
             # As each future completes, extend the data_all list.
             for future in concurrent.futures.as_completed(futures):
@@ -110,7 +135,7 @@ class Forge:
 
         # Convert collected data into a pandas DataFrame.
         self.save_data_to_files(data_all=data_all)
-        self.genes.agents = updated_agents
+        self.agents = updated_agents
 
     
     def run(self,parallel=0):
@@ -123,21 +148,21 @@ class Forge:
         else:
             self.generate_data()
 
-        if len(self.genes.agents) > 7:
+        if len(self.agents) > 7:
             legend = False
         else:
             legend = True
         # Now plot the orbit
         if self.plots:
             if "orbit" in self.plots:
-                plot_orbit(self.genes.agents,self.scenario,self.output_directory,name=self.name,legend=legend)
+                plot_orbit(self.agents,self.scenario,self.output_directory,name=self.name,legend=legend)
             if "ground_track" in self.plots:
                 plot_ground_track(
-                    self.genes.agents, self.scenario.stations, self.output_directory, name=self.name,legend=legend
+                    self.agents, self.scenario.stations, self.output_directory, name=self.name,legend=legend
                 )
             if "orbital_elements" in self.plots:
-                plot_orbital_elements(self.genes.agents, self.scenario, self.output_directory, name=self.name,legend=legend)
+                plot_orbital_elements(self.agents, self.scenario, self.output_directory, name=self.name,legend=legend)
 
             if "light_curve" in self.plots:
-                plot_light_curve(self.genes.agents, self.output_directory, name=self.name, legend=legend)
+                plot_light_curve(self.agents, self.output_directory, name=self.name, legend=legend)
     
