@@ -77,7 +77,7 @@ def test_hme() -> None:
     hme = HME(experts_file='examples/hme_example.yaml',device='cpu')
 
     #run HME
-    expert_dict = hme.run(observations_dataframe=data,num_epochs=20000, parallel=0)
+    expert_dict = hme.run(observations_dataframe=data,num_epochs=10000, parallel=0)
 
 
     # T, N = weights.shape

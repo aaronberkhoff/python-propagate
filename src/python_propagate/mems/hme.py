@@ -100,21 +100,32 @@ class GatingNetwork(nn.Module):
         # self.fc = nn.Sequential(
         #     nn.Linear(features, 128),
         #     nn.ReLU(),
-        #     # nn.Dropout(p=0.2),
+        #     nn.Dropout(p=0.2),
         #     nn.Linear(128, 64),
         #     nn.ReLU(),
-        #     # nn.Dropout(p=0.2),
+        #     nn.Dropout(p=0.2),
         #     nn.Linear(64, 1),
         # )
         
         self.fc = nn.Sequential(
-            nn.Linear(features, 128),
+            nn.Linear(hidden_dim, 128),
             # nn.BatchNorm1d(128),
             nn.ReLU(),
             nn.Linear(128, 64),
             # nn.BatchNorm1d(64),
             nn.ReLU(),
             nn.Linear(64, 1)
+        )
+
+        kernel_size = 1
+        padding = kernel_size // 2
+        self.conv = nn.Sequential(
+            nn.Conv1d(in_channels=features, out_channels=hidden_dim, kernel_size=kernel_size, padding=padding),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU(),
+            nn.Conv1d(in_channels=hidden_dim,out_channels=hidden_dim, kernel_size=kernel_size, padding=padding),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU()
         )
 
 
@@ -133,9 +144,13 @@ class GatingNetwork(nn.Module):
     def forward(self, x):
         # #simple gating
 
-        logits = self.fc(x)      # Shape: [T*N, 1]
+        x = x.permute(0, 2, 1)
+        x = self.conv(x)      # Shape: [T*N, 1]
+        x = x.permute(0, 2, 1)
 
-        weights = torch.softmax(logits, dim=1)  # Softmax over experts for each timestep
+        logits = self.fc(x)
+        temperature = 1.0
+        weights = torch.softmax(logits / temperature, dim=1)  # Softmax over experts for each timestamp
         
         return weights, logits
 
@@ -163,21 +178,11 @@ class GatingNetwork(nn.Module):
             # Forward pass
             gating_weights, gating_logits = self(x_train)
             
-            sigma = .01
-            
-            
             # loss = weighted_mse_loss(x_train,weights=gating_weights)
             loss = weighted_mse4_loss(x_train,weights=gating_weights)
-            # loss += entropy_loss(gating_weights)
-            # loss = cross_entropy(x_train,y_train,gating_logits)
 
             # Backpropagation
             loss.backward()
-
-            # for name, param in self.named_parameters():
-            #     if param.grad is not None:
-            #         print(name, param.requires_grad)
-            #         print(f"{name} grad norm: {param.grad.norm()}")
             
             # torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
             optimizer.step()
@@ -192,28 +197,15 @@ class GatingNetwork(nn.Module):
 def gaussian_nll(y_pred, y_true, sigma):
     return ((y_pred - y_true) ** 2 / (2 * sigma**2)).mean()
 
-def mse_loss(y_pred, y_true):
-    return ((y_pred - y_true)**2).mean()
-
 def weighted_mse_loss(predictions,weights):
     loss = weights * (predictions)**2
     return torch.sum(loss) / torch.sum(weights)
 
 def weighted_mse4_loss(predictions, weights):
     loss = weights * (predictions) ** 4
-    # loss += (1- weights) * predictions**4
-    # loss = (predictions) ** 4
-    # loss = torch.log(loss)
+    
     return torch.sum(loss) /  torch.sum(weights)
 
-def cross_entropy(y_pred, y_true,gating_logits):
-
-    errors = torch.sum((y_pred - y_true)**2,dim=2)  # (T, N)
-    true_expert = torch.argmin(errors,dim = 1)  # (T,)
-
-    loss = F.cross_entropy(gating_logits.squeeze(1), true_expert.unsqueeze((1)))
-
-    return loss
 
 def entropy_loss(gating_weights):
     # gating_weights: shape (T, N)
@@ -221,15 +213,6 @@ def entropy_loss(gating_weights):
     epsilon = 1e-8
     entropy = -torch.sum(gating_weights * torch.log(gating_weights + epsilon), dim=-1)  # shape: (T,)
     return entropy.mean()
-
-def marginal_loss(logits, margin = 1.0, weight = 1.0):
-
-    topk_logits, _ = torch.topk(logits, k=2, dim=1)
-    margin_loss = F.relu(margin - (topk_logits[:, 0] - topk_logits[:, 1])).mean()
-
-    loss = weight * margin_loss
-
-    return loss
 
 
 class HME:
@@ -246,10 +229,10 @@ class HME:
 
         
         
-        # self.scaler = MinMaxScaler(feature_range=(-1,1))
+        self.scaler = MinMaxScaler(feature_range=(-1,1))
         # self.scaler = MaxNormalizer()
 
-        self.scaler = RobustScaler()
+        # self.scaler = RobustScaler()
         # self.scaler = LogNormalizer()
         # self.scaler = StandardScaler()
         self.device = device
@@ -389,7 +372,9 @@ class HME:
 
         residuals = y_train - x_train
 
-        residuals_norm = np.array([self.scaler.fit_transform(res) for res in residuals])
+        self.scaler.fit(residuals[:,0,:])
+
+        residuals_norm = np.array([self.scaler.transform(res) for res in residuals])
 
         return x_train, y_train, residuals
 
