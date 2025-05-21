@@ -13,6 +13,7 @@ from python_propagate.utilities.load_spice import load_spice
 from python_propagate.states import State
 from python_propagate.agents import Agent
 from python_propagate.constructors.yaml_constructors import load_yaml
+from python_propagate.utilities.units import RAD2DEG, ARC2DEG, DEG2RAD
 
 from datetime import datetime, timedelta
 
@@ -210,9 +211,9 @@ class AstriaConnector:
                     'VY_BODY_FIXED_KMS': state.velocity_ecef[1],
                     'VZ_BODY_FIXED_KMS': state.velocity_ecef[2],
 
-                    'latitude': state.latlong[0],
-                    'longitude': state.latlong[1],
-                    'altitude': np.linalg.norm(state.position_eci) - 6378.1363 # Radius of Earth
+                    'LAT_DEG': state.latlong[0] *  RAD2DEG,
+                    'LAT_DEG': state.latlong[1] * RAD2DEG,
+                    'ALT_KM': np.linalg.norm(state.position_eci) - 6378.1363 # Radius of Earth
                 })
 
                 current_time += timedelta(hours=12)
