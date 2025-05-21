@@ -11,8 +11,12 @@ from typing import Iterable, Literal
 
 from python_propagate.utilities.load_spice import load_spice
 from python_propagate.states import State
+from python_propagate.agents import Agent
+from python_propagate.constructors.yaml_constructors import load_yaml
 
 from datetime import datetime, timedelta
+
+from pathlib import Path
 
 
 
@@ -25,6 +29,8 @@ URI = "bolt+s://astria001.pods.astria.tapis.io:443"
 CREDENTIALS_FILE = "credentials.yaml"
 CYPHER_QUERY = "MATCH (n) RETURN count(n) as num"
 DATABASE = 'astria'
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+PROP_YAML = BASE_DIR / "data" / "defaults" / "astria_propagator.yaml"
 
 
 
@@ -48,9 +54,17 @@ class AstriaConnector:
                                               Orbit.MeanAnom as ma,
                                               Orbit.Epoch as epoch"""
 
-    def __init__(self):
+    def __init__(self, propagator:Agent = None, prop_index = 0):
         self.username, self.password = self._get_credentials()
         self.client = GraphDatabase.driver(URI, auth=basic_auth(self.username, self.password))
+
+        if not propagator:
+            config = load_yaml(yaml_file=PROP_YAML)
+            try: 
+                self.propagator = config['propagators'][prop_index]
+            except ValueError:
+                print(f'Input file <{PROP_YAML}> must have a propagators field defined or must be a valid index. Check the yaml file.')
+
 
     def _get_credentials(self):
         """Retrieves stored credentials from a YAML file or prompts the user."""
@@ -146,7 +160,7 @@ class AstriaConnector:
         try:
             result = self.run_query(AstriaConnector._full_query, norad_id = norad_id, time = time)[0]
             cartesian = np.array(result['orbit']['Cart']) / 1000
-            epoch = result['orbit']['Epoch'].to_native()
+            epoch = result['orbit']['Epoch'].to_native().replace(tzinfo=None)
             state = State(position = cartesian[:3] ,velocity = cartesian[3:], time = epoch)
             return state
         except IndexError:
@@ -154,6 +168,7 @@ class AstriaConnector:
             cartesian = [None for i in range(6)]
             epoch = datetime.strptime(time,"%Y-%m-%d")
             state = State(position = cartesian[:3] ,velocity = cartesian[3:], time = epoch)
+            return State
 
         
 
@@ -216,8 +231,110 @@ class AstriaConnector:
             df.to_csv(path_or_buf=csv_path)
 
         return df
+    
+    def _unique_dates(self, norad_id:int, start_time:datetime, end_time:datetime):
+
+        #TODO need to add start and end dates to the lists
+
+        seen = set()
+        unique_ordered = []
+        states = []
+
+        current_time = start_time
+
+        while current_time < end_time:
+            time_str = current_time.strftime("%Y-%m-%d")
+            state = self.get_full_state(norad_id=norad_id, time=time_str)
+            
+            if state.time not in seen:
+                if state.time > start_time:
+                    unique_ordered.append(state.time)
+                    seen.add(state.time)
+                    states.append(state)
+
+            current_time += timedelta(hours=1)
+
+    
+
+        return unique_ordered, states
 
 
+    
+    def get_propagated_data(self, norad_ids:Iterable[int], start_time:str, end_time:str, dt = timedelta(seconds=30), csv_path = None): 
+
+
+        data = {}
+        start_time = datetime.strptime(start_time,"%Y-%m-%d")
+        end_time = datetime.strptime(end_time,"%Y-%m-%d")
+        self.propagator.dt = dt
+
+        # times_to_evaluate = timedelta_list(start=start_time, end=end_time, step=dt)
+
+        results = []  # List to collect all records
+
+        for norad_id in norad_ids:
+            # current_time = start_time
+            unique_dates, states = self._unique_dates(norad_id=norad_id,start_time=start_time,end_time=end_time)
+            for tkm1,tk,xkm1 in zip(unique_dates[0:-1],unique_dates[1:],states[0:-1]) :
+                #fill in the gaps
+                time_to_prop = tk - tkm1
+                self.propagator.state = xkm1
+                self.propagator.start_time = tkm1
+                self.propagator.propagate(duration = time_to_prop.total_seconds())
+                # self.propagator.state_data.append
+
+                # if state.time
+                for state in self.propagator.state_data:
+                    results.append({
+                        'norad_id': norad_id,
+                        'time_sec': (state.time - unique_dates[0]).total_seconds(),
+                        'epoch': state.time,
+                        'X_INERTIAL_KM': state.position_eci[0],
+                        'Y_INERTIAL_KM': state.position_eci[1],
+                        'Z_INERTIAL_KM': state.position_eci[2],
+
+                        'VX_INERTIAL_KMS': state.velocity_eci[0],
+                        'VY_INERTIAL_KMS': state.velocity_eci[1],
+                        'VZ_INERTIAL_KMS': state.velocity_eci[2],
+
+                        'X_BODY_FIXED_KM': state.position_ecef[0],
+                        'Y_BODY_FIXED_KM': state.position_ecef[1],
+                        'Z_BODY_FIXED_KM': state.position_ecef[2],
+
+                        'VX_BODY_FIXED_KMS': state.velocity_ecef[0],
+                        'VY_BODY_FIXED_KMS': state.velocity_ecef[1],
+                        'VZ_BODY_FIXED_KMS': state.velocity_ecef[2],
+
+                        'latitude': state.latlong[0],
+                        'longitude': state.latlong[1],
+                        'altitude': np.linalg.norm(state.position_eci) - 6378.1363 # Radius of Earth
+                    })
+                self.propagator.state_data = []
+
+        # Convert to DataFrame
+        df = pd.DataFrame(results)
+
+        # Drop duplicate epochs *per satellite*
+        df = df.drop_duplicates(subset=['norad_id', 'epoch'])
+
+        # Optional: reset index
+        df.reset_index(drop=True, inplace=True)
+
+        if csv_path:
+            print(f"Saved csv to {csv_path}")
+            df.to_csv(path_or_buf=csv_path)
+
+        return df
+
+
+
+def timedelta_list(start: datetime, end: datetime, step: timedelta):
+    times = []
+    current = start
+    while current <= end:
+        times.append(current)
+        current += step
+    return times
 
 
 
