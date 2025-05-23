@@ -17,7 +17,6 @@ from python_propagate.constructors.yaml_constructors import load_yaml
 from python_propagate.utilities.string_format import DATESTR
 from python_propagate.utilities.units import RAD2DEG
 
-
 from datetime import datetime, timedelta
 
 from pathlib import Path
@@ -203,7 +202,7 @@ class AstriaConnector:
                     'VY_BODY_FIXED_KMS': state.velocity_ecef[1],
                     'VZ_BODY_FIXED_KMS': state.velocity_ecef[2],
 
-                    'LAT_DEG': state.latlong[0] * RAD2DEG,
+                    'LAT_DEG': state.latlong[0] *  RAD2DEG,
                     'LON_DEG': state.latlong[1] * RAD2DEG,
                     'ALT_KM': np.linalg.norm(state.position_eci) - 6378.1363 # Radius of Earth
                 })
@@ -217,18 +216,3 @@ class AstriaConnector:
             df.to_csv(path_or_buf=csv_path)
 
         return df
-
-
-
-
-
-
-
-
-        
-
-        
-
-
-
-       
