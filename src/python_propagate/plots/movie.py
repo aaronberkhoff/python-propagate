@@ -26,7 +26,8 @@ def generate_movie(agent: Iterable,
         frame = state.metadata['image']
         if np.any(frame != -99):
             if frame.dtype != np.uint8:  
-                frame = cv2.normalize(frame,None,0,255,cv2.NORM_MINMAX)
+                # frame = cv2.normalize(frame,None,0,255,cv2.NORM_MINMAX)
+                frame = np.clip(frame,0,255)
                 frame = frame.astype(np.uint8)
             video_writer.write(frame)
 
