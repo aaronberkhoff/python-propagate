@@ -21,6 +21,7 @@ from python_propagate.utilities.units import DEG2RAD, RAD2DEG
 from python_propagate.constructors.yaml_constructors import load_yaml
 from python_propagate.states import State
 from python_propagate.mems.experts import Expert
+from python_propagate.mems.loss import WeightedMSE, JahLoss
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -95,6 +96,8 @@ class GatingNetwork(nn.Module):
         self.device = device
         self.num_experts = num_experts
         self.features = features
+        # self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
+        self.loss = JahLoss()
         
 
         # self.fc = nn.Sequential(
@@ -179,7 +182,8 @@ class GatingNetwork(nn.Module):
             gating_weights, gating_logits = self(x_train)
             
             # loss = weighted_mse_loss(x_train,weights=gating_weights)
-            loss = weighted_mse4_loss(x_train,weights=gating_weights)
+            # loss = weighted_mse4_loss(x_train,weights=gating_weights)
+            loss = self.loss(predicted = x_train,targets = torch.zeros_like(x_train), weights = gating_weights)
 
             # Backpropagation
             loss.backward()
