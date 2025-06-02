@@ -1,13 +1,12 @@
-from python_propagate.ml.models.lstm import BayesianLSTM, LSTM
+from python_propagate.ml.models.lstm import LSTM
 from python_propagate.ml.preprocess.load import load_data_from_h5
-from python_propagate.ml.preprocess.preprocess import (NonDimensional,Seq2SeqDataModule)
+from python_propagate.ml.preprocess.preprocess import (NonDimensional,Seq2SeqDataModule, MinMax)
 
 from python_propagate.ml.models.seq2seq import Seq2Seq, duration_to_steps
 
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
-from sklearn.preprocessing import StandardScaler,MinMaxScaler, Normalizer,RobustScaler
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -39,8 +38,8 @@ def plot_trajectory(y_test,y_predicted):
     fig, axs = plt.subplots(3,1,figsize = (10,8))
 
     for i, ax in enumerate(axs):
-        ax.plot(y_predicted[:,:,i].flatten()*50000,color = 'red', marker = '*', label = "Predicted")
-        ax.plot(y_test[:,:,i].flatten()*50000,color = 'blue',label = 'Truth')
+        ax.plot(y_predicted[:,:,i].flatten(),color = 'red', marker = '*', label = "Predicted")
+        ax.plot(y_test[:,:,i].flatten(),color = 'blue',label = 'Truth')
 
     plt.savefig('tests/ml/results/geo_test1/trajectory.png')
 
@@ -70,7 +69,7 @@ def test_seq2seq_lstm(train_loader,scaler,n_epcochs = 10):
 
     # Example usage
     # model = BayesianLSTM(input_size=6, hidden_size=32, output_size=6)
-    model = Seq2Seq(input_size=6, hidden_size=64, output_size=6)
+    model = Seq2Seq(input_size=6, hidden_size=128, output_size=6)
     # model = Seq2Seq(input_size=1, hidden_size=64, output_size=1)
     model = torch.compile(model)
 
@@ -97,22 +96,23 @@ def test_plot(predictions, y_test):
     return None
 def load_data(agent_name = 'GEO1'):
 
-    # data = load_data_from_h5(file = 'tests/ml/results/geo_test1/MLForge.h5')
-    data = load_data_from_h5(file = 'tests/ml/results/geo_test1/MLForge1hrdt.h5')
+    data = load_data_from_h5(file = 'tests/ml/results/geo_test1/MLForge.h5')
+    # data = load_data_from_h5(file = 'tests/ml/results/geo_test1/MLForge1hrdt.h5')
 
     return data[agent_name]
 
 def preprocess(data):
-    scaler = NonDimensional(sma=50000)
+    # scaler = NonDimensional(sma=50000)
+    scaler = MinMax(feature_range=(0, 1))
     # scaler = MinMaxScaler(feature_range=(0,1))
 
-    train_days = 20
+    train_days = 15
     total_seconds = data.shape[0] * 30  # assuming 30s intervals
     total_days = total_seconds / 86400
 
     # train_index = int(train_days * 86400 / 30)
     #dt is 1 hour
-    train_index = int(train_days * 86400 / 3600)
+    train_index = int(train_days *24*60)
 
     # Fit scaler on training set only
     # data = scaler.fit_transform(data)
@@ -123,8 +123,8 @@ def preprocess(data):
     train_data = data[:train_index, 1:7]
     train_module = Seq2SeqDataModule(
         data=train_data,
-        input_window=48,
-        target_window=48,
+        input_window=2 *24 * 60,
+        target_window=int(.25 * 24 * 60),
         overlap=0.5,
         batch_size=64,
         shuffle=True,
@@ -135,8 +135,8 @@ def preprocess(data):
     test_data = data[train_index:, 1:7]
     test_module = Seq2SeqDataModule(
         data=test_data,
-        input_window=24,
-        target_window=24,
+        input_window=1 *24 * 60,
+        target_window=6 * 60,
         overlap=0.0,  # no overlap for simplicity
         batch_size=1,
         shuffle=False
@@ -145,6 +145,15 @@ def preprocess(data):
 
     
     return train_loader, test_loader, scaler
+
+def load_model(model_path = 'tests/ml/models/GEO/DeterministicModel.pth'):
+
+    model = Seq2Seq(input_size=6, hidden_size=128, output_size=6)
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
+    model.to('cuda')
+
+    return model
 
 
 
@@ -160,7 +169,12 @@ if __name__ == "__main__":
     # x_test, y_test = next(iter(train_loader))
     # x_test = x_test.detach().numpy()
     # y_test = y_test.detach().numpy()
-    model = test_seq2seq_lstm(train_loader,scalar,2000)
+    # model = test_seq2seq_lstm(train_loader,scalar,50)
+
+    
+
+    # torch.save(model._orig_mod.state_dict(), 'tests/ml/models/GEO/DeterministicModel.pth')
+    model = load_model()
     predictions = test_predict(model, x_test[0].unsqueeze(0), y_test[0].unsqueeze(0))
     # plot_test(train_loader=train_loader)
     # idx = duration_to_steps(duration_seconds=86400)

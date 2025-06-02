@@ -12,13 +12,13 @@ class BayesianLinear(nn.Module):
     def __init__(self, in_features, out_features, prior_std=1.0):
         super().__init__()
         # Mean and log variance for weights and biases
-        self.weight_mu = nn.Parameter(torch.Tensor(out_features, in_features).normal_(0, 0.1))
-        self.weight_logvar = nn.Parameter(torch.Tensor(out_features, in_features).fill_(-3))
-        self.bias_mu = nn.Parameter(torch.Tensor(out_features).normal_(0, 0.1))
-        self.bias_logvar = nn.Parameter(torch.Tensor(out_features).fill_(-3))
+        self.weight_mu = nn.Parameter(torch.Tensor(out_features, in_features).normal_(0, prior_std**2))
+        self.weight_logvar = nn.Parameter(torch.Tensor(out_features, in_features).fill_(np.log(prior_std**2)))
+        self.bias_mu = nn.Parameter(torch.Tensor(out_features).normal_(0, prior_std**2))
+        self.bias_logvar = nn.Parameter(torch.Tensor(out_features).fill_(np.log(prior_std**2)))
         self.prior_std = prior_std
         self.out_features = out_features
-
+ 
     def forward(self, x):
         # Sample weights and biases using reparameterization
         weight_std = torch.exp(0.5 * self.weight_logvar)
@@ -27,33 +27,46 @@ class BayesianLinear(nn.Module):
         bias_eps = torch.randn_like(self.bias_mu)
         weight = self.weight_mu + weight_std * weight_eps
         bias = self.bias_mu + bias_std * bias_eps
-        
-        return F.linear(x, weight, bias)
+
+        if self.training:
+            pred_mean = F.linear(x, self.weight_mu, self.bias_mu)
+            pred_logvar = F.linear(x, self.weight_logvar, self.bias_logvar)
+            return pred_mean, pred_logvar
+        else:
+            pred_mean = F.linear(x, weight, bias)
+            # pred_mean = F.linear(x, self.weight_mu, self.bias_mu)
+            pred_logvar = F.linear(x, self.weight_logvar, self.bias_logvar)
+            return pred_mean, pred_logvar
 
     def kl_loss(self):
         # KL divergence between posterior and standard normal prior
         kl = 0.5 * (self.weight_mu.pow(2) + self.weight_logvar.exp() - self.weight_logvar - 1).sum()
         kl += 0.5 * (self.bias_mu.pow(2) + self.bias_logvar.exp() - self.bias_logvar - 1).sum()
         return kl / self.prior_std**2
+    
 
 class BayesianLSTMCell(nn.Module):
     """
     Bayesian LSTM Cell (single time step).
     """
-    def __init__(self, input_size, hidden_size, prior_std=1.0):
+    def __init__(self, input_size, hidden_size, prior_std=1.0, direction = 1):
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.prior_std = prior_std
         # Four gates: input, forget, cell, output
-        self.x2h = BayesianLinear(input_size, 4 * hidden_size, prior_std)
-        self.h2h = BayesianLinear(hidden_size, 4 * hidden_size, prior_std)
+        self.x2h = BayesianLinear(input_size, direction * 4 * hidden_size, prior_std)
+        self.h2h = BayesianLinear(direction * hidden_size, direction * 4 * hidden_size, prior_std)
         
 
     def forward(self, x, hx):
         h, c = hx
-        gates = self.x2h(x) + self.h2h(h)
-        i, f, g, o = gates.chunk(4, 2)
+        
+        meanx2h, varx2h = self.x2h(x)
+        meanh2h, varh2h = self.h2h(h)
+
+        gates = meanx2h + meanh2h
+        i, f, g, o = gates.chunk(4, 1)
         i = torch.sigmoid(i)
         f = torch.sigmoid(f)
         g = torch.tanh(g)
@@ -65,62 +78,11 @@ class BayesianLSTMCell(nn.Module):
     def kl_loss(self):
         return self.x2h.kl_loss() + self.h2h.kl_loss()
     
+    def mahalanobis_loss(self):
 
-
-class BayesianLSTM(nn.Module):
-    """
-    Bayesian LSTM for sequence processing.
-    """
-    def __init__(self, input_size, hidden_size, output_size, prior_std=0.001):
-        super().__init__()
-        self.hidden_size = hidden_size
-        self.cell = BayesianLSTMCell(input_size, hidden_size, prior_std)
-        self.fc = BayesianLinear(hidden_size, output_size, prior_std)
-
-    def forward(self, x):
-        # x: (batch, seq_len, input_size)
-        batch_size, seq_len, _ = x.size()
-        h = torch.zeros(batch_size, self.hidden_size, device=x.device)
-        c = torch.zeros(batch_size, self.hidden_size, device=x.device)
-        for t in range(seq_len):
-            h, c = self.cell(x[:, t], (h, c))
-        out = self.fc(h)
-        out = torch.tanh(out)
-        return out
+        return self.x2h.kl_loss() + self.h2h.kl_loss()
     
-    def predict(self,x):
 
-        return self.forward(x)
-    
-    def train_model(self, train_loader, num_epochs=10, lr=1e-3, beta=None, criterion=None, device='cpu'):
-        self.to(device)
-        # print(next(self.parameters()).device)
-        if criterion is None:
-            criterion = nn.MSELoss()
-        optimizer = optim.Adam(self.parameters(), lr=lr)
-        if beta is None:
-            beta = 1.0 / len(train_loader)
-
-        for epoch in range(num_epochs):
-            self.train()
-            running_loss = 0.0
-            for x_batch, y_batch in train_loader:
-                x_batch = x_batch.to(device)
-                y_batch = y_batch.to(device)
-                optimizer.zero_grad()
-                output = self(x_batch)
-                data_loss = criterion(output, y_batch[:, -1, :])
-                kl = self.kl_loss()
-                loss = data_loss + beta * kl
-                # loss = data_loss
-                loss.backward()
-                optimizer.step()
-                running_loss += loss.item()
-            avg_loss = running_loss / len(train_loader)
-            print(f"Epoch {epoch+1}/{num_epochs} - Loss: {avg_loss:.4f}")    
-
-    def kl_loss(self):
-        return self.cell.kl_loss() + self.fc.kl_loss()
 
 
 class LSTM(nn.Module):

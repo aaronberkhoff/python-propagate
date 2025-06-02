@@ -1,6 +1,7 @@
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 import torch
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer, RobustScaler
 
 class NonDimensional:
     def __init__(self, sma, mu=398600.4415):
@@ -27,9 +28,9 @@ class NonDimensional:
 
     def fit_position(self, data: np.ndarray) -> np.ndarray:
         # Step 1: Canonical transform
-        normalized = data * self.position_transform
+        # normalized = data * self.position_transform
 
-        max_positions = np.max(np.linalg.norm(normalized,axis=1))
+        # max_positions = np.max(np.linalg.norm(normalized,axis=1))
         self.pos_bound = max_positions
 
         # Step 2: Scale to (-1, 1)
@@ -53,6 +54,35 @@ class NonDimensional:
 
     def inverse_velocity(self, norm_data: np.ndarray) -> np.ndarray:
         return norm_data * self.vel_bound / self.velocity_transform
+    
+class MinMax:
+    def __init__(self, feature_range = (-1,1), mu=398600.4415):
+        """
+        Parameters:
+        - sma: reference semi-major axis [km]
+        - mu: gravitational parameter [km^3/s^2]
+        - max_position: expected max |r| in units of SMA (e.g. 1.5 * SMA)
+        - max_velocity: expected max |v| in units of canonical velocity (e.g. 1.2 * sqrt(mu/sma))
+        """
+        self.pos_scaler = MinMaxScaler(feature_range=feature_range)
+        self.vel_scaler = MinMaxScaler(feature_range=feature_range)
+        self.mu = mu
+
+
+    def fit_position(self, data: np.ndarray) -> np.ndarray:
+
+        return self.pos_scaler.fit_transform(data)
+
+    def fit_velocity(self, data: np.ndarray) -> np.ndarray:
+        
+        return self.vel_scaler.fit_transform(data)
+    
+
+    def inverse_position(self, norm_data: np.ndarray) -> np.ndarray:
+        return self.pos_scaler.inverse_transform(norm_data)
+
+    def inverse_velocity(self, norm_data: np.ndarray) -> np.ndarray:
+        return self.vel_scaler.inverse_transform(norm_data)
 
 class Seq2SeqDataModule:
     class Seq2SeqDataset(Dataset):

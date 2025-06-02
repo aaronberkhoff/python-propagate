@@ -5,7 +5,8 @@ import numpy as np
 
 def load_data_from_h5(file):
 
-    data_to_extract = ['time_sec',
+    data_to_extract = [#'index',
+                       'time_sec',
                        'X_INERTIAL_KM',
                        'Y_INERTIAL_KM',
                        'Z_INERTIAL_KM',

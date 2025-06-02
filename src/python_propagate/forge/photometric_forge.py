@@ -53,11 +53,15 @@ class PhotoForge(Forge):
     def process_agent(self, agent, scenario, datatypes, add_noise = False, propagate=True):
         load_spice() # This is required so that this function works in parallel mode, otherwise spice will not be loaded in the worker process.
         if propagate:
+            print(f'Propagating Agent {agent.name}...')
             agent.propagate()  # Update agent state
+            print(f'DONE: {agent.name}...')
+            
 
         data_agent = []
         state_data = []
         orientation_data = self.get_orientation_history_from_manuever(agent,[i * agent.dt.total_seconds() for i, _ in enumerate(agent.state_data)])
+        print(f'{agent.name} generation data...')
         for i, (state, orientation) in enumerate(zip(agent.state_data,orientation_data)):
             
             for station in scenario.stations:
@@ -150,4 +154,5 @@ class PhotoForge(Forge):
                     data_agent.append(filtered_data_entry)
                     cnt += 1
         agent.state_data = state_data
+        print(f'DONE: {agent.name} generation data')
         return data_agent, agent

@@ -10,13 +10,15 @@ celestial_bodies:
 
 start_times:
   - &dec15 "2025-01-15T12:30:00.0"
+  - &dec14 "2023-01-15T12:30:00.0"
   - &dec17 "2025-01-17T12:30:00.0"
 
 stations: 
   - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: -90.0, identity: 0}
 
 scenarios: 
-  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
+  - &scenario1 !Scenario {central_body: *earth, start_time: *dec14, duration: {days: 30}, dt: {seconds: 60}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
+  - &scenario2 !Scenario {central_body: *earth, start_time: *dec14, duration: {days: 30}, dt: {hours: 12}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
 
 
 manuevers: 
@@ -42,6 +44,10 @@ buses:
 
 initial_conditions:
   - &geo1  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 180.0} 
+  - &leo1  !OrbitalElements {sma: 8000, ecc: 0.001, inc: 50.0, arg: 0.0, raan: 0.0, nu: 180.0} 
+
+  - &geoecc  !OrbitalElements {sma: 26600, ecc: 0.7, inc: 63.4 , arg: 0.0, raan: 0.0, nu: 180.0} 
+  - &leoecc  !OrbitalElements {sma: 8500, ecc: 0.2, inc: 50.0, arg: 0.0, raan: 0.0, nu: 180.0} 
 
 
 
@@ -49,11 +55,37 @@ initial_conditions:
 
 #Nominal Agents
 agents: &nominal 
-  - &GEO1 !Spacecraft { name: "GEO1", start_time: *dec15, state: *geo1, dt: {seconds: 30}, duration: {days: 10},
+
+    #Baseline
+  - &GEO1 !Spacecraft { name: "GEO1", start_time: *dec15, state: *geo1, dt: {seconds: 60}, duration: {days: 20},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &GEO2 !Spacecraft { name: "GEO1", start_time: *dec15, state: *geo1, dt: {hours: 1}, duration: {days: 30},
+  - &LEO1 !Spacecraft { name: "LEO1", start_time: *dec15, state: *leo1, dt: {seconds: 60}, duration: {days: 20},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  #Long Propagations
+  # - &GEOLong !Spacecraft { name: "GEO Long", start_time: *dec15, state: *geo1, dt: {hours: 12}, duration: {days: 20},
+  #   coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario2, bus: *busbox}
+
+  # - &LeoLong !Spacecraft { name: "LEO Long", start_time: *dec15, state: *leo1, dt: {hours: 12}, duration: {days: 20},
+  #   coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario2, bus: *busbox}
+
+  #Eccentric 
+  - &GEOecc !Spacecraft { name: "GEO_Ecc", start_time: *dec15, state: *geoecc, dt: {seconds: 60}, duration: {days: 20},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario2, bus: *busbox}
+
+  - &Leoecc !Spacecraft { name: "LEO_Ecc", start_time: *dec15, state: *leoecc, dt: {seconds: 60}, duration: {days: 20},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario2, bus: *busbox}
+
+  #Perturbed
+  - &PROP !Spacecraft { name: "GEO_Pert", start_time: *dec15, state: *geo1, dt: {seconds: 60}, duration: {days: 20},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','J2','drag'], scenario: *scenario2, bus: *busbox}
+
+  - &GEOPert !Spacecraft { name: "GEO_Pert", start_time: *dec15, state: *geo1, dt: {seconds: 60}, duration: {days: 20},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','J2','J3','3body','complex_srp'], scenario: *scenario2, bus: *busbox}
+
+  - &LeoPert !Spacecraft { name: "LEO_Pert", start_time: *dec15, state: *leo1, dt: {seconds: 60}, duration: {days: 20},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','J2','J3','3body','complex_srp','complex_drag'], scenario: *scenario2, bus: *busbox}
 
 
 
@@ -70,21 +102,28 @@ agents: &nominal
 # The forges define the cases
 forges:
   #This case is run with a list of different agents
-  - &case1 !AstroForge {name: "MLForge", scenario: *scenario1, agents: [*GEO1],
+  - &case1 !PhotoForge {name: "MLForge", scenario: *scenario1, agents: [*GEO1],
     data_types: ['X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM','VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS'], 
     add_noise: False,
     plots: ['orbital_elements','orbit'],
     output_directory: 'tests/ml/results/geo_test1',
     output_types: ['h5']}
 
-  - &case2 !AstroForge {name: "MLForge1hrdt", scenario: *scenario1, agents: [*GEO2],
+  - &case2 !PhotoForge {name: "MLForge1hrdt", scenario: *scenario1, agents: [*GEO1],
     data_types: ['X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM','VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS'], 
     add_noise: False,
     plots: ['orbital_elements','orbit'],
     output_directory: 'tests/ml/results/geo_test1',
-    output_types: ['h5','csv']}
+    output_types: ['h5']}
 
-cases_to_run: [*case2]
+  - &case3 !AstroForge {name: "ML_all_cases", scenario: *scenario1, agents: *nominal,
+    data_types: ['X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM','VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS'], 
+    add_noise: False,
+    plots: ['orbital_elements','orbit','ground_track'],
+    output_directory: 'tests/ml/results/final_all',
+    output_types: ['h5']}
+
+cases_to_run: [*case3]
 
        
 

@@ -204,7 +204,7 @@ forges:
 
 
 # cases_to_run: [*case1, *case2]
-cases_to_run: [*case3]
+cases_to_run: [*case1]
 
        
 
