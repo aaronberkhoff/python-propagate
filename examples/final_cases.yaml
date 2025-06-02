@@ -27,11 +27,11 @@ scenarios:
 
 manuevers: 
     #Thrust Manuever options
-  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 5}, execution_duration: {minutes: 1}}
-  - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {days: 3}, execution_duration: {minutes: 1}}
+  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
+  - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
 
     #Station keeping loss Manuever options
-  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {days: 3}, execution_duration: {minutes: 7}}
+  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {hours: 1}, execution_duration: {minutes: 7}}
 
     #Attitude changing manuevers
   - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
@@ -266,8 +266,8 @@ forges:
 
 
 # cases_to_run: [*case1, *case2]
-# cases_to_run: [*case1,*case1_ls,*case2_ls,*case3,*case3_ls]
-cases_to_run: [*case1_ls]
+cases_to_run: [*case1,*case1_ls,*case2_ls,*case3,*case3_ls]
+# cases_to_run: [*case1_ls]
 
        
 
