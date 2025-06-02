@@ -195,6 +195,8 @@ class Station(Platform):
             - apparent_magnitude (float): The apparent magnitude of the target as seen from the station.
             - is_visible (bool): True if the target is visible from the station, False otherwise.
         """
+        #TODO plot gamma AND beta
+        #TODO model glint
         self.state.time = state.time
         object_dict = {obj.name.lower(): obj for obj in agent.scenario.celestial_bodies}
         state_sun =  object_dict.get("sun").get_state(state.time)

@@ -96,8 +96,8 @@ class GatingNetwork(nn.Module):
         self.device = device
         self.num_experts = num_experts
         self.features = features
-        # self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
-        self.loss = JahLoss()
+        self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
+        # self.loss = JahLoss()
         
 
         # self.fc = nn.Sequential(
@@ -154,6 +154,8 @@ class GatingNetwork(nn.Module):
         logits = self.fc(x)
         temperature = 1.0
         weights = torch.softmax(logits / temperature, dim=1)  # Softmax over experts for each timestamp
+
+        #SUm of weights might not be one
         
         return weights, logits
 
@@ -282,7 +284,7 @@ class HME:
         for expert, weight in zip(self.experts, weights_np.T):
 
             expert.probability_data = weight
-            expert_dict[expert.name]['epoch_time'] = observations[:,0] 
+            expert_dict[expert.name]['epoch_time'] = times
             expert_dict[expert.name]['probabilities'] = weight 
 
         return expert_dict   
