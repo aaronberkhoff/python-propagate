@@ -2,6 +2,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 from python_propagate.connectors.astria import AstriaConnector
+from python_propagate.utilities.string_format import DATESTR
 
 
 
@@ -40,11 +41,13 @@ def test_get_multiple_tle():
 
     norad_ids = [41866, 43226, 42818]
 
-    start_time = "2019-10-22"
-    end_time = "2019-10-24"
+    start = "2019-10-22T00:00:00.0"
+    end = "2019-10-28T00:00:00.0"
 
-    csv_path = "tests/results/astria/test_csv.csv"
-    pandas_dataframe = astria.get_data(norad_ids=norad_ids,start_time=start_time,end_time=end_time,csv_path=csv_path)
+    start_time = datetime.strptime(start, DATESTR)
+    end_time   = datetime.strptime(end, DATESTR)
+
+    pandas_dataframe = astria.get_state_data(norad_ids=norad_ids,start_time=start_time,end_time=end_time)
 
 
 
@@ -58,12 +61,15 @@ def test_get_prop_tle():
 
     norad_ids = [41866, 43226, 42818]
 
-    start_time = "2019-10-22"
-    end_time = "2019-10-28"
+    start = "2019-10-22T00:00:00.0"
+    end = "2019-10-28T00:00:00.0"
+
+    start_time = datetime.strptime(start, DATESTR)
+    end_time   = datetime.strptime(end, DATESTR)
 
     dt = timedelta(seconds=30)
 
-    csv_path = "tests/results/astria/test2_csv.csv"
+    csv_path = "tests/results/astria/test2_csv.csv" #optional
     pandas_dataframe = astria.get_propagated_data(norad_ids=norad_ids,start_time=start_time,end_time=end_time,dt=dt,csv_path=csv_path)
 
     pass
