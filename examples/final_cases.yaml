@@ -29,8 +29,6 @@ manuevers:
     #Thrust Manuever options
   - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
   - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
-  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
-  - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
 
     #Station keeping loss Manuever options
   - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {hours: 1}, execution_duration: {hours: 12}}
