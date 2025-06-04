@@ -106,7 +106,7 @@ class PhotoForge(Forge):
                     rhodot_noise = 0
 
 
-                if el > station.minimum_elevation_angle and is_visible:
+                if el > station.minimum_elevation_angle:
                     # Only record data if the elevation is above the minimum angle and the target is visible
                     data_entry = {
                         "agent": agent.name,
@@ -134,8 +134,8 @@ class PhotoForge(Forge):
                         "LON_DEG": state.latlong[1] * RAD2DEG,
                         "ALT_KM": np.linalg.norm(state.position) - agent.scenario.central_body.radius,
 
-                        "FLUX_W_M2": flux_received,
-                        "FLUX_APPARENT_MAG": apparent_magnitude, # Placeholder for apparent magnitude, can be calculated from flux if needed.
+                        "FLUX_W_M2": flux_received if is_visible else 0.0,
+                        "FLUX_APPARENT_MAG": apparent_magnitude if is_visible else 0.0,   # Placeholder for apparent magnitude, can be calculated from flux if needed.
 
 
                     }
