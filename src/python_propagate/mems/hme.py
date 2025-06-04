@@ -129,6 +129,7 @@ class GatingNetwork(nn.Module):
         )
 
 
+
     def init_weights_equal(self, m):
         if isinstance(m, nn.Linear):
             nn.init.constant_(m.weight, 0.0)
@@ -177,7 +178,7 @@ class GatingNetwork(nn.Module):
 
             # Forward pass
             gating_weights, gating_logits = self(x_train)
-            
+            #TODO add alpha: alpha * MSE4 + (1 - alpha) * MSE2
             # loss = weighted_mse_loss(x_train,weights=gating_weights)
             loss = weighted_mse4_loss(x_train,weights=gating_weights)
 
@@ -204,7 +205,7 @@ def weighted_mse_loss(predictions,weights):
 def weighted_mse4_loss(predictions, weights):
     loss = weights * (predictions) ** 4
     
-    return torch.sum(loss) /  torch.sum(weights)
+    return (torch.sum(loss) /  torch.sum(weights))
 
 
 def entropy_loss(gating_weights):

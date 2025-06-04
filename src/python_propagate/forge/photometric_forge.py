@@ -136,6 +136,7 @@ class PhotoForge(Forge):
 
                         "FLUX_W_M2": flux_received if is_visible else 0.0,
                         "FLUX_APPARENT_MAG": apparent_magnitude if is_visible else 0.0,   # Placeholder for apparent magnitude, can be calculated from flux if needed.
+                        "is_visable": is_visible,
 
 
                     }
