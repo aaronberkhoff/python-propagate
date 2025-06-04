@@ -16,22 +16,22 @@ sensors:
   - &camera1 !Camera {noise_mean: [0,0], noise_covariance: [0,0], resolution: [1024,1024],reference_mag: 20, fov: 20, pointing_angles: [0,-27], background: 'dark'}
 
 stations: 
-  - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: 15.0, identity: 0, sensor: *camera1}
+  - &arecibo !Station {name: 'Arecibo', lat_long_alt: [18.344, -66.752, 0.0], minimum_elevation_angle: -90.0, identity: 0, sensor: *camera1}
   - &kwaj !Station {name: 'Kwajalein', lat_long_alt: [8.717, 167.733, 0.0], minimum_elevation_angle: 15.0, identity: 1, sensor: *camera1}
   - &diego !Station {name: 'Diego Garcia', lat_long_alt: [-7.31333, 72.41111, 0.0], minimum_elevation_angle: 15.0, identity: 2, sensor: *camera1}
 
 scenarios: 
-  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
-  - &scenario2 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*kwaj]}
-  - &scenario3 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 30}, name: 'Base', stations: [*diego]}
+  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 60}, name: 'Base', stations: [*arecibo], celestial_bodies: [*moon, *sun]}
+  - &scenario2 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 60}, name: 'Base', stations: [*kwaj]}
+  - &scenario3 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 10}, dt: {seconds: 60}, name: 'Base', stations: [*diego]}
 
 manuevers: 
     #Thrust Manuever options
-  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 5}, execution_duration: {minutes: 1}}
-  - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {days: 3}, execution_duration: {minutes: 1}}
+  - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
+  - &manuever2 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 1}, execution_duration: {minutes: 1}}
 
     #Station keeping loss Manuever options
-  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {days: 3}, execution_duration: {minutes: 7}}
+  - &manuever3 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {hours: 1}, execution_duration: {hours: 12}}
 
     #Attitude changing manuevers
   - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
@@ -77,122 +77,122 @@ initial_conditions:
 
 #Nominal Agents
 nominal_agents: &nominal 
-  - &nom1 !Spacecraft { name: "GEO_Sat1", start_time: *dec15, state: *geo1, dt: {seconds: 30}, duration: {days: 10},
+  - &nom1 !Spacecraft { name: "GEO_Sat1", start_time: *dec15, state: *geo1, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom2 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 10},
+  - &nom2 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom3 !Spacecraft { name: "GEO_Sat3", start_time: *dec15, state: *geo3, dt: {seconds: 30}, duration: {days: 10},
+  - &nom3 !Spacecraft { name: "GEO_Sat3", start_time: *dec15, state: *geo3, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom4 !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 30}, duration: {days: 10},
+  - &nom4 !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom5 !Spacecraft { name: "GEO_Sat5", start_time: *dec15, state: *geo5, dt: {seconds: 30}, duration: {days: 10},
+  - &nom5 !Spacecraft { name: "GEO_Sat5", start_time: *dec15, state: *geo5, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom6 !Spacecraft { name: "GEO_Sat6", start_time: *dec15, state: *geo6, dt: {seconds: 30}, duration: {days: 10},
+  - &nom6 !Spacecraft { name: "GEO_Sat6", start_time: *dec15, state: *geo6, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom7 !Spacecraft { name: "GEO_Sat7", start_time: *dec15, state: *geo7, dt: {seconds: 30}, duration: {days: 10},
+  - &nom7 !Spacecraft { name: "GEO_Sat7", start_time: *dec15, state: *geo7, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom8 !Spacecraft { name: "GEO_Sat8", start_time: *dec15, state: *geo8, dt: {seconds: 30}, duration: {days: 10},
+  - &nom8 !Spacecraft { name: "GEO_Sat8", start_time: *dec15, state: *geo8, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom9 !Spacecraft { name: "GEO_Sat9", start_time: *dec15, state: *geo9, dt: {seconds: 30}, duration: {days: 10},
+  - &nom9 !Spacecraft { name: "GEO_Sat9", start_time: *dec15, state: *geo9, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &nom10 !Spacecraft { name: "GEO_Sat10", start_time: *dec15, state: *geo10, dt: {seconds: 30}, duration: {days: 10},
+  - &nom10 !Spacecraft { name: "GEO_Sat10", start_time: *dec15, state: *geo10, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
 anomalous_agents: &anomaly
     # Added manuever1 to the spacecraft
-  - &anom1 !Spacecraft { name: "GEO_Sat1", start_time: *dec15, state: *geo1, dt: {seconds: 30}, duration: {days: 10},
+  - &anom1 !Spacecraft { name: "GEO_Sat1", start_time: *dec15, state: *geo1, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom2 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 10},
+  - &anom2 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom3 !Spacecraft { name: "GEO_Sat3", start_time: *dec15, state: *geo3, dt: {seconds: 30}, duration: {days: 10},
+  - &anom3 !Spacecraft { name: "GEO_Sat3", start_time: *dec15, state: *geo3, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom4 !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 30}, duration: {days: 10},
+  - &anom4 !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom5 !Spacecraft { name: "GEO_Sat5", start_time: *dec15, state: *geo5, dt: {seconds: 30}, duration: {days: 10},
+  - &anom5 !Spacecraft { name: "GEO_Sat5", start_time: *dec15, state: *geo5, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever3]}
 
-  - &anom6 !Spacecraft { name: "GEO_Sat6", start_time: *dec15, state: *geo6, dt: {seconds: 30}, duration: {days: 10},
+  - &anom6 !Spacecraft { name: "GEO_Sat6", start_time: *dec15, state: *geo6, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom7 !Spacecraft { name: "GEO_Sat7", start_time: *dec15, state: *geo7, dt: {seconds: 30}, duration: {days: 10},
+  - &anom7 !Spacecraft { name: "GEO_Sat7", start_time: *dec15, state: *geo7, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom8 !Spacecraft { name: "GEO_Sat8", start_time: *dec15, state: *geo8, dt: {seconds: 30}, duration: {days: 10},
+  - &anom8 !Spacecraft { name: "GEO_Sat8", start_time: *dec15, state: *geo8, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom9 !Spacecraft { name: "GEO_Sat9", start_time: *dec15, state: *geo9, dt: {seconds: 30}, duration: {days: 10},
+  - &anom9 !Spacecraft { name: "GEO_Sat9", start_time: *dec15, state: *geo9, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
-  - &anom10 !Spacecraft { name: "GEO_Sat10", start_time: *dec15, state: *geo10, dt: {seconds: 30}, duration: {days: 10},
+  - &anom10 !Spacecraft { name: "GEO_Sat10", start_time: *dec15, state: *geo10, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
 geo_agents: &geo_constel
-  - &geo_sat1 !Spacecraft { name: "GEO_Sat1", start_time: *dec15, state: *geo1, dt: {seconds: 30}, duration: {days: 10},
+  - &geo_sat1 !Spacecraft { name: "GEO_Sat1", start_time: *dec15, state: *geo1, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &geo_sat2 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 10},
+  - &geo_sat2 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &geo_sat3 !Spacecraft { name: "GEO_Sat3", start_time: *dec15, state: *geo3, dt: {seconds: 30}, duration: {days: 10},
+  - &geo_sat3 !Spacecraft { name: "GEO_Sat3", start_time: *dec15, state: *geo3, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &geo_sat4 !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 30}, duration: {days: 10},
+  - &geo_sat4 !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &geo_anom !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 30}, duration: {days: 10},
+  - &geo_anom !Spacecraft { name: "GEO_Sat4", start_time: *dec15, state: *geo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
 meo_agents: &meo_constel
-  - &meo_sat1 !Spacecraft { name: "MEO_Sat1", start_time: *dec15, state: *meo1, dt: {seconds: 30}, duration: {days: 10},
+  - &meo_sat1 !Spacecraft { name: "MEO_Sat1", start_time: *dec15, state: *meo1, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &meo_sat2 !Spacecraft { name: "MEO_Sat2", start_time: *dec15, state: *meo2, dt: {seconds: 30}, duration: {days: 10},
+  - &meo_sat2 !Spacecraft { name: "MEO_Sat2", start_time: *dec15, state: *meo2, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &meo_sat3 !Spacecraft { name: "MEO_Sat3", start_time: *dec15, state: *meo3, dt: {seconds: 30}, duration: {days: 10},
+  - &meo_sat3 !Spacecraft { name: "MEO_Sat3", start_time: *dec15, state: *meo3, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &meo_sat4 !Spacecraft { name: "MEO_Sat4", start_time: *dec15, state: *meo4, dt: {seconds: 30}, duration: {days: 10},
+  - &meo_sat4 !Spacecraft { name: "MEO_Sat4", start_time: *dec15, state: *meo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &meo_anom !Spacecraft { name: "MEO_Sat4", start_time: *dec15, state: *meo4, dt: {seconds: 30}, duration: {days: 10},
+  - &meo_anom !Spacecraft { name: "MEO_Sat4", start_time: *dec15, state: *meo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
 leo_agents: &leo_constel
-  - &leo_sat1 !Spacecraft { name: "LEO_Sat1", start_time: *dec15, state: *leo1, dt: {seconds: 30}, duration: {days: 10},
+  - &leo_sat1 !Spacecraft { name: "LEO_Sat1", start_time: *dec15, state: *leo1, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &leo_sat2 !Spacecraft { name: "LEO_Sat2", start_time: *dec15, state: *leo2, dt: {seconds: 30}, duration: {days: 10},
+  - &leo_sat2 !Spacecraft { name: "LEO_Sat2", start_time: *dec15, state: *leo2, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &leo_sat3 !Spacecraft { name: "LEO_Sat3", start_time: *dec15, state: *leo3, dt: {seconds: 30}, duration: {days: 10},
+  - &leo_sat3 !Spacecraft { name: "LEO_Sat3", start_time: *dec15, state: *leo3, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &leo_sat4 !Spacecraft { name: "LEO_Sat4", start_time: *dec15, state: *leo4, dt: {seconds: 30}, duration: {days: 10},
+  - &leo_sat4 !Spacecraft { name: "LEO_Sat4", start_time: *dec15, state: *leo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &leo_anom !Spacecraft { name: "LEO_Sat4", start_time: *dec15, state: *leo4, dt: {seconds: 30}, duration: {days: 10},
+  - &leo_anom !Spacecraft { name: "LEO_Sat4", start_time: *dec15, state: *leo4, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
 spawn: &spawn
 
-  - &spawn0 !Spacecraft { name: "Base_spawn", start_time: *dec15, state: *sp_min, dt: {seconds: 30}, duration: {days: 10},
+  - &spawn0 !Spacecraft { name: "Base_spawn", start_time: *dec15, state: *sp_min, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
-  - &spawn1 !Spacecraft { name: "Spawned", start_time: *dec17, state: *sp_min, dt: {seconds: 30}, duration: {days: 10},
+  - &spawn1 !Spacecraft { name: "Spawned", start_time: *dec17, state: *sp_min, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
 
 
@@ -208,7 +208,7 @@ forges:
     data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
                   'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM','FLUX_W_M2','FLUX_APPARENT_MAG'], 
     add_noise: False,
-    plots: ['orbital_elements','orbit','light_curve','ground_track'],
+    plots: [],
     output_directory: 'examples/builders/results/case1',
     output_types: ['h5','csv']}
 
@@ -217,7 +217,7 @@ forges:
     data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
                   'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM','FLUX_W_M2','FLUX_APPARENT_MAG'], 
     add_noise: False,
-    plots: ['orbital_elements','orbit','light_curve','ground_track'],
+    plots: [],
     output_directory: 'examples/builders/results/case1_ls',
     output_types: ['h5','csv']}
 
@@ -266,8 +266,8 @@ forges:
 
 
 # cases_to_run: [*case1, *case2]
-# cases_to_run: [*case1,*case1_ls,*case2_ls,*case3,*case3_ls]
-cases_to_run: [*case1_ls]
+cases_to_run: [*case1,*case1_ls]
+# cases_to_run: [*case1_ls]
 
        
 
