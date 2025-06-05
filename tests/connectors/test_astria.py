@@ -74,10 +74,29 @@ def test_get_prop_tle():
 
     pass
 
+def test_push_anomaly():
+
+    norad_id = 41866
+
+    time = "2019-10-28T00:00:00.0"
+    time = datetime.strptime(time,DATESTR)
+    contributing_feature = 'X_INERTIAL'
+
+    astria = AstriaConnector()
+
+    astria.push_anomaly(norad_id = norad_id, contributing_feature=contributing_feature,time=time)
+
+    
+
+
+    pass
+
+
 if __name__ == "__main__":
 
     # test_get_single_tle()
     # test_get_multiple_tle()
     test_get_prop_tle()
+    test_push_anomaly()
 
     
