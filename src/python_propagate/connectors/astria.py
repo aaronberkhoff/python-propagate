@@ -1,14 +1,13 @@
 import os 
-import requests
-import json
 import pandas as pd
-import warnings
 from neo4j import GraphDatabase, basic_auth
 from neo4j.exceptions import AuthError, ServiceUnavailable
 import yaml
 import getpass
 import numpy as np
-from typing import Iterable, Literal
+from typing import Iterable
+from datetime import datetime, timedelta
+from pathlib import Path
 
 from python_propagate.utilities.load_spice import load_spice
 from python_propagate.states import State
@@ -17,20 +16,11 @@ from python_propagate.constructors.yaml_constructors import load_yaml
 from python_propagate.utilities.string_format import DATESTR
 from python_propagate.utilities.units import RAD2DEG
 
-from datetime import datetime, timedelta
-
-from pathlib import Path
 
 
 
-
-
-# URL = "http://astria.tacc.utexas.edu/AstriaGraph/"
-# URL = "http://astria.tacc.utexas.edu/AstriaGraph/cesium/Assets/IAU2006_XYS/IAU2006_XYS_0.json"
-# URL = "http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/08/8822.oem.gz"
 URI = "bolt+s://astria003.pods.astria.tapis.io:443"
 CREDENTIALS_FILE = "credentials.yaml"
-# CYPHER_QUERY = "MATCH (n) RETURN count(n) as num"
 DATABASE = 'astria'
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 PROP_YAML = BASE_DIR / "data" / "defaults" / "astria_propagator.yaml"
@@ -41,11 +31,18 @@ class AstriaConnector:
 
     
     
-    _full_query = lambda norad_id, start, end : f"""MATCH (p:SpaceObject)-[:has_orbit]->(Orbit)
-                                                    WHERE p.NoradId = "{norad_id}"
-                                                    AND Orbit.Epoch > datetime("{start.strftime(DATESTR)}")
-                                                    AND Orbit.Epoch < datetime("{end.strftime(DATESTR)}")
-                                                    RETURN Orbit;"""
+    _full_query = """MATCH (p:SpaceObject)-[:has_orbit]->(Orbit)
+                     WHERE p.NoradId = $norad_id
+                     AND Orbit.Epoch > datetime($start)
+                     AND Orbit.Epoch < datetime($end)
+                     RETURN Orbit;"""
+
+    _anomaly_merge = r"""MATCH (n:SpaceObject {NoradId: $norad_id})
+                        MERGE (b:Anomaly {contributing_feature: $contributing_feature,
+                            time: $time}) 
+                        MERGE (n)-[:HAS_ANOMALY]-(b)
+                        RETURN b"""
+
     
 
     def __init__(self, propagator:Agent = None, prop_index = 0):
@@ -120,8 +117,11 @@ class AstriaConnector:
     def run_query(self, query,**kwargs):
 
         with self.client.session(database=DATABASE) as session:
-            result = session.run(query(**kwargs))
-            return [record.data() for record in result] 
+            result = session.run(query, parameters=kwargs)
+            data = [record.data() for record in result]
+            info = result.consume()
+
+            return data, info
 
 
     def get_state_data(self, norad_ids: Iterable[int], start_time: datetime, end_time: datetime) -> dict:
@@ -130,18 +130,16 @@ class AstriaConnector:
 
         for norad_id in norad_ids:
 
-            results_raw = self.run_query(
+            results_raw, _ = self.run_query(
                 AstriaConnector._full_query,
-                norad_id=norad_id,
-                start=start_time,
-                end=end_time
+                norad_id=str(norad_id),
+                start=start_time.strftime(DATESTR),
+                end=end_time.strftime(DATESTR)
             )
 
             if not results_raw:
-                warnings.warn(
-                    f'No data for Norad_id: <{norad_id}> for date range {start_time} to {end_time}',
-                    UserWarning
-                )
+                print(f'No data for Norad_id: <{norad_id}> for date range {start_time} to {end_time}')
+                
             else:
                 state_data = [
                     State(
@@ -216,3 +214,18 @@ class AstriaConnector:
             df.to_csv(path_or_buf=csv_path)
 
         return df
+    
+    def push_anomaly(self,norad_id: int, contributing_feature:str, time:datetime):
+
+        results, info = self.run_query(AstriaConnector._anomaly_merge,
+                                 norad_id = str(norad_id),
+                                 contributing_feature = contributing_feature,
+                                 time = time)
+        if not info._had_record:
+            print(f'WARNING: No nodes found for norad_id <{norad_id}>. Did not push.')
+            return False
+        return True
+        
+        
+
+
