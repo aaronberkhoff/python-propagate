@@ -27,14 +27,27 @@ class CombinedLoss(Loss):
     
     
 class WeightedMSE(Loss):
-    def __init__(self, power):
+    def __init__(self, power, weight = 1.0):
         super().__init__()
         self.power = power
+        self.weight = weight
 
     def forward(self, predicted, targets, weights, *args, **kwargs):
         # Example: weighted mean squared error
         loss = weights * torch.pow((predicted - targets),self.power)
-        return torch.sum(loss) / torch.sum(weights)
+        return self.weight * torch.sum(loss) #/ torch.sum(weights)
+    
+class EntropyLoss(Loss):
+
+    def __init__(self, power = 1.0, weight = 1.0):
+        super().__init__()
+        self.weight = weight
+        self.power = power
+
+    def forward(self, predicted, targets, weights, *args, **kwargs):
+        error = torch.pow(predicted - targets, self.power)
+        loss = - torch.sum(error * torch.log(1 - weights + 1e-8))
+        return self.weight * loss
     
 class JahLoss(Loss):
     def __init__(self):

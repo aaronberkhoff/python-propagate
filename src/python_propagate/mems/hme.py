@@ -21,7 +21,7 @@ from python_propagate.utilities.units import DEG2RAD, RAD2DEG
 from python_propagate.constructors.yaml_constructors import load_yaml
 from python_propagate.states import State
 from python_propagate.mems.experts import Expert
-from python_propagate.mems.loss import WeightedMSE, JahLoss
+from python_propagate.mems.loss import WeightedMSE, JahLoss, EntropyLoss
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -96,7 +96,12 @@ class GatingNetwork(nn.Module):
         self.device = device
         self.num_experts = num_experts
         self.features = features
-        self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
+        alpha = 1.0
+        # self.loss = WeightedMSE(power=4,weight=alpha) + WeightedMSE(power=2,weight=(1-alpha))
+        # self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
+        # self.loss = EntropyLoss(power=4,weight=1.0) #+ EntropyLoss(power=2,weight=1.0)
+        self.loss = EntropyLoss(power=4,weight=alpha) + EntropyLoss(power=2,weight=(1 - alpha))
+        self.loss +=  WeightedMSE(power=4,weight=alpha)
         # self.loss = JahLoss()
         
 
@@ -112,20 +117,23 @@ class GatingNetwork(nn.Module):
         
         self.fc = nn.Sequential(
             nn.Linear(hidden_dim, 128),
-            # nn.BatchNorm1d(128),
             nn.ReLU(),
+            nn.Dropout(p=0.2),
+            nn.BatchNorm1d(num_experts),
             nn.Linear(128, 64),
-            # nn.BatchNorm1d(64),
             nn.ReLU(),
+            nn.BatchNorm1d(num_experts),
+            nn.Dropout(p=0.2),
             nn.Linear(64, 1)
         )
 
-        kernel_size = 1
+        kernel_size = 3
         padding = kernel_size // 2
         self.conv = nn.Sequential(
             nn.Conv1d(in_channels=features, out_channels=hidden_dim, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm1d(hidden_dim),
             nn.ReLU(),
+            # nn.MaxPool1d(kernel_size=1),
             nn.Conv1d(in_channels=hidden_dim,out_channels=hidden_dim, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm1d(hidden_dim),
             nn.ReLU()
@@ -172,10 +180,10 @@ class GatingNetwork(nn.Module):
 
 
         #normalize data
-
-        optimizer = optim.Adam(self.parameters(), lr=1e-3)
+        lr = 1e-3
+        optimizer = optim.AdamW(self.parameters(), lr=lr)
         # optimizer = optim.SGD(self.parameters(),momentum=.9,lr=1e-3)
-        scheduler = ReduceLROnPlateau(optimizer=optimizer,mode = 'min', factor=.9, patience=200, cooldown=100)
+        scheduler = ReduceLROnPlateau(optimizer=optimizer,mode = 'min', factor=.9, patience=300, cooldown=100)
         
         for epoch in range(num_epochs):
             optimizer.zero_grad()
@@ -192,8 +200,13 @@ class GatingNetwork(nn.Module):
             
             # torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
             optimizer.step()
+            # if scheduler.optimizer.param_groups[0]['lr'] < lr:
 
-            if epoch % 50 == 0:
+            #     print(f"Epoch {epoch}: Final Loss: {loss.item():.10e}")
+            #     break
+
+
+            if epoch % 100 == 0:
                 # print(f"Epoch {epoch}: Total:{loss.item():.4f}, mse_loss = {ms_loss.item():.4f}, ent_loss = {en_loss.item():.4f}, mar_loss = {ma_loss.item():.4f}")
                 print(f"Epoch {epoch}: Total:{loss.item():.10e}, LR: {scheduler.optimizer.param_groups[0]['lr']:.2e}")
 
@@ -235,12 +248,12 @@ class HME:
 
         
         
-        self.scaler = MinMaxScaler(feature_range=(-1,1))
+        # self.scaler = MinMaxScaler(feature_range=(-1,1))
         # self.scaler = MaxNormalizer()
 
         # self.scaler = RobustScaler()
         # self.scaler = LogNormalizer()
-        # self.scaler = StandardScaler()
+        self.scaler = StandardScaler()
         self.device = device
         self.features = []
         # self._valid_features = ['X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
@@ -262,7 +275,7 @@ class HME:
 
     def run(self,observations_dataframe,num_epochs = 1000, parallel = 0):
 
-        times, observations = self.process_observations(observations_dataframe)
+        times, observations, time_sec = self.process_observations(observations_dataframe)
 
         x_train, y_train, residuals = self.process_experts(times = times, observations=observations)
 
@@ -284,7 +297,8 @@ class HME:
         for expert, weight in zip(self.experts, weights_np.T):
 
             expert.probability_data = weight
-            expert_dict[expert.name]['epoch_time'] = times
+            expert_dict[expert.name]['epoch_time'] = times[1:]
+            expert_dict[expert.name]['time_sec'] = time_sec[1:] / 3600
             expert_dict[expert.name]['probabilities'] = weight 
 
         return expert_dict   
@@ -307,7 +321,9 @@ class HME:
                 self._valid_features.remove(att)
                 continue
 
-        return times, np.array(observations).T
+        time_sec = observation_dataframe['time_sec']
+
+        return times, np.array(observations).T, time_sec
     
     def process_experts(self,times, observations):
 
@@ -382,7 +398,7 @@ class HME:
 
         residuals_norm = np.array([self.scaler.transform(res) for res in residuals])
 
-        return x_train, y_train, residuals
+        return x_train, y_train, residuals_norm
 
 
 

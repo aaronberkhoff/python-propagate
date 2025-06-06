@@ -22,20 +22,25 @@ scenarios:
 
 manuevers: 
     #Thrust Manuever options
-  - &manuevertest !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 0}, execution_duration: {minutes: 1}}
+
+  # - &manuevertest !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3'], execution_time: {days: 0}, execution_duration: {hours: 2}}
   
   - &manuever1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 0}, execution_duration: {days: 10}}
-
   - &manuever2 !ThrustManuever  {magnitude:  -0.001, direction_ric: [0.0,0.0,1.0], execution_time: {days: 0}, execution_duration: {days: 10}}
   - &manuever3 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,1.0,0.0], execution_time: {days: 0}, execution_duration: {days: 10}}
-
   - &manuever4 !ThrustManuever {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {days: 0}, execution_duration: {days: 10}}
-
-    #Station keeping loss Manuever options
-  - &manuever5 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3','3body','complex_srp'], execution_time: {days: 0}, execution_duration: {days: 10}}
+  - &manuever5 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3'], execution_time: {days: 0}, execution_duration: {days: 10}}
 
     #Attitude changing manuevers
   # - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
+
+manuevertest: &test_manuevers
+  - &manuevertest1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 1}, execution_duration:  {minutes: 3}}
+  - &manuevertest2 !ThrustManuever  {magnitude:  -0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 2}, execution_duration: {minutes: 3}}
+  - &manuevertest3 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 3}, execution_duration:  {minutes: 3}}
+  - &manuevertest4 !ThrustManuever {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 4}, execution_duration:   {minutes: 3}}
+  - &manuevertest5 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3'], execution_time: {hours: 5}, execution_duration:      {hours: 1}}
+
 
 
 #Define the agents in the simulation
@@ -76,8 +81,11 @@ experts: &experts
 
 validation: &validate
     # Added manuever1 to the spacecraft
-  - &valid1 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {hours: 3},
-    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuevertest]}
+  # - &valid1 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 1},
+  #   coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuevertest]}
+
+  - &valid1 !Spacecraft { name: "GEO_Sat2", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {hours: 7},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: *test_manuevers}
 
 forges:
   #nominal geo case with 10 agents

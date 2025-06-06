@@ -74,7 +74,7 @@ def test_hme() -> None:
 
     #initialize the hme
 
-    hme = HME(experts_file='examples/hme_example.yaml',device='cpu')
+    hme = HME(experts_file='examples/hme_example.yaml',device='cuda')
 
     #run HME
     expert_dict = hme.run(observations_dataframe=data,num_epochs=10000, parallel=0)
@@ -85,10 +85,10 @@ def test_hme() -> None:
 
     plt.figure(figsize=(12, 6))
     for expert in expert_dict.keys():
-        plt.plot(expert_dict[expert]['probabilities'], label=f'Expert: {expert}, MAX: {np.max(expert_dict[expert]["probabilities"])}')
+        plt.plot( "time_sec","probabilities", data = expert_dict[expert], label=f'Expert: {expert}, MAX: {np.max(expert_dict[expert]["probabilities"])}')
 
-    plt.xlabel('Time step')
-    plt.ylabel('Gating weight')
+    plt.xlabel('Time [HR]')
+    plt.ylabel('Gating Weight')
     plt.title('Gating network weights over time')
     plt.legend()
     plt.grid(True)
