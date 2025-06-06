@@ -21,7 +21,7 @@ from python_propagate.utilities.units import DEG2RAD, RAD2DEG
 from python_propagate.constructors.yaml_constructors import load_yaml
 from python_propagate.states import State
 from python_propagate.mems.experts import Expert
-from python_propagate.mems.loss import WeightedMSE, JahLoss, EntropyLoss
+from python_propagate.mems.loss import WeightedMSE, SurprisalLoss, EntropyLoss, NecessityLoss
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -100,9 +100,11 @@ class GatingNetwork(nn.Module):
         # self.loss = WeightedMSE(power=4,weight=alpha) + WeightedMSE(power=2,weight=(1-alpha))
         # self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
         # self.loss = EntropyLoss(power=4,weight=1.0) #+ EntropyLoss(power=2,weight=1.0)
-        self.loss = EntropyLoss(power=4,weight=alpha) + EntropyLoss(power=2,weight=(1 - alpha))
-        self.loss +=  WeightedMSE(power=4,weight=alpha)
+        # self.loss = EntropyLoss(power=2,weight=alpha) #+ EntropyLoss(power=2,weight=(1 - alpha))
+        # self.loss =  WeightedMSE(power=4,weight=alpha)
         # self.loss = JahLoss()
+        self.loss = SurprisalLoss(power=4) 
+        # self.loss = NecessityLoss(power=2)
         
 
         # self.fc = nn.Sequential(
@@ -118,12 +120,12 @@ class GatingNetwork(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(hidden_dim, 128),
             nn.ReLU(),
-            nn.Dropout(p=0.2),
+            # nn.Dropout(p=0.2),
             nn.BatchNorm1d(num_experts),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.BatchNorm1d(num_experts),
-            nn.Dropout(p=0.2),
+            # nn.Dropout(p=0.2),
             nn.Linear(64, 1)
         )
 
@@ -161,7 +163,8 @@ class GatingNetwork(nn.Module):
 
         logits = self.fc(x)
         temperature = 1.0
-        weights = torch.softmax(logits / temperature, dim=1)  # Softmax over experts for each timestamp
+        # weights = torch.softmax(logits / temperature, dim=1)  # Softmax over experts for each timestamp
+        weights = torch.exp(logits - torch.max(logits, dim=1, keepdim=True).values)  # Softmax over experts for each timestamp
 
         #SUm of weights might not be one
         

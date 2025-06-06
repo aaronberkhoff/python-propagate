@@ -49,20 +49,27 @@ class EntropyLoss(Loss):
         loss = - torch.sum(error * torch.log(1 - weights + 1e-8))
         return self.weight * loss
     
-class JahLoss(Loss):
-    def __init__(self):
+class SurprisalLoss(Loss):
+
+    def __init__(self, power = 1.0, weight = 1.0):
         super().__init__()
+        self.weight = weight
+        self.power = power
 
     def forward(self, predicted, targets, weights, *args, **kwargs):
-        # Example: weighted mean squared error
-        # loss = -weights * torch.pow((predicted - targets),self.power)
-        sigma = .001
-        eps = 1e-8
+        error = torch.pow(predicted - targets, self.power)
+        loss = torch.sum(error * - torch.log(weights + 1e-8))
+        return self.weight * loss
+    
+class NecessityLoss(Loss):
 
-        epistemic = -torch.log(weights + eps)
-        aleatory = .5 * np.log(np.sqrt(2*np.pi) * sigma) 
-        deviation = .5 * torch.pow((predicted - targets),2) / (2*sigma**2)
+    def __init__(self, power = 1.0, weight = 1.0):
+        super().__init__()
+        self.weight = weight
+        self.power = power
 
-        loss = epistemic + deviation
-        return torch.sum(loss) 
+    def forward(self, predicted, targets, weights, *args, **kwargs):
+        error = torch.pow(predicted - targets, self.power)
+        loss = torch.sum(error * torch.log(1 - weights + 1e-8))
+        return self.weight * loss
 
