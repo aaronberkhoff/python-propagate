@@ -100,11 +100,10 @@ class GatingNetwork(nn.Module):
         # self.loss = WeightedMSE(power=4,weight=alpha) + WeightedMSE(power=2,weight=(1-alpha))
         # self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
         # self.loss = EntropyLoss(power=4,weight=1.0) #+ EntropyLoss(power=2,weight=1.0)
-        # self.loss = EntropyLoss(power=2,weight=alpha) #+ EntropyLoss(power=2,weight=(1 - alpha))
+        self.loss = EntropyLoss(power=2,weight=alpha) #+ EntropyLoss(power=2,weight=(1 - alpha))
         # self.loss =  WeightedMSE(power=4,weight=alpha)
         # self.loss = JahLoss()
-        self.loss = SurprisalLoss(power=4) 
-        # self.loss = NecessityLoss(power=2)
+        # self.loss = SurprisalLoss(power=2)
         
 
         # self.fc = nn.Sequential(
@@ -120,12 +119,12 @@ class GatingNetwork(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(hidden_dim, 128),
             nn.ReLU(),
-            # nn.Dropout(p=0.2),
+            nn.Dropout(p=0.2),
             nn.BatchNorm1d(num_experts),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.BatchNorm1d(num_experts),
-            # nn.Dropout(p=0.2),
+            nn.Dropout(p=0.2),
             nn.Linear(64, 1)
         )
 
@@ -214,27 +213,6 @@ class GatingNetwork(nn.Module):
                 print(f"Epoch {epoch}: Total:{loss.item():.10e}, LR: {scheduler.optimizer.param_groups[0]['lr']:.2e}")
 
             scheduler.step(loss)
-
-
-def gaussian_nll(y_pred, y_true, sigma):
-    return ((y_pred - y_true) ** 2 / (2 * sigma**2)).mean()
-
-def weighted_mse_loss(predictions,weights):
-    loss = weights * (predictions)**2
-    return torch.sum(loss) / torch.sum(weights)
-
-def weighted_mse4_loss(predictions, weights):
-    loss = weights * (predictions) ** 4
-    
-    return torch.sum(loss) /  torch.sum(weights)
-
-
-def entropy_loss(gating_weights):
-    # gating_weights: shape (T, N)
-    # Add a small epsilon to avoid log(0)
-    epsilon = 1e-8
-    entropy = -torch.sum(gating_weights * torch.log(gating_weights + epsilon), dim=-1)  # shape: (T,)
-    return entropy.mean()
 
 
 class HME:
@@ -401,7 +379,7 @@ class HME:
 
         residuals_norm = np.array([self.scaler.transform(res) for res in residuals])
 
-        return x_train, y_train, residuals_norm
+        return x_train, y_train, residuals
 
 
 
