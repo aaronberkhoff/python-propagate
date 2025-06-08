@@ -99,8 +99,8 @@ class GatingNetwork(nn.Module):
         alpha = 1.0
         # self.loss = WeightedMSE(power=4,weight=alpha) + WeightedMSE(power=2,weight=(1-alpha))
         # self.loss = WeightedMSE(power=4) + WeightedMSE(power=2)
-        # self.loss = EntropyLoss(power=4,weight=1.0) #+ EntropyLoss(power=2,weight=1.0)
-        self.loss = EntropyLoss(power=2,weight=alpha) #+ EntropyLoss(power=2,weight=(1 - alpha))
+        # self.loss = EntropyLoss(power=4,weight=1.0) + EntropyLoss(power=2,weight=1.0)
+        self.loss = EntropyLoss(power=4,weight=alpha) + EntropyLoss(power=2,weight=(1 - alpha))
         # self.loss =  WeightedMSE(power=4,weight=alpha)
         # self.loss = JahLoss()
         # self.loss = SurprisalLoss(power=2)
@@ -119,12 +119,12 @@ class GatingNetwork(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(hidden_dim, 128),
             nn.ReLU(),
-            nn.Dropout(p=0.2),
+            # nn.Dropout(p=0.2),
             nn.BatchNorm1d(num_experts),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.BatchNorm1d(num_experts),
-            nn.Dropout(p=0.2),
+            # nn.Dropout(p=0.2),
             nn.Linear(64, 1)
         )
 
@@ -134,7 +134,7 @@ class GatingNetwork(nn.Module):
             nn.Conv1d(in_channels=features, out_channels=hidden_dim, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm1d(hidden_dim),
             nn.ReLU(),
-            # nn.MaxPool1d(kernel_size=1),
+            nn.MaxPool1d(kernel_size=1),
             nn.Conv1d(in_channels=hidden_dim,out_channels=hidden_dim, kernel_size=kernel_size, padding=padding),
             nn.BatchNorm1d(hidden_dim),
             nn.ReLU()
@@ -162,8 +162,8 @@ class GatingNetwork(nn.Module):
 
         logits = self.fc(x)
         temperature = 1.0
-        # weights = torch.softmax(logits / temperature, dim=1)  # Softmax over experts for each timestamp
-        weights = torch.exp(logits - torch.max(logits, dim=1, keepdim=True).values)  # Softmax over experts for each timestamp
+        weights = torch.softmax(logits / temperature, dim=1)  # Softmax over experts for each timestamp
+        # weights = torch.exp(logits - torch.max(logits, dim=1, keepdim=True).values)  # Softmax over experts for each timestamp
 
         #SUm of weights might not be one
         

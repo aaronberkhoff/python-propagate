@@ -35,10 +35,10 @@ manuevers:
   # - &manuever4 !FreeRotate  {execution_time: {days: 5}, execution_duration: {minutes: 1}}
 
 manuevertest: &test_manuevers
-  - &manuevertest1 !ThrustManuever  {magnitude: -0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 1}, execution_duration:  {minutes: 3}}
-  - &manuevertest2 !ThrustManuever  {magnitude:  -0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 2}, execution_duration: {minutes: 3}}
-  - &manuevertest3 !ThrustManuever  {magnitude:  0.001, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 3}, execution_duration:  {minutes: 3}}
-  - &manuevertest4 !ThrustManuever {magnitude:  0.001, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 4}, execution_duration:   {minutes: 3}}
+  - &manuevertest1 !ThrustManuever  {magnitude: -0.0007, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 1}, execution_duration:  {minutes: 3}}
+  - &manuevertest2 !ThrustManuever  {magnitude:  -0.0005, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 2}, execution_duration: {minutes: 3}}
+  - &manuevertest3 !ThrustManuever  {magnitude:  0.0004, direction_ric: [0.0,1.0,0.0], execution_time: {hours: 3}, execution_duration:  {minutes: 3}}
+  - &manuevertest4 !ThrustManuever {magnitude:  0.0003, direction_ric: [0.0,0.0,1.0], execution_time: {hours: 4}, execution_duration:   {minutes: 3}}
   - &manuevertest5 !StationKeepLoss {scenario: *scenario1, dynamics: ['J2','J3'], execution_time: {hours: 5}, execution_duration:      {hours: 1}}
 
 
