@@ -47,6 +47,11 @@ buses:
 #Define the agents initial conditions
 
 initial_conditions:
+  - &xgeo1  !OrbitalElements {sma: 326400, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 180.0} 
+  - &xgeo2  !OrbitalElements {sma: 326400, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 200.0} 
+  - &xgeo3  !OrbitalElements {sma: 326400, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 220.0} 
+  - &xgeo4  !OrbitalElements {sma: 326400, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 240.0} 
+
   - &geo1  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 180.0} 
   - &geo2  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 200.0} 
   - &geo3  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 220.0} 
@@ -138,6 +143,22 @@ anomalous_agents: &anomaly
 
   - &anom10 !Spacecraft { name: "GEO_Sat10", start_time: *dec15, state: *geo10, dt: {seconds: 60}, duration: {days: 10},
     coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
+
+xgeo_agents: &xgeo_constel
+  - &xgeo_sat1 !Spacecraft { name: "XGEO_Sat1", start_time: *dec15, state: *xgeo1, dt: {seconds: 60}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','3body'], scenario: *scenario1, bus: *busbox}
+
+  - &xgeo_sat2 !Spacecraft { name: "XGEO_Sat2", start_time: *dec15, state: *xgeo2, dt: {seconds: 60}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','3body'], scenario: *scenario1, bus: *busbox}
+
+  - &xgeo_sat3 !Spacecraft { name: "XGEO_Sat3", start_time: *dec15, state: *xgeo3, dt: {seconds: 60}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','3body'], scenario: *scenario1, bus: *busbox}
+
+  - &xgeo_sat4 !Spacecraft { name: "XGEO_Sat4", start_time: *dec15, state: *xgeo4, dt: {seconds: 60}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','3body'], scenario: *scenario1, bus: *busbox}
+
+  - &xgeo_anom !Spacecraft { name: "XGEO_Sat4", start_time: *dec15, state: *xgeo4, dt: {seconds: 60}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','3body'], scenario: *scenario1, bus: *busbox, manuevers: [*manuever1]}
 
 geo_agents: &geo_constel
   - &geo_sat1 !Spacecraft { name: "GEO_Sat1", start_time: *dec15, state: *geo1, dt: {seconds: 60}, duration: {days: 10},
@@ -254,6 +275,22 @@ forges:
     output_directory: 'examples/builders/results/case3_ls',
     output_types: ['h5','csv']}
 
+  - &case_xgeo !PhotoForge {name: "case_xgeo", scenario: *scenario1, agents: [*xgeo_sat1, *xgeo_sat2, *xgeo_sat3, *xgeo_sat4],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM','FLUX_W_M2','FLUX_APPARENT_MAG'], 
+    add_noise: False,
+    plots: ['orbit', 'ground_track', 'orbital_elements'],
+    output_directory: 'examples/builders/results/case_xgeo',
+    output_types: ['h5','csv']}
+
+  - &case_xgeo_ls !PhotoForge {name: "case_xgeo_ls", scenario: *scenario1, agents: [*xgeo_sat1, *xgeo_sat2, *xgeo_sat3, *xgeo_anom],
+    data_types: ['RA_DEG', 'DEC_DEG', 'RANGE_KM', 'RANGE_RATE_KMS', 'AZ_DEG', 'EL_DEG', 'X_INERTIAL_KM','Y_INERTIAL_KM','Z_INERTIAL_KM',
+                  'VX_INERTIAL_KMS','VY_INERTIAL_KMS','VZ_INERTIAL_KMS','LAT_DEG','LON_DEG','ALT_KM','FLUX_W_M2','FLUX_APPARENT_MAG'], 
+    add_noise: False,
+    plots: ['orbit', 'ground_track','orbital_elements'],
+    output_directory: 'examples/builders/results/case_xgeo_ls',
+    output_types: ['h5','csv']}
+
   #Starlink case  
   # - &case4 !TLEForge 
 
@@ -266,7 +303,9 @@ forges:
 
 
 # cases_to_run: [*case1, *case2]
-cases_to_run: [*case1]
+# cases_to_run: [*case1]
+# cases_to_run: [*case_xgeo]
+cases_to_run: [*case_xgeo_ls]
 # cases_to_run: [*case1_ls]
 
        
