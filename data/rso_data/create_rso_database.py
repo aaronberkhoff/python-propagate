@@ -75,8 +75,8 @@ def parse_json_and_store(json_file, db_name="data.db"):
 
 
 if __name__ == "__main__":
-    json_file = "data/rso_data/rso_data.json" # Change this to your JSON file path
-    db_name = "data/rso_data/rso_data.db"     # Change database name if needed
+    json_file = "data/rso_data/leo_data.json" # Change this to your JSON file path
+    db_name = "data/rso_data/leo_data.db"     # Change database name if needed
     
     create_database_from_json(json_file, db_name)
     parse_json_and_store(json_file, db_name)

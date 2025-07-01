@@ -83,4 +83,3 @@ class Sun(Planet):
             f"J3={self._j3}, spice_id={self._spice_id}, mu={self._mu}, "
             f"angular_velocity={self._angular_velocity}, flattening_bool={self._flattening_bool})"
         )
-

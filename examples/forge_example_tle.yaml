@@ -13,55 +13,100 @@ stations:
       lat_long_alt: [18.344, -66.752, 0.0]
       minimum_elevation_angle: 15.0
       identity: 0
+    - &asu !Station
+      name: 'ASU'
+      lat_long_alt: [33.4214, -111.9332, 0.0]
+      minimum_elevation_angle: 5.0
+      identity: 1
 
 scenario: &scenario !Scenario
   central_body: *earth
-  start_time: "2025-03-03T0:00:00.0" 
+  start_time: "2020-05-21T0:00:00.0" 
   celestial_bodies: [*moon, *sun]
   duration: 
-    days: 3
+    days: 5
   dt: 
     seconds: 30
   name: 'Base'
-  stations: [*arecibo]
+  stations: [*asu]
+  # stations: [*arecibo]
+
+manuevers: 
+  - &manuever1 !ThrustManuever
+    magnitude: -0.001 #km/s
+    direction_ric: [0.0,1.0,0.0]
+    execution_time: 
+      days: 5
+    execution_duration:
+      minutes: 1
+  - &manuever2 !ThrustManuever
+      magnitude: 0.001 #km/s
+      direction_ric: [0.0,1.0,0.0]
+      execution_time: 
+        days: 7
+      execution_duration:
+        minutes: 1
+  - &manuever3 !StationKeepLoss
+      scenario: *scenario
+      dynamics: ['J2','J3']
+      execution_time: 
+        days: 5
+      execution_duration:
+        days: 2
+  - &manuever4 !FreeRotate
+      execution_time: 
+        days: 1
+      execution_duration:
+        days: 7    
 
 buses:
   - &bus1 !Bus
     name: "GEO_Sat1_bus"
-    extents: [2.0, 2.0, 2.0] # Dimensions of the bus in meters (width, height, depth) (3 for a box)
+    extents: [20.0, 20.0, 20.0] # Dimensions of the bus in meters (width, height, depth) (3 for a box)
     orientation: 'nadir' # Only supports Nadir 
     properties_file: "data/bus/default_properties.json" #File that defines the reflectivity and emissivity properties of the bus. This file can be found in the data directory of the package.    
 
 agents: 
   - &sat1 !Spacecraft
     name: "GEO"
-    start_time: "2025-01-15T12:30:00.0" # Can be arbitrary
+    start_time: "2020-05-21T0:00:00.0" # Can be arbitrary
     state: None # This will be populated by the TLE Forge
     dt: 
       seconds: 30
     duration: 
-      days: 3 #Can bne arbitrary, this will be overridden by the TLE Forge if needed
+      days: 3 #Can be arbitrary, this will be overridden by the TLE Forge if needed
     coefficient_of_drag: 2.0
     mass: 150.0 #kg
     area: 2.0 #m^2
-    dynamics: ['kepler','J2','3body','J3','complex_srp'] # You can specify the dynamics you want to use for the TLE Forge. 'kepler' is required for TLE generation.
+    dynamics: ['kepler','J2','3body','J3','complex_srp','complex_drag'] # You can specify the dynamics you want to use for the TLE Forge. 'kepler' is required for TLE generation.
     scenario: *scenario
     bus: *bus1 # Link the bus to the spacecraft, this is optional but recommended for photometric calculations.
+    # manuevers: [*manuever4]
 
 
 forge:
   !TLEForge
-  name: "tle_forge" # Name of the TLE Forge instance
-  database: data/rso_data/rso_data.db
+  name: "tle_forge_LEO" # Name of the TLE Forge instance
+  database: data/rso_data/leo_data.db
   agent_base: *sat1
   norad_ids: 
+    # GEO Sats
     # - 41592
-    - 37602
+    # - 37602
     # - 42432
     # - 49055
     # - 42740
     # - 40733
     # - 40272
+
+    # Starlink
+     - 44748
+    #  - 44918
+    #  - 44768
+    #  - 44769 
+    #  - 44921
+    #  - 45074
+
   scenario: *scenario
   data_types:
      - 'RA_DEG'
@@ -88,7 +133,7 @@ forge:
   
   add_noise: False
   plots: ['orbital_elements','orbit','ground_track',light_curve] # Specify the plots you want to generate for the TLE Forge. Options include 'orbital_elements', 'orbit', 'ground_track', 'light_curve', etc.
-  output_directory: 'examples/results'
+  output_directory: 'examples/results/StarlinkTLE'
   output_types: ['h5','csv']
   forge: 'PhotoForge' # This is required to specify the type of forge being used, in this case PhotoForge
 

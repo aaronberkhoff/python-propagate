@@ -31,7 +31,7 @@ class PDAFilter:
         clutter_poisson_mean=2,
     ):
 
-        process_noise_mean = np.array(process_noise_mean)[:, np.newaxis]
+        process_noise_mean = np.array(process_noise_mean).reshape(-1, 1)
         process_noise_covariance = np.array(process_noise_covariance) * np.eye(
             len(process_noise_mean)
         )

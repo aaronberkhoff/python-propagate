@@ -5,6 +5,7 @@ from python_propagate.dynamics import Dynamic
 from python_propagate.states import State
 from python_propagate.utilities.load_spice import load_spice
 
+
 class ThreeBody(Dynamic):
     """
     A class to represent a Keplerian dynamic.
@@ -28,8 +29,6 @@ class ThreeBody(Dynamic):
 
         super().__init__(scenario, agent, stm, function)
 
-
-
     def three_body(self, state, celestial_body):
 
         # Gravitational parameter (GM) in km^3/sec^2
@@ -43,20 +42,23 @@ class ThreeBody(Dynamic):
         third_body_state = celestial_body.get_state(state.time)
 
         # Extract the position (first 3 elements of the state vector)
-        inertial_to_third_body = third_body_state.position  # 3rd body position in km (X, Y, Z)
+        inertial_to_third_body = (
+            third_body_state.position
+        )  # 3rd body position in km (X, Y, Z)
 
         # Agent position relative to inertial body
-        inertial_to_agent = state.position # Agent position in km (X, Y, Z)
+        inertial_to_agent = state.position  # Agent position in km (X, Y, Z)
 
         # Agent position relative to third body
         agent_to_third_body = inertial_to_third_body - inertial_to_agent
 
         # Third body acceleration
-        accel_third_body = mu * (agent_to_third_body/(np.linalg.norm(agent_to_third_body)**3) - inertial_to_third_body/(np.linalg.norm(inertial_to_third_body)**3))
+        accel_third_body = mu * (
+            agent_to_third_body / (np.linalg.norm(agent_to_third_body) ** 3)
+            - inertial_to_third_body / (np.linalg.norm(inertial_to_third_body) ** 3)
+        )
 
         return State(acceleration=accel_third_body, time=state.time)
-
-
 
     def three_body_all(self, state: State, time: float = None):
         """
@@ -79,5 +81,5 @@ class ThreeBody(Dynamic):
         accel = State(acceleration=np.zeros(3))
         for body in self.scenario.celestial_bodies:
             accel @= self.three_body(state, body)
-            
+
         return accel

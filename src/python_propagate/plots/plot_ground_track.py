@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def plot_ground_track(
-    agents, stations, output_directory, name="ground_track_visibility",legend = True
+    agents, stations, output_directory, name="ground_track_visibility", legend=True
 ):
     """
     Plots the entire ground track of each agent and overlays points (in the station's color)
@@ -41,7 +41,7 @@ def plot_ground_track(
     gl.xlabel_style = {"size": 10, "color": "gray"}
     gl.ylabel_style = {"size": 10, "color": "gray"}
     ax.set_global()
-    
+
     # Plot the entire ground track for each agent (in a neutral color)
     for agent in agents:
         # Compute full track: convert longitudes and latitudes from radians to degrees
@@ -156,5 +156,3 @@ def plot_ground_track(
     plt.savefig(output_path, dpi=150)
     # plt.close(fig)
     print(f"Ground track with visibility plot saved as {output_path}")
-
-

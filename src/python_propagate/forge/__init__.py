@@ -48,28 +48,31 @@ class Forge:
 
         self.add_noise = add_noise
 
-        if isinstance(output_types,str):
-            self.output_types [output_types]
-        if isinstance(output_types,Iterable):
+        if isinstance(output_types, str):
+            self.output_types[output_types]
+        if isinstance(output_types, Iterable):
             self.output_types = output_types
-            
 
-    def process_agent(self, agent, scenario, datatypes, add_noise = False, propagate=True):
+    def process_agent(
+        self, agent, scenario, datatypes, add_noise=False, propagate=True
+    ):
 
-        raise NotImplementedError("The method 'process_agent' should be implemented in the subclass or outside this class.")
+        raise NotImplementedError(
+            "The method 'process_agent' should be implemented in the subclass or outside this class."
+        )
 
     def save_data_to_files(self, data_all):
-            """
-            Saves the simulation data to CSV, HDF5, and Excel, with unique datasets for each agent.
-            """
-            # Convert list of all agent data into a DataFrame
-            df_all = pd.DataFrame(data_all)
+        """
+        Saves the simulation data to CSV, HDF5, and Excel, with unique datasets for each agent.
+        """
+        # Convert list of all agent data into a DataFrame
+        df_all = pd.DataFrame(data_all)
 
-            # Define output file paths
-            if 'csv' in self.output_types:
-                output_path_csv = self.output_directory / f"{self.name}.csv"
-                df_all.to_csv(output_path_csv, index=False)
-                print(f"CSV File written:\n CSV: {output_path_csv}")
+        # Define output file paths
+        if "csv" in self.output_types:
+            output_path_csv = self.output_directory / f"{self.name}.csv"
+            df_all.to_csv(output_path_csv, index=False)
+            print(f"CSV File written:\n CSV: {output_path_csv}")
 
             if 'h5' in self.output_types:
                 output_path_h5 = self.output_directory / f"{self.name}.h5"
@@ -86,20 +89,17 @@ class Forge:
                                     agent_group.create_dataset(column, data=stacked_array)
 
 
-                print(f"HDF5 File written:\n h5: {output_path_h5}")
+            print(f"HDF5 File written:\n h5: {output_path_h5}")
 
-            if 'xlsx' in self.output_types:
-                output_path_xlsx = self.output_directory / f"{self.name}.xlsx"
-                with pd.ExcelWriter(output_path_xlsx) as writer:
-                    for agent_name, df_agent in df_all.groupby("agent"):
-                        df_agent.to_excel(writer, sheet_name=agent_name, index=False)
-                print(f"XLSX File written:\n xlsx: {output_path_xlsx}")
-        
-
-
+        if "xlsx" in self.output_types:
+            output_path_xlsx = self.output_directory / f"{self.name}.xlsx"
+            with pd.ExcelWriter(output_path_xlsx) as writer:
+                for agent_name, df_agent in df_all.groupby("agent"):
+                    df_agent.to_excel(writer, sheet_name=agent_name, index=False)
+            print(f"XLSX File written:\n xlsx: {output_path_xlsx}")
 
     def generate_data(self):
-        
+
         data_all = []  # List to store data for all agents
 
         for agent in self.agents:
@@ -108,8 +108,8 @@ class Forge:
 
         self.save_data_to_files(data_all)
         return data_all
-        
-    def generate_data_parallel(self,cores):
+
+    def generate_data_parallel(self, cores):
 
         import concurrent.futures
 

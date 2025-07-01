@@ -9,7 +9,7 @@ def mahalanobis_distance(x, y, covariance):
     c_factor = cho_factor(covariance, lower=True)
     mahal_dist_sq = diff.T @ cho_solve(c_factor, diff)
 
-    return np.sqrt(mahal_dist_sq)[0, 0]
+    return np.squeeze(np.sqrt(mahal_dist_sq))
 
 
 def calc_ellipse(mean, covariance, sigma=3, resolution=100):

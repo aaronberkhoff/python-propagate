@@ -1,4 +1,6 @@
 from python_propagate.environment.planets import Planet
+
+
 class Earth(Planet):
     """
     A class to represent the Earth.
