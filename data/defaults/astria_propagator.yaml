@@ -1,0 +1,38 @@
+central_body: &earth !Earth
+  flattening_bool: False
+
+celestial_bodies:
+ - &moon !Moon
+   name: 'Moon'
+ - &sun  !Sun
+   name: 'Sun'
+
+
+start_times:
+  - &dec15 "2025-01-15T12:30:00.0"
+
+scenarios: 
+  - &scenario1 !Scenario {central_body: *earth, start_time: *dec15, duration: {days: 5}, dt: {seconds: 30}, name: 'Base', celestial_bodies: [*moon, *sun]}
+
+
+#Define the agents in the simulation
+
+#Agent bus
+buses:
+  - &busbox  !Bus {name: "box",  extents: [2.0, 2.0, 2.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # box     
+  - &busrect !Bus {name: "rect", extents: [4.0, 2.0, 3.0], orientation: 'nadir', properties_file: "data/bus/default_properties.json"} # rectangular     
+
+#Define the agents initial conditions (Overwritten int the API)
+
+initial_conditions:
+  - &geo2  !OrbitalElements {sma: 42164, ecc: 0.0, inc: 0.0001, arg: 0.0, raan: 0.0, nu: 180.0} 
+
+#Define the propagator options
+
+propagators: &props
+  - &kepler !Spacecraft { name: "Kepler", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler'], scenario: *scenario1, bus: *busbox}
+
+  - &j2 !Spacecraft { name: "J2", start_time: *dec15, state: *geo2, dt: {seconds: 30}, duration: {days: 10},
+    coefficient_of_drag: 2.0, mass: 150.0, area: 4.0, dynamics: ['kepler','J2'], scenario: *scenario1, bus: *busbox}
+

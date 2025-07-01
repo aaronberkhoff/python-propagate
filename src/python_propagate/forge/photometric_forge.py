@@ -35,27 +35,8 @@ class PhotoForge(Forge):
 
     """
 
-    def __init__(
-        self,
-        scenario,
-        genes,
-        output_directory,
-        data_types,
-        output_types,
-        add_noise=False,
-        plots=None,
-        name="PhotoForge",
-    ):
-        super().__init__(
-            scenario,
-            genes,
-            output_directory,
-            data_types,
-            output_types,
-            add_noise,
-            plots,
-            name,
-        )
+    def __init__(self, scenario, agents, output_directory, data_types, output_types, add_noise=False, plots=None, name='PhotoForge'):
+        super().__init__(scenario, agents, output_directory, data_types, output_types, add_noise, plots, name)
 
     def get_orientation_history_from_manuever(
         self, agent, time_data
@@ -141,12 +122,13 @@ class PhotoForge(Forge):
                     rho_noise = 0
                     rhodot_noise = 0
 
-                if el > station.minimum_elevation_angle and is_visible:
+
+                if el > station.minimum_elevation_angle:
                     # Only record data if the elevation is above the minimum angle and the target is visible
                     data_entry = {
                         "agent": agent.name,
                         "index": i,
-                        "epoch_time": state.time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "epoch_time": state.time.strftime(DATESTR),
                         "time_sec": i * agent.dt.total_seconds(),
                         "station": station.name,
                         "station_id": station.identity,
@@ -164,26 +146,18 @@ class PhotoForge(Forge):
                         "VZ_INERTIAL_KMS": state.velocity[2],
                         "LAT_DEG": state.latlong[0] * RAD2DEG,
                         "LON_DEG": state.latlong[1] * RAD2DEG,
-                        "ALT_KM": np.linalg.norm(state.position)
-                        - agent.scenario.central_body.radius,
-                        "FLUX_W_M2": flux_received,
-                        "FLUX_APPARENT_MAG": apparent_magnitude,  # Placeholder for apparent magnitude, can be calculated from flux if needed.
+                        "ALT_KM": np.linalg.norm(state.position) - agent.scenario.central_body.radius,
+
+                        "FLUX_W_M2": flux_received if is_visible else 0.0,
+                        "FLUX_APPARENT_MAG": apparent_magnitude if is_visible else 0.0,   # Placeholder for apparent magnitude, can be calculated from flux if needed.
+                        "is_visable": is_visible,
+
+
                     }
 
-                    filtered_data_entry = {
-                        key: value
-                        for key, value in data_entry.items()
-                        if key in datatypes
-                        or key
-                        in {
-                            "agent",
-                            "index",
-                            "time_sec",
-                            "epoch_time",
-                            "station",
-                            "station_id",
-                        }
-                    }
+                    
+
+                    filtered_data_entry = {key: value for key, value in data_entry.items() if key in datatypes or key in {"agent", "index", "time_sec","epoch_time", "station", "station_id"}}
                     # for data_type in datatypes:
                     #     if data_type in data_entry:
                     #         pass

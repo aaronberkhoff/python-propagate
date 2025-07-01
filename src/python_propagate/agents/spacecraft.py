@@ -139,13 +139,11 @@ class Bus:
         if properties_file not in Bus._cached_face_properties:
             with open(properties_file, "r") as file:
                 Bus._cached_face_properties[properties_file] = json.load(file)
-        self.face_properties = Bus._cached_face_properties[properties_file]
+        self.face_properties = Bus._cached_face_properties[properties_file][shape]
 
-        if shape == "box":
-            self.shape = trimesh.creation.box(
-                extents=extents, face_attributes=self.face_properties
-            )
-            self.face_properties = self._order_face_properties_box()
+        if shape == 'box':
+            self.shape = trimesh.creation.box(extents=extents, face_attributes=self.face_properties)
+            # self.face_properties = self._order_face_properties_box()
         else:
             raise NotImplementedError(
                 f"Shape '{shape}' is not implemented for the spacecraft bus."
@@ -230,10 +228,8 @@ class Bus:
         }
 
         properties_ordered = {}
-        for i, normal in enumerate(self.shape.face_normals):
-            normal_tuple = tuple(
-                np.round(normal).astype(int)
-            )  # Convert normal to a tuple of integers
+        for i, normal in enumerate(self.shape.facets_normal):
+            normal_tuple = tuple(np.round(normal).astype(int))  # Convert normal to a tuple of integers
             if normal_tuple in normal_to_property:
                 properties_ordered[i] = self.face_properties[
                     normal_to_property[normal_tuple]

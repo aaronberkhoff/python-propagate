@@ -55,6 +55,9 @@ class UnscentedKalman(Filter):
         self.state_estimate_hist = []
         self.covariance_estimate_hist = []
         self.time_data = []
+        self.measurement_mean_hist = []
+        self.measurement_covariance_hist = []
+        self.state_mean_hist = []
 
         if process_noise_mean is not None:
             self.spacecraft.add_dynamics((NoiseDynamic,))
@@ -120,12 +123,12 @@ class UnscentedKalman(Filter):
 
             self.time_data.append(i)
 
-            print(f"Progress: {(i / len(measurements))*100}")
+            # print(f"Progress: {(i / len(measurements))*100}")
             # self.spacecraft.state.position = state_estimate[0:3]
             # self.spacecraft.state.velocity = state_estimate[3:6]
             # self.spacecraft.state.covariance_estimate = covariance_estimate
 
-        return state_estimate, covariance_estimate
+        return state_estimate, covariance_estimate # , state_estimate_hist, covariance_estimate_hist
 
     def time_update(
         self, state_estimate, covariance_estimate, duration: int, parallel=False
@@ -159,6 +162,9 @@ class UnscentedKalman(Filter):
             measurement_sigma, weights=self.weights
         )
 
+        self.measurement_mean_hist.append(measurement_mean.T)
+        self.measurement_covariance_hist.append(measurement_covariance.T)
+
         innovation = measurement - measurement_mean
 
         # cross-covariance
@@ -183,6 +189,9 @@ class UnscentedKalman(Filter):
             + kalman_gain @ measurement_covariance @ kalman_gain.T
         )
 
+
+
+
         self.residuals_data[0].append(innovation[0, 0])
         self.residuals_data[1].append(innovation[1, 0])
 
@@ -193,7 +202,11 @@ class UnscentedKalman(Filter):
         self.residual_cov_data[3].append(-3 * np.sqrt(measurement_covariance[1, 1]))
 
         self.state_estimate_hist.append(state_estimate)
+        self.state_mean_hist.append(state_bar)
         self.covariance_estimate_hist.append(covariance_estimate)
+
+
+        
         # TODO refactor to handle the memory better. Try saving these values to the filter state
         if return_kalman:
             return (

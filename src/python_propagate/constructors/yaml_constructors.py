@@ -27,10 +27,12 @@ from python_propagate.dynamics.manuevers import (
 )
 from python_propagate.forge.photometric_forge import PhotoForge
 from python_propagate.forge.astrometric_forge import AstroForge
+from python_propagate.forge.eoir_forge import EOIRForge
 from python_propagate.forge.tle_forge import TLEForge
 from python_propagate.forge.genes import Genes, Gene
+from python_propagate.mems.experts import Expert
 
-# from python_propagate.forge.photometric_forge import PhotoForge
+from python_propagate.sensors.optical import Camera
 
 
 class ClassConstructor:
@@ -78,9 +80,15 @@ def load_yaml(yaml_file):
     yaml.add_constructor("!AstroForge", ClassConstructor(AstroForge).constructor)
     yaml.add_constructor("!TLEForge", ClassConstructor(TLEForge).constructor)
     yaml.add_constructor("!PhotoForge", ClassConstructor(PhotoForge).constructor)
+    yaml.add_constructor("!EOIRForge", ClassConstructor(EOIRForge).constructor)
 
     yaml.add_constructor("!Gene", ClassConstructor(Gene).constructor)
     yaml.add_constructor("!Genes", ClassConstructor(Genes).constructor)
+
+    yaml.add_constructor("!Camera", ClassConstructor(Camera).constructor)
+
+    yaml.add_constructor("!Expert", ClassConstructor(Expert).constructor)
+    
 
     with open(yaml_file, "r") as file:
         # raw = file.read()

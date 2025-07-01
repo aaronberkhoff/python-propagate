@@ -244,7 +244,7 @@ class Agent:
         self.state.velocity = state[3:6]
         self.state.acceleration = np.array([0.0, 0.0, 0.0])
 
-        for dynamic in self.dynamics:
+        for dynamic in list(self.dynamics + self.manuevers):
             # a_x,a_y,a_z = dynamic(state,time,self.scenario,self)
             # state.update_acceleration_from_state(dynamic(state, time))
             self.state @= dynamic(self.state, time)
@@ -297,7 +297,7 @@ class Agent:
             The tolerance for the numerical integration (default is 1e-12).
         """
         self.ensure_cart_state()
-        self.dynamics.extend(self.manuevers)
+        
         if duration is None:
             time = [0, self.duration.total_seconds()]
             t_eval = np.arange(time[0], time[1], self.dt.seconds)

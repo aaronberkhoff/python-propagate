@@ -7,7 +7,8 @@ from python_propagate.dynamics.j2 import J2
 from python_propagate.dynamics.j3 import J3
 from python_propagate.dynamics.drag import Drag
 from python_propagate.dynamics.stm import STM
-
+from python_propagate.dynamics.three_body import ThreeBody
+from python_propagate.dynamics.srp import SRP
 
 class Manuever(Dynamic):
     """
@@ -185,6 +186,15 @@ class StationKeepLoss(Manuever):
             elif dynamic == "drag":
                 self.dynamics.append(Drag(scenario=self.scenario, agent=self.agent))
 
+            elif dynamic == "3body":
+                self.dynamics.append(ThreeBody(scenario=self.scenario, agent=self.agent))
+
+            elif dynamic == "complex_srp":
+                self.dynamics.append(SRP(scenario=self.scenario, agent=self.agent,complex_srp=True))
+
+            elif dynamic == "complex_drag":
+                self.dynamics.append(Drag(scenario=self.scenario, agent=self.agent,complex_drag=True))
+
             elif dynamic == "stm":
                 self.dynamics.append(STM(scenario=self.scenario, agent=self.agent))
 
@@ -213,8 +223,8 @@ class StationKeepLoss(Manuever):
                 dyn.agent = self.agent  # ensure that the agent is set #TODO Better way?
                 state2 @= dyn(state, time)
         else:
-            state2 = State(acceleration=np.zeros(3))
-
+            state2 = State(acceleration = np.zeros(3))
+        
         return state2
 
 

@@ -51,8 +51,8 @@ class SRP(Dynamic):
         self.agent.bus.set_orientation(state)
 
         # Get the face normals and areas from the bus shape.
-        normals = self.agent.bus.shape.face_normals
-        areas = self.agent.bus.shape.area_faces
+        normals = self.agent.bus.shape.facets_normal
+        areas = self.agent.bus.shape.facets_area
 
         # Compute the cosine of the angle between each face normal and the sunlight direction.
         # The sun direction is taken as the unit vector from the spacecraft toward the sun.

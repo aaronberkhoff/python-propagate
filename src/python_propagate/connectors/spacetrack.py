@@ -2,7 +2,8 @@ import yaml
 import os
 import getpass
 from datetime import timedelta
-import time
+import time  
+import json
 
 
 from spacetrack import SpaceTrackClient, AuthenticationError
@@ -59,7 +60,7 @@ class SpaceTrackConnector:
 
     def _store_credentials(self, username, password):
         """Stores credentials securely in a YAML file."""
-        creds = {"username": username, "password": password}
+        creds = {"space_track": {"username": username, "password": password}}
         with open(CREDENTIALS_FILE, "w") as f:
             yaml.safe_dump(creds, f)
 
@@ -100,14 +101,11 @@ class SpaceTrackConnector:
         # Loop through each day in the date range to fetch TLEs
         try:
             # Query SpaceTrack for the TLE closest to the current time
-            lines = self.client.gp_history(
-                iter_lines=True, creation_date=drange, orderby="TLE_LINE1", format="tle"
-            )
-            if tle_data:
-                for tle in tle_data:
-                    timestamp = tle.get(
-                        "epoch"
-                    )  # Or a specific timestamp field depending on the API response
+            tle_data = self.client.gp_history(norad_cat_id=25544, orderby="epoch desc", format="json",creation_date = drange)
+            tle_data_json = json.loads(tle_data)
+            if tle_data_json:
+                for tle in tle_data_json:
+                    timestamp = tle.get("EPOCH")  # Or a specific timestamp field depending on the API response
                     tle_history.append((timestamp, tle.get("tle")))
 
             # Move to the next day
